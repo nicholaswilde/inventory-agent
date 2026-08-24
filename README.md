@@ -27,9 +27,9 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 
 ## :gear: Setup
 
-1. Copy the example environment file and configure Homebox credentials:
+1. Initialize `.env` and configure Homebox credentials:
    ```bash
-   cp .env.example .env
+   task init
    ```
 2. Install Python test dependencies (using [`uv`](https://github.com/astral-sh/uv)):
    ```bash
@@ -51,6 +51,9 @@ sudo .venv/bin/pytest tests/
 
 ## :clipboard: Taskfile Commands
 
+- `task init` — Copy `.env.example` to `.env`.
+- `task encrypt` — Encrypt `.env` to `.env.enc` using SOPS.
+- `task decrypt` — Decrypt `.env.enc` to `.env` using SOPS.
 - `task test` — Run complete test suite (API, bash scripts, image pipeline).
 - `task homebox:list` — List all Homebox entities.
 - `task homebox:search QUERY='<name>'` — Search Homebox entities by name.

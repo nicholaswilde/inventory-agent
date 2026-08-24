@@ -1,6 +1,21 @@
 version: '3'
 
 tasks:
+  init:
+    desc: Copy .env.example to .env
+    cmds:
+      - cp .env.example .env
+
+  encrypt:
+    desc: Encrypt .env to .env.enc using SOPS
+    cmds:
+      - sops --encrypt --input-type dotenv --output-type dotenv --output .env.enc .env
+
+  decrypt:
+    desc: Decrypt .env.enc to .env using SOPS
+    cmds:
+      - sops --decrypt --input-type dotenv --output-type dotenv --output .env .env.enc
+
   homebox:list:
     desc: List all Homebox entities
     cmds:
@@ -69,3 +84,8 @@ tasks:
     desc: Run all tests (API, bash scripts)
     cmds:
       - sudo .venv/bin/pytest tests/
+
+  default:
+    cmds:
+      - task -l
+    silent: true
