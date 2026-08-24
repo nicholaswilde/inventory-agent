@@ -50,19 +50,26 @@ case "$CMD" in
     ')
     curl -s -X POST -H "$AUTH_HEADER" -H "$CONTENT_TYPE" -d "$DATA" "${BASE_URL}/entities"
     ;;
+  delete)
+    ID=$1
+    curl -s -X DELETE -H "$AUTH_HEADER" "${BASE_URL}/entities/${ID}"
+    echo "Deleted entity $ID"
+    ;;
   attach)
     ID=$1
     FILE_PATH=$2
     FILE_NAME=$(basename "$FILE_PATH")
     curl -s -X POST -H "$AUTH_HEADER" -F "file=@${FILE_PATH}" -F "name=${FILE_NAME}" "${BASE_URL}/entities/${ID}/attachments"
     ;;
-  *)
-    echo "Usage: ./homebox.sh <list|get <id>|update <id> <json_data>|create <json_data>|attach <id> <file_path>|search <query>>"
-    exit 1
-    ;;
-esac
-
   search)
     QUERY=$1
     curl -s -H "$AUTH_HEADER" "${BASE_URL}/entities" | jq -r --arg q "$QUERY" '.items[] | select(.name | ascii_downcase | contains($q | ascii_downcase)) | "ID: \(.id) | Name: \(.name)"'
     ;;
+  entity-types)
+    curl -s -H "$AUTH_HEADER" "${BASE_URL}/entity-types" | jq -r '.[] | "ID: \(.id) | Name: \(.name)\(if .isLocation then " (Location)" else "" end)"'
+    ;;
+  *)
+    echo "Usage: ./homebox.sh <list|get <id>|update <id> <json_data>|create <json_data>|delete <id>|attach <id> <file_path>|search <query>|entity-types>"
+    exit 1
+    ;;
+esac

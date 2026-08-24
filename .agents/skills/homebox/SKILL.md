@@ -44,10 +44,22 @@ Creates a new entity. The data should be provided as a JSON string.
 ./scripts/homebox.sh create '{"name": "New Entity", "description": "A description"}'
 ```
 
+### Delete Entity
+Deletes an entity by its ID.
+```bash
+./scripts/homebox.sh delete <entity_id>
+```
+
 ### Attach File
 Uploads a file (such as a photo) and attaches it to the specified entity.
 ```bash
 ./scripts/homebox.sh attach <entity_id> <file_path>
+```
+
+### List Entity Types
+Lists all available entity types (e.g., Location, Asset), which is useful when creating a new entity to find the correct `entityTypeId`.
+```bash
+./scripts/homebox.sh entity-types
 ```
 
 ## Usage Guidelines for Agents
