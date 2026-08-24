@@ -29,7 +29,7 @@ This skill guides the agent to process a GitHub issue, extract item details, map
    - **Unstructured / Missing Info**: If the issue does not follow the structured template, or if fields are blank (e.g. just a title and a zip upload), use OCR and your visual identification to generate an appropriate `name`, `manufacturer`, `modelNumber`, and `description` for the Homebox JSON payload yourself.
 
 4. **Check Homebox**:
-   - Use the `homebox` skill (e.g., `scripts/homebox.sh list`) to check if the component(s) already exist in Homebox.
+   - Use the `homebox` skill (e.g., `scripts/homebox.sh search "<name>"`) to check if the component(s) already exist in Homebox.
    - If a component **already exists**, inform the user that it exists. Do NOT increase the quantity or add a duplicate.
 
 5. **Add to Homebox**:

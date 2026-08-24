@@ -7,8 +7,9 @@ Intelligent image and issue ingestion agent for Homebox inventory management.
 ## Features
 
 - **GitHub Issue Processing**: Ingest items from issues containing images or zip archives directly into Homebox, with OCR (`lit` + `tesseract`) and multimodal vision fallback.
+- **Token-Optimized Extraction**: Streamlined issue and image extraction pipeline (`task issue:extract`) to minimize context token usage.
 - **Local Image & Zip Processing**: Ingest local photos and zip files from `images/pending/` into Homebox and move them to `images/processed/`.
-- **Homebox API Integration**: Helper scripts and Taskfile commands for CRUD operations and image attachments.
+- **Homebox API Integration**: Helper scripts and Taskfile commands for CRUD operations, search filtering, and image attachments.
 
 ## Usage
 
@@ -24,10 +25,12 @@ Intelligent image and issue ingestion agent for Homebox inventory management.
 ### Taskfile Commands
 
 - `task homebox:list` — List all Homebox entities.
+- `task homebox:search QUERY='<name>'` — Search Homebox entities by name.
 - `task homebox:get ID=<id>` — Get details for an entity.
 - `task homebox:create DATA='<json>'` — Create a new entity.
 - `task homebox:update ID=<id> DATA='<json>'` — Update an existing entity.
 - `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity.
+- `task issue:extract ISSUE=<id>` — Extract issue attachments and run quiet OCR.
 - `task process-images` — Process pending local images and zip archives.
 
 ## :balance_scale: License

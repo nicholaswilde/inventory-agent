@@ -57,7 +57,12 @@ case "$CMD" in
     curl -s -X POST -H "$AUTH_HEADER" -F "file=@${FILE_PATH}" -F "name=${FILE_NAME}" "${BASE_URL}/entities/${ID}/attachments"
     ;;
   *)
-    echo "Usage: ./homebox.sh <list|get <id>|update <id> <json_data>|create <json_data>|attach <id> <file_path>>"
+    echo "Usage: ./homebox.sh <list|get <id>|update <id> <json_data>|create <json_data>|attach <id> <file_path>|search <query>>"
     exit 1
     ;;
 esac
+
+  search)
+    QUERY=$1
+    curl -s -H "$AUTH_HEADER" "${BASE_URL}/entities" | jq -r --arg q "$QUERY" '.items[] | select(.name | ascii_downcase | contains($q | ascii_downcase)) | "ID: \(.id) | Name: \(.name)"'
+    ;;

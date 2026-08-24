@@ -38,3 +38,17 @@ tasks:
     desc: Process local images and zip files from images/pending
     cmds:
       - ./scripts/process_images.sh
+
+  homebox:search:
+    desc: Search Homebox entities by name
+    cmds:
+      - ./scripts/homebox.sh search '{{.QUERY}}'
+    requires:
+      vars: [QUERY]
+
+  issue:extract:
+    desc: Extract an issue and run OCR quietly
+    cmds:
+      - ./scripts/extract_issue.sh {{.ISSUE}}
+    requires:
+      vars: [ISSUE]
