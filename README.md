@@ -2,7 +2,7 @@
 
 [![task](https://img.shields.io/badge/Task-Enabled-brightgreen?style=for-the-badge&logo=task&logoColor=white)](https://taskfile.dev/#/)
 
-Intelligent image and issue ingestion agent for Homebox inventory management.
+Intelligent image and issue ingestion agent for [Homebox](https://homebox.software) inventory management.
 
 > [!IMPORTANT]
 > **Compatibility**: This repository only supports **Homebox v0.26.0+** (which uses the unified Entities API). Older versions using deprecated `/api/locations` and `/api/items` endpoints are not supported.
