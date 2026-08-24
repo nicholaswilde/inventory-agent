@@ -1,1 +1,35 @@
+version: '3'
 
+tasks:
+  homebox:list:
+    desc: List all Homebox entities
+    cmds:
+      - ./scripts/homebox.sh list
+
+  homebox:get:
+    desc: Get Homebox entity by ID
+    cmds:
+      - ./scripts/homebox.sh get {{.ID}}
+    requires:
+      vars: [ID]
+
+  homebox:update:
+    desc: Update Homebox entity by ID with JSON payload
+    cmds:
+      - ./scripts/homebox.sh update {{.ID}} '{{.DATA}}'
+    requires:
+      vars: [ID, DATA]
+
+  homebox:create:
+    desc: Create Homebox entity with JSON payload
+    cmds:
+      - ./scripts/homebox.sh create '{{.DATA}}'
+    requires:
+      vars: [DATA]
+
+  homebox:attach:
+    desc: Attach a file to a Homebox entity
+    cmds:
+      - ./scripts/homebox.sh attach {{.ID}} '{{.FILE}}'
+    requires:
+      vars: [ID, FILE]
