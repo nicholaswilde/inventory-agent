@@ -99,3 +99,20 @@ When parsing images to extract text:
 1. Process the image with `lit`.
 2. Run `tesseract` on the output to extract text.
 <!-- image-parsing-end -->
+
+<!-- script-tdd-begin -->
+## Script Test-Driven Development (TDD)
+When adding a new script, you must ALWAYS create a test for it first, and then run the script against that test to verify functionality. When updating or modifying an existing script, you must modify its corresponding test first before making changes to the script itself.
+<!-- script-tdd-end -->
+
+<!-- issue-management-begin -->
+## GitHub Issue Management
+When creating or updating GitHub issues, always adhere to the following naming and labeling scheme:
+- **Features**: Prefix the title with `[feat]: ` and apply the `enhancement` label.
+- **Bugs**: Prefix the title with `[bug]: ` and apply the `bug` label.
+<!-- issue-management-end -->
+
+<!-- readme-formatting-begin -->
+## README Formatting
+When adding or updating section and subsection headings in `README.md`, always include appropriate emoji shortcodes (e.g., `## :sparkles: Features`, `## :gear: Setup`, `## :test_tube: Testing`).
+<!-- readme-formatting-end -->

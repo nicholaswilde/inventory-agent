@@ -27,12 +27,24 @@ tasks:
     requires:
       vars: [DATA]
 
+  homebox:delete:
+    desc: Delete Homebox entity by ID
+    cmds:
+      - ./scripts/homebox.sh delete {{.ID}}
+    requires:
+      vars: [ID]
+
   homebox:attach:
     desc: Attach a file to a Homebox entity
     cmds:
       - ./scripts/homebox.sh attach {{.ID}} '{{.FILE}}'
     requires:
       vars: [ID, FILE]
+
+  homebox:entity-types:
+    desc: List all Homebox entity types
+    cmds:
+      - ./scripts/homebox.sh entity-types
 
   process-images:
     desc: Process local images and zip files from images/pending
@@ -52,3 +64,8 @@ tasks:
       - ./scripts/extract_issue.sh {{.ISSUE}}
     requires:
       vars: [ISSUE]
+
+  test:
+    desc: Run all tests (API, bash scripts)
+    cmds:
+      - sudo .venv/bin/pytest tests/
