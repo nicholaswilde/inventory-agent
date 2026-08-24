@@ -1,24 +1,30 @@
 ---
 name: issue-to-homebox
-description: Processes a GitHub issue to extract item details from images, adds the item to Homebox if it doesn't exist, and creates a commit to close the issue.
+description: Processes a GitHub issue to extract item details from images or zips, adds the item to Homebox if it doesn't exist, and creates a commit to close the issue.
 ---
 
 # Issue to Homebox Skill
 
-This skill guides the agent to process a GitHub issue, extract component information from attached images, and add the item to Homebox. 
+This skill guides the agent to process a GitHub issue, extract item details, map them to HomeBox fields, process any attached images or zip files, and add the item to Homebox. 
 
 ## Workflow
 
 1. **Read Issue**: 
-   - Run `gh issue view <issue_number> | cat` to read the issue title, body, and extract any image URLs.
+   - Run `gh issue view <issue_number> | cat` to read the issue title, body, and extract any file URLs (images or zip files).
 
-2. **Download & Process Images**: 
-   - Download the attached image(s) (e.g., using `curl -O`).
-   - Follow the repository's image parsing workflow: Process the image with `lit`, and then run `tesseract` on the output to extract text.
+2. **Download & Process Files**: 
+   - Download the attached file(s) from the issue (e.g., using `curl -O`).
+   - **If the file is a zip archive**: Extract the `.zip` file into a temporary directory first, then process all images inside.
+   - Follow the repository's primary image parsing workflow for each image: Process the image with `lit`, and then run `tesseract` on the output to extract text.
+   - **Vision Fallback**: If the OCR pipeline fails to extract meaningful text, or if the component's type/model is unclear from the text alone, use your native multimodal capabilities (e.g. via `view_file` tool on the image) to visually inspect the component or board to identify its type, manufacturer, and model.
 
-3. **Identify Item Details**:
-   - Determine the component's name, description, and other relevant fields from the extracted text.
-   - If a quantity is specified in the issue or text, use it. Otherwise, assume the quantity is `1`.
+3. **Identify Item Details & Map to Homebox Fields**:
+   - Parse the structured fields from the issue body. Based on the issue template, map these fields directly to the Homebox JSON payload:
+     - **Item Name** -> `name` (Use OCR or visual identification if the issue left this blank or vague)
+     - **Manufacturer** -> `manufacturer`
+     - **Model Number** -> `modelNumber`
+     - **Quantity** -> `quantity` (If not specified, assume `1`)
+     - **Notes / Description** -> `description` (Append any text extracted from OCR or details derived from visual inspection here)
 
 4. **Check Homebox**:
    - Use the `homebox` skill (e.g., `scripts/homebox.sh list`) to check if the component already exists in Homebox.
@@ -26,7 +32,8 @@ This skill guides the agent to process a GitHub issue, extract component informa
 
 5. **Add to Homebox**:
    - If the component **does not exist**, use `scripts/homebox.sh create '<json_data>'` (or the Taskfile equivalent) to create it. 
-   - After creating, use `scripts/homebox.sh attach <entity_id> <image_path>` to upload the image from the issue to the item. 
+   - After creating, upload the image(s) from the issue to the item using `scripts/homebox.sh attach <entity_id> <image_path>`. 
+   - If there are multiple images (e.g., extracted from a zip file or uploaded separately), upload ALL of them to the Homebox entry by calling the attach command for each image. 
 
 6. **Create Git Commit**:
    - Create an empty git commit (or commit related changes if any) to close the issue.
@@ -39,3 +46,4 @@ fixes #<issue_number>"`
 - `gh` CLI for reading issues.
 - `lit` and `tesseract` for OCR.
 - `scripts/homebox.sh` for Homebox interactions.
+- `unzip` for handling zip files.

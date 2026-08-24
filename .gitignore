@@ -221,3 +221,7 @@ __marimo__/
 .agents/mcp_config.json
 .codegraph/
 .rtk/
+images/pending/*
+!images/pending/.gitkeep
+images/processed/*
+!images/processed/.gitkeep

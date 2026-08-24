@@ -1,0 +1,48 @@
+name: New Item from Image
+description: Submit a new item for Homebox using an image.
+title: "[Item]: "
+labels: ["new item", "image source"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for submitting a new item! Please upload the image(s) or zip file(s) of the item below.
+  - type: input
+    id: item_name
+    attributes:
+      label: Item Name
+      description: What is the name of the item?
+      placeholder: e.g. Logitec Mouse
+    validations:
+      required: true
+  - type: textarea
+    id: item_image
+    attributes:
+      label: Item Image(s) or Zip File(s)
+      description: Drag and drop the image(s) or zip file(s) of the item here.
+      placeholder: ![image](url)
+    validations:
+      required: true
+  - type: input
+    id: manufacturer
+    attributes:
+      label: Manufacturer (Optional)
+      description: Who makes the item?
+      placeholder: e.g. Logitech, Sony, Apple
+  - type: input
+    id: model_number
+    attributes:
+      label: Model Number (Optional)
+      description: What is the model number of the item?
+      placeholder: e.g. MX Master 3
+  - type: input
+    id: quantity
+    attributes:
+      label: Quantity (Optional)
+      description: How many of this item are there?
+      placeholder: 1
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / Description (Optional)
+      description: Any additional notes, labels, or details about the item.

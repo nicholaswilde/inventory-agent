@@ -33,3 +33,8 @@ tasks:
       - ./scripts/homebox.sh attach {{.ID}} '{{.FILE}}'
     requires:
       vars: [ID, FILE]
+
+  process-images:
+    desc: Process local images and zip files from images/pending
+    cmds:
+      - ./scripts/process_images.sh
