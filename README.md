@@ -12,6 +12,7 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 - **GitHub Issue Processing**: Ingest items from issues containing images or zip archives directly into Homebox, with OCR (`lit` + `tesseract`) and multimodal vision fallback.
 - **Token-Optimized Extraction**: Streamlined issue and image extraction pipeline (`task issue:extract`) to minimize context token usage.
 - **Local Image & Zip Processing**: Ingest local photos and zip files from `images/pending/` into Homebox and move them to `images/processed/`.
+- **Duplicate Management**: Detect, merge, and clean up duplicate Homebox entities using fuzzy text matching.
 - **Homebox API Integration**: Helper scripts and Taskfile commands for CRUD operations, search filtering, and image attachments.
 
 ## :rocket: Usage
@@ -21,20 +22,21 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 1. Place images or `.zip` archives into `images/pending/`.
 2. Run the processing task:
    ```bash
-   task process-images
+   task process-vision
    ```
 3. Processed files are automatically organized into `images/processed/`.
 
 ## :gear: Setup
 
-1. Install system prerequisites (`jq`, `curl`):
+1. Install system prerequisites (`jq`, `curl`, `tesseract-ocr`):
    ```bash
    # Debian / Ubuntu
-   sudo apt-get install jq curl
+   sudo apt-get install jq curl tesseract-ocr
    ```
-2. Initialize `.env` and configure Homebox credentials:
+2. Initialize `.env` and configure Homebox credentials and Gemini API:
    ```bash
    task init
+   # Edit .env to set HOMEBOX_IP, HOMEBOX_API_KEY, and GEMINI_API_KEY
    ```
 3. Install Python test dependencies (using [`uv`](https://github.com/astral-sh/uv)):
    ```bash
@@ -51,7 +53,7 @@ task test
 
 Or run directly via pytest:
 ```bash
-sudo .venv/bin/pytest tests/
+uv run pytest tests/
 ```
 
 ## :clipboard: Taskfile Commands
@@ -67,9 +69,12 @@ sudo .venv/bin/pytest tests/
 - `task homebox:update ID=<id> DATA='<json>'` — Update an existing entity.
 - `task homebox:delete ID=<id>` — Delete an entity by ID.
 - `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity.
+- `task homebox:dedup` — Detect and report duplicate Homebox entities.
+- `task homebox:dedup-delete` — Delete duplicate entities (preview with `DRY_RUN=1`).
+- `task homebox:dedup-merge` — Merge quantities and delete duplicates (preview with `DRY_RUN=1`).
 - `task homebox:entity-types` — List all Homebox entity types (useful for finding Location ID).
 - `task issue:extract ISSUE=<id>` — Extract issue attachments and run quiet OCR.
-- `task process-images` — Process pending local images and zip archives.
+- `task process-vision` — Process pending local images and zip archives.
 
 ## :balance_scale: License
 
