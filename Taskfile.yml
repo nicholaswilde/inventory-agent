@@ -61,10 +61,12 @@ tasks:
     cmds:
       - ./scripts/homebox.sh entity-types
 
-  process-images:
-    desc: Process local images and zip files from images/pending
+  process-vision:
+    desc: Process electronic component images using vision pipeline
+    aliases:
+      - process-images
     cmds:
-      - ./scripts/process_images.sh
+      - uv run scripts/process_vision.py {{.CLI_ARGS}}
 
   homebox:search:
     desc: Search Homebox entities by name
@@ -72,6 +74,21 @@ tasks:
       - ./scripts/homebox.sh search '{{.QUERY}}'
     requires:
       vars: [QUERY]
+
+  homebox:dedup:
+    desc: Detect duplicate HomeBox entities and report them
+    cmds:
+      - uv run scripts/homebox_dedup.py --threshold {{.THRESHOLD | default "0.8"}} {{.CLI_ARGS}}
+
+  homebox:dedup-delete:
+    desc: Delete duplicate HomeBox entities (keeps most descriptive). Use DRY_RUN=1 to preview.
+    cmds:
+      - uv run scripts/homebox_dedup.py --threshold {{.THRESHOLD | default "0.8"}} --delete {{if eq .DRY_RUN "1"}}--dry-run{{end}}
+
+  homebox:dedup-merge:
+    desc: Merge quantities then delete duplicates. Use DRY_RUN=1 to preview.
+    cmds:
+      - uv run scripts/homebox_dedup.py --threshold {{.THRESHOLD | default "0.8"}} --merge {{if eq .DRY_RUN "1"}}--dry-run{{end}}
 
   issue:extract:
     desc: Extract an issue and run OCR quietly
@@ -81,9 +98,9 @@ tasks:
       vars: [ISSUE]
 
   test:
-    desc: Run all tests (API, bash scripts)
+    desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:
-      - sudo .venv/bin/pytest tests/
+      - uv run pytest -v tests/
 
   default:
     cmds:
