@@ -105,3 +105,66 @@ def test_homebox_script_no_env(tmp_path):
     result = subprocess.run([script_path, "list"], env=env, cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode == 1
     assert "Error: HOMEBOX_IP or HOMEBOX_API_KEY not set" in result.stdout
+
+def test_homebox_script_missing_jq(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    
+    # Provide dummy curl but no jq
+    curl_mock = bin_dir / "curl"
+    curl_mock.write_text("#!/bin/bash\nexit 0\n")
+    curl_mock.chmod(0o755)
+    
+    env = os.environ.copy()
+    env["PATH"] = str(bin_dir)
+    env["HOMEBOX_IP"] = "127.0.0.1"
+    env["HOMEBOX_API_KEY"] = "fake-key"
+    
+    script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "homebox.sh"))
+    
+    result = subprocess.run([script_path, "list"], env=env, cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == 1
+    assert "Error: jq is not installed" in result.stdout
+
+def test_homebox_script_update_field(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    
+    curl_mock = bin_dir / "curl"
+    curl_mock.write_text("""#!/bin/bash
+    if [[ "$*" == *"-X PUT"* ]]; then
+        while [[ $# -gt 0 ]]; do
+            if [[ "$1" == "-d" ]]; then
+                echo "$2"
+            fi
+            shift
+        done
+    else
+        cat <<JSON
+{
+  "id": "ent-123",
+  "name": "Test Entity",
+  "fields": [
+    {"name": "Notes", "type": "text", "value": "Old notes"}
+  ]
+}
+JSON
+    fi
+""")
+    curl_mock.chmod(0o755)
+    
+    env = os.environ.copy()
+    system_path = env.get('PATH', '')
+    if "/home/linuxbrew/.linuxbrew/bin" not in system_path:
+        system_path = f"/home/linuxbrew/.linuxbrew/bin:{system_path}"
+    env["PATH"] = f"{bin_dir}:{system_path}"
+    env["HOMEBOX_IP"] = "127.0.0.1"
+    env["HOMEBOX_API_KEY"] = "fake-key"
+    
+    script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "homebox.sh"))
+    
+    result = subprocess.run([script_path, "update-field", "ent-123", "Model Number", "12345"], env=env, capture_output=True, text=True)
+    assert result.returncode == 0, f"Script failed: {result.stderr}"
+    assert "Updated field 'Model Number' on entity ent-123" in result.stdout
+    assert "12345" in result.stdout
+    assert "Old notes" in result.stdout

@@ -225,3 +225,7 @@ images/pending/*
 !images/pending/.gitkeep
 images/processed/*
 !images/processed/.gitkeep
+# Ignore subagent workspaces and outputs
+.agents/*
+!.agents/skills/
+!.agents/rules/

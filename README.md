@@ -27,11 +27,16 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 
 ## :gear: Setup
 
-1. Initialize `.env` and configure Homebox credentials:
+1. Install system prerequisites (`jq`, `curl`):
+   ```bash
+   # Debian / Ubuntu
+   sudo apt-get install jq curl
+   ```
+2. Initialize `.env` and configure Homebox credentials:
    ```bash
    task init
    ```
-2. Install Python test dependencies (using [`uv`](https://github.com/astral-sh/uv)):
+3. Install Python test dependencies (using [`uv`](https://github.com/astral-sh/uv)):
    ```bash
    uv sync
    ```

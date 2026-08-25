@@ -27,15 +27,22 @@ Lists all entities, outputting their ID and Name.
 ```
 
 ### Get Entity
-Retrieves the full JSON object for a given entity ID.
+Retrieves the JSON object for a given entity ID. You can optionally pass a jq filter to only extract specific fields and save tokens.
 ```bash
-./scripts/homebox.sh get <entity_id>
+./scripts/homebox.sh get <entity_id> [jq_filter]
+# Example: ./scripts/homebox.sh get 123 '{name: .name, fields: .fields}'
 ```
 
 ### Update Entity
 Updates an entity with new data. The data should be provided as a JSON string. The script will fetch the current entity, merge the new fields, and send a PUT request to update it.
 ```bash
 ./scripts/homebox.sh update <entity_id> '{"name": "New Name", "quantity": 5}'
+```
+
+### Update Custom Field
+Updates or creates a single custom field in an entity's `.fields` array (like Model Number, Manufacturer, Notes). This prevents accidentally overwriting other existing custom fields.
+```bash
+./scripts/homebox.sh update-field <entity_id> "Model Number" "12345"
 ```
 
 ### Create Entity

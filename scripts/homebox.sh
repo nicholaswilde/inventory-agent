@@ -5,6 +5,11 @@ if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 fi
 
+if ! command -v jq &> /dev/null; then
+  echo "Error: jq is not installed. Please install jq to use this script."
+  exit 1
+fi
+
 if [ -z "$HOMEBOX_IP" ] || [ -z "$HOMEBOX_API_KEY" ]; then
   echo "Error: HOMEBOX_IP or HOMEBOX_API_KEY not set"
   exit 1
@@ -23,7 +28,8 @@ case "$CMD" in
     ;;
   get)
     ID=$1
-    curl -s -H "$AUTH_HEADER" "${BASE_URL}/entities/${ID}" | jq .
+    FILTER=${2:-"."}
+    curl -s -H "$AUTH_HEADER" "${BASE_URL}/entities/${ID}" | jq "$FILTER"
     ;;
   update)
     ID=$1
@@ -35,6 +41,25 @@ case "$CMD" in
     # Update entity
     curl -s -X PUT -H "$AUTH_HEADER" -H "$CONTENT_TYPE" -d "$MERGED" "${BASE_URL}/entities/${ID}"
     echo "Updated entity $ID"
+    ;;
+  update-field)
+    ID=$1
+    FIELD_NAME=$2
+    FIELD_VALUE=$3
+    # Get current entity
+    CURRENT=$(curl -s -H "$AUTH_HEADER" "${BASE_URL}/entities/${ID}")
+    # Update or add the field using jq
+    MERGED=$(echo "$CURRENT" | jq --arg name "$FIELD_NAME" --arg value "$FIELD_VALUE" '
+      .fields = (.fields // []) |
+      if any(.fields[]; .name == $name) then
+        .fields |= map(if .name == $name then .value = $value | .textValue = $value else . end)
+      else
+        .fields += [{"name": $name, "type": "text", "value": $value}]
+      end
+    ')
+    # Update entity
+    curl -s -X PUT -H "$AUTH_HEADER" -H "$CONTENT_TYPE" -d "$MERGED" "${BASE_URL}/entities/${ID}"
+    echo "Updated field '$FIELD_NAME' on entity $ID"
     ;;
   create)
     RAW_DATA=$1
@@ -69,7 +94,7 @@ case "$CMD" in
     curl -s -H "$AUTH_HEADER" "${BASE_URL}/entity-types" | jq -r '.[] | "ID: \(.id) | Name: \(.name)\(if .isLocation then " (Location)" else "" end)"'
     ;;
   *)
-    echo "Usage: ./homebox.sh <list|get <id>|update <id> <json_data>|create <json_data>|delete <id>|attach <id> <file_path>|search <query>|entity-types>"
+    echo "Usage: ./homebox.sh <list|get <id> [jq_filter]|update <id> <json_data>|update-field <id> <field_name> <field_value>|create <json_data>|delete <id>|attach <id> <file_path>|search <query>|entity-types>"
     exit 1
     ;;
 esac

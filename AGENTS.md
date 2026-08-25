@@ -116,3 +116,9 @@ When creating or updating GitHub issues, always adhere to the following naming a
 ## README Formatting
 When adding or updating section and subsection headings in `README.md`, always include appropriate emoji shortcodes (e.g., `## :sparkles: Features`, `## :gear: Setup`, `## :test_tube: Testing`).
 <!-- readme-formatting-end -->
+
+<!-- api-response-handling-begin -->
+## API Response Handling Guidelines
+- **JSON Filtering**: Always use `jq` to filter API responses (like Homebox entities) to specific required fields (e.g., `jq '{name: .name, fields: .fields}'`). Do NOT dump full uncompressed JSON into context.
+- **Context-Mode for Data**: For heavy JSON analysis, use `context-mode/ctx_execute` to keep the payload in the sandbox and return only the derived answer.
+<!-- api-response-handling-end -->
