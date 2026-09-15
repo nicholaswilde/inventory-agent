@@ -1,0 +1,714 @@
+{
+  "model": "WT7800CW/00",
+  "model_id": "2453006",
+  "diagrams": [
+    {
+      "diagram_id": 1129403,
+      "name": "EXPLODED VIEW OF TOP COVER ASSEMBLY",
+      "large_image_url": "https://bapgpartsprod.blob.core.windows.net/diagrams/20153051211818_10000_EV_page_1__lg_1500x.jpg",
+      "parts": [
+        {
+          "callout": "A011",
+          "part_number": "MGC65100301",
+          "title": "Rear Panel",
+          "description": "Panel,rear",
+          "price": "83.00",
+          "status": "In Stock",
+          "part_id": 4881301
+        },
+        {
+          "callout": "A011",
+          "part_number": "MGC65100302",
+          "title": "Rear Panel",
+          "description": "Panel,rear",
+          "price": "45.34",
+          "status": "In Stock",
+          "part_id": 4957672
+        },
+        {
+          "callout": "A020",
+          "part_number": "AFG73629706",
+          "title": "Lid",
+          "description": "Washing machine lid",
+          "price": "301.87",
+          "status": "In Stock",
+          "part_id": 4952934
+        },
+        {
+          "callout": "A020",
+          "part_number": "AFG73629711",
+          "title": "Lid",
+          "description": "Lid assembly",
+          "price": "284.87",
+          "status": "NLA",
+          "part_id": 4952936
+        },
+        {
+          "callout": "A050",
+          "part_number": "AGL76194003",
+          "title": "Front Panel",
+          "description": "Panel assembly,front",
+          "price": "258.44",
+          "status": "In Stock",
+          "part_id": 4953238
+        },
+        {
+          "callout": "A050",
+          "part_number": "AGL75452972",
+          "title": "Front Panel",
+          "description": "Front panel assembly",
+          "price": "372.38",
+          "status": "In Stock",
+          "part_id": 4999580
+        },
+        {
+          "callout": "A051",
+          "part_number": "MCR67147702",
+          "title": "Divider Panel",
+          "description": "Decor,panel",
+          "price": "78.11",
+          "status": "In Stock",
+          "part_id": 4957381
+        },
+        {
+          "callout": "A051",
+          "part_number": "MCR67147703",
+          "title": "Decor,panel",
+          "description": "",
+          "price": "107.89",
+          "status": "In Stock",
+          "part_id": 4957382
+        },
+        {
+          "callout": "A056",
+          "part_number": "AEZ73913401",
+          "title": "Control Knob",
+          "description": "Knob assembly",
+          "price": "69.18",
+          "status": "In Stock",
+          "part_id": 3380792
+        },
+        {
+          "callout": "A062",
+          "part_number": "EBR85755505",
+          "title": "Power Supply Board",
+          "description": "Pcb assembly,display",
+          "price": "375.24",
+          "status": "In Stock",
+          "part_id": 4956163
+        },
+        {
+          "callout": "A063",
+          "part_number": "MCK66959302",
+          "title": "Cover,protect",
+          "description": "",
+          "price": "50.07",
+          "status": "In Stock",
+          "part_id": 4995831
+        },
+        {
+          "callout": "A064",
+          "part_number": "EBR86692713",
+          "title": "User Control and Display Board",
+          "description": "Pcb assembly,main",
+          "price": "398.69",
+          "status": "In Stock",
+          "part_id": 4956236
+        },
+        {
+          "callout": "A100",
+          "part_number": "MCK70055601",
+          "title": "Cover",
+          "description": "Cover,top",
+          "price": "237.91",
+          "status": "NLA",
+          "part_id": 4880452
+        },
+        {
+          "callout": "A100",
+          "part_number": "MCK70055603",
+          "title": "Cover",
+          "description": "Cover,top",
+          "price": "301.87",
+          "status": "In Stock",
+          "part_id": 4957310
+        },
+        {
+          "callout": "A105",
+          "part_number": "MBN65224201",
+          "title": "Bottom Panel",
+          "description": "Case",
+          "price": "25.61",
+          "status": "In Stock",
+          "part_id": 4880086
+        },
+        {
+          "callout": "A125",
+          "part_number": "MCK62185701",
+          "title": "Guide",
+          "description": "Guide cover, lid catch",
+          "price": "7.98",
+          "status": "In Stock",
+          "part_id": 2672747
+        },
+        {
+          "callout": "A125",
+          "part_number": "MCK62185702",
+          "title": "Guide",
+          "description": "Cover,guide",
+          "price": "7.51",
+          "status": "In Stock",
+          "part_id": 2672748
+        },
+        {
+          "callout": "A140",
+          "part_number": "EBF61674802",
+          "title": "Door Lock",
+          "description": "Washing machine lid lock & switch assembly",
+          "price": "143.80",
+          "status": "In Stock",
+          "part_id": 2703681
+        },
+        {
+          "callout": "A147",
+          "part_number": "ABA72939703",
+          "title": "Bracket",
+          "description": "Bracket assembly",
+          "price": "12.41",
+          "status": "In Stock",
+          "part_id": 4870213
+        },
+        {
+          "callout": "A147",
+          "part_number": "ABA72939704",
+          "title": "Bracket",
+          "description": "Bracket assembly",
+          "price": "40.91",
+          "status": "In Stock",
+          "part_id": 4995213
+        },
+        {
+          "callout": "A148",
+          "part_number": "ABA73249001",
+          "title": "Bracket",
+          "description": "Top support bracket, left side",
+          "price": "40.91",
+          "status": "In Stock",
+          "part_id": 2652469
+        },
+        {
+          "callout": "A148",
+          "part_number": "ABA73249002",
+          "title": "Bracket",
+          "description": "Bracket assembly",
+          "price": "78.11",
+          "status": "In Stock",
+          "part_id": 4995214
+        },
+        {
+          "callout": "A150",
+          "part_number": "AAZ72925601",
+          "title": "Detergent Container",
+          "description": "Complete detergent box assembly",
+          "price": "111.25",
+          "status": "In Stock",
+          "part_id": 2652387
+        },
+        {
+          "callout": "A150",
+          "part_number": "AAZ72925602",
+          "title": "Detergent Container",
+          "description": "Box assembly,detergent",
+          "price": "134.11",
+          "status": "In Stock",
+          "part_id": 2652388
+        },
+        {
+          "callout": "A157",
+          "part_number": "AGB72932407",
+          "title": "Nozzle",
+          "description": "Nozzle assy",
+          "price": "11.98",
+          "status": "In Stock",
+          "part_id": 4978795
+        },
+        {
+          "callout": "A180",
+          "part_number": "AJU75152602",
+          "title": "Water Inlet Valve",
+          "description": "Multi-port water inlet valve assembly",
+          "price": "133.30",
+          "status": "In Stock",
+          "part_id": 4873914
+        },
+        {
+          "callout": "A186",
+          "part_number": "5214EA3004B",
+          "title": "Inlet Hose",
+          "description": "Inlet Hose",
+          "price": "36.94",
+          "status": "In Stock",
+          "part_id": 2650265
+        },
+        {
+          "callout": "A190",
+          "part_number": "AEN74691601",
+          "title": "Dispenser Housing",
+          "description": "Housing assembly,detergent",
+          "price": "51.96",
+          "status": "NLA",
+          "part_id": 4872617
+        },
+        {
+          "callout": "A200",
+          "part_number": "6501EA1001R",
+          "title": "Pressure Switch",
+          "description": "Water level pressure switch with tube",
+          "price": "64.94",
+          "status": "In Stock",
+          "part_id": 2651052
+        },
+        {
+          "callout": "A203",
+          "part_number": "MEG64119601",
+          "title": "Holder",
+          "description": "Holder",
+          "price": "3.66",
+          "status": "In Stock",
+          "part_id": 4392403
+        },
+        {
+          "callout": "A242",
+          "part_number": "AGM30029101",
+          "title": "Noise Filter",
+          "description": "Noise filter and harness assembly with power cord",
+          "price": "326.84",
+          "status": "In Stock",
+          "part_id": 4962974
+        },
+        {
+          "callout": "A410",
+          "part_number": "MBL67700801",
+          "title": "Cover",
+          "description": "Cap,cover",
+          "price": "25.04",
+          "status": "In Stock",
+          "part_id": 4879946
+        }
+      ],
+      "diagram_file": "01_EXPLODED_VIEW_OF_TOP_COVER_ASSEMBLY.jpg"
+    },
+    {
+      "diagram_id": 1129372,
+      "name": "EXPLODED VIEW OF OUTER CASE ASSEMBLY",
+      "large_image_url": "https://bapgpartsprod.blob.core.windows.net/diagrams/20153051211818_10000_EV_page_2__lg_1500x.jpg",
+      "parts": [
+        {
+          "callout": "F000",
+          "part_number": "ABJ75767801",
+          "title": "Housing Panel",
+          "description": "Cabinet assembly",
+          "price": "180.84",
+          "status": "In Stock",
+          "part_id": 4951629
+        },
+        {
+          "callout": "F000",
+          "part_number": "ABJ75767803",
+          "title": "Housing Panel",
+          "description": "Cabinet assembly",
+          "price": "214.44",
+          "status": "In Stock",
+          "part_id": 4951631
+        },
+        {
+          "callout": "F005",
+          "part_number": "MCQ67395201",
+          "title": "Sound Shield",
+          "description": "Damper",
+          "price": "5.52",
+          "status": "In Stock",
+          "part_id": 4880487
+        },
+        {
+          "callout": "F006",
+          "part_number": "MCQ67395202",
+          "title": "Sound Shield",
+          "description": "Damper",
+          "price": "17.55",
+          "status": "In Stock",
+          "part_id": 4880488
+        },
+        {
+          "callout": "F011",
+          "part_number": "AEJ33026401",
+          "title": "Retainer",
+          "description": "Holder",
+          "price": "7.51",
+          "status": "In Stock",
+          "part_id": 1268385
+        },
+        {
+          "callout": "F017",
+          "part_number": "MAZ65988601",
+          "title": "Bracket,top",
+          "description": "",
+          "price": "8.34",
+          "status": "In Stock",
+          "part_id": 4879757
+        },
+        {
+          "callout": "F018",
+          "part_number": "AEJ73820101",
+          "title": "Holder",
+          "description": "Holder assembly",
+          "price": "7.51",
+          "status": "In Stock",
+          "part_id": 3191783
+        },
+        {
+          "callout": "F020",
+          "part_number": "AAN76350201",
+          "title": "Base assembly,cabinet",
+          "description": "",
+          "price": "267.84",
+          "status": "In Stock",
+          "part_id": 4870064
+        },
+        {
+          "callout": "F020",
+          "part_number": "AAN76350205",
+          "title": "Base Panel",
+          "description": "Base assembly,cabinet",
+          "price": "267.84",
+          "status": "In Stock",
+          "part_id": 4995210
+        },
+        {
+          "callout": "F027",
+          "part_number": "4263FA3933C",
+          "title": "Leveling Leg",
+          "description": "Rubber foot",
+          "price": "36.94",
+          "status": "In Stock",
+          "part_id": 2756914
+        },
+        {
+          "callout": "F032",
+          "part_number": "4930EA3002A",
+          "title": "Holder",
+          "description": "Holder, drain hose",
+          "price": "7.98",
+          "status": "In Stock",
+          "part_id": 1335313
+        },
+        {
+          "callout": "F070",
+          "part_number": "3808FA1368F",
+          "title": "Rear Panel",
+          "description": "Rear cover",
+          "price": "59.73",
+          "status": "In Stock",
+          "part_id": 2648154
+        },
+        {
+          "callout": "F070",
+          "part_number": "MCK69953701",
+          "title": "Rear Panel",
+          "description": "Cover,rear",
+          "price": "21.51",
+          "status": "In Stock",
+          "part_id": 4880396
+        },
+        {
+          "callout": "F080",
+          "part_number": "AHA75673404",
+          "title": "Drain Pump",
+          "description": "Drain pump",
+          "price": "130.15",
+          "status": "In Stock",
+          "part_id": 4961807
+        },
+        {
+          "callout": "F080",
+          "part_number": "AAN73209838",
+          "title": "Drain Pump",
+          "description": "Drain Pump and Cabinet Base Assembly",
+          "price": "143.95",
+          "status": "In Stock",
+          "part_id": 4985882
+        },
+        {
+          "callout": "F086",
+          "part_number": "EAD64545806",
+          "title": "Wire Harness",
+          "description": "Harness,single",
+          "price": "43.47",
+          "status": "In Stock",
+          "part_id": 4876439
+        },
+        {
+          "callout": "F100",
+          "part_number": "AEM73732901",
+          "title": "Drain Hose",
+          "description": "Drain hose- 67.5 \" long",
+          "price": "47.40",
+          "status": "In Stock",
+          "part_id": 2702257
+        }
+      ],
+      "diagram_file": "02_EXPLODED_VIEW_OF_OUTER_CASE_ASSEMBLY.jpg"
+    },
+    {
+      "diagram_id": 1129437,
+      "name": "EXPLODED VIEW OF TUB ASSEMBLY",
+      "large_image_url": "https://bapgpartsprod.blob.core.windows.net/diagrams/20153051211818_10000_EV_page_3__lg_1500x.jpg",
+      "parts": [
+        {
+          "callout": "K012",
+          "part_number": "AGZ72909711",
+          "title": "Washplate",
+          "description": "Washing machine pulsator assembly (or wash plate) with screw.",
+          "price": "160.95",
+          "status": "In Stock",
+          "part_id": 4873462
+        },
+        {
+          "callout": "K020",
+          "part_number": "5006EA3009B",
+          "title": "Agitator Cap",
+          "description": "Washplate cap",
+          "price": "47.40",
+          "status": "In Stock",
+          "part_id": 2649961
+        },
+        {
+          "callout": "K021",
+          "part_number": "FAB30598601",
+          "title": "Screw",
+          "description": "Agitator screw",
+          "price": "23.51",
+          "status": "In Stock",
+          "part_id": 2671180
+        },
+        {
+          "callout": "K030",
+          "part_number": "FAF30369201",
+          "title": "Washer",
+          "description": "Common washer",
+          "price": "10.42",
+          "status": "In Stock",
+          "part_id": 2671221
+        },
+        {
+          "callout": "K040",
+          "part_number": "4020FA4208V",
+          "title": "Spanner Nut",
+          "description": "Spanner (inner tub) nut",
+          "price": "63.47",
+          "status": "In Stock",
+          "part_id": 4985186
+        },
+        {
+          "callout": "K050",
+          "part_number": "4040FA4045C",
+          "title": "Washer",
+          "description": "Drawing Washer",
+          "price": "19.09",
+          "status": "In Stock",
+          "part_id": 1326718
+        },
+        {
+          "callout": "K060",
+          "part_number": "AJQ74774302",
+          "title": "Inner Tub",
+          "description": "Tub assembly,inner",
+          "price": "529.58",
+          "status": "In Stock",
+          "part_id": 4953584
+        },
+        {
+          "callout": "K064",
+          "part_number": "MEL62741701",
+          "title": "Tub Support",
+          "description": "Inner Tub Hub Support",
+          "price": "158.31",
+          "status": "In Stock",
+          "part_id": 4880998
+        },
+        {
+          "callout": "K100",
+          "part_number": "AJK73229704",
+          "title": "Suspension assembly",
+          "description": "",
+          "price": "78.11",
+          "status": "In Stock",
+          "part_id": 4953510
+        },
+        {
+          "callout": "K100",
+          "part_number": "AJK73309707",
+          "title": "Suspension Rod",
+          "description": "Suspension assembly",
+          "price": "63.47",
+          "status": "In Stock",
+          "part_id": 4996426
+        },
+        {
+          "callout": "K104",
+          "part_number": "AGM74269801",
+          "title": "Shock Absorber",
+          "description": "Shock absorber with pin",
+          "price": "71.94",
+          "status": "In Stock",
+          "part_id": 2978407
+        },
+        {
+          "callout": "K140",
+          "part_number": "AEM75152903",
+          "title": "Drain Hose",
+          "description": "Drain hose",
+          "price": "43.47",
+          "status": "In Stock",
+          "part_id": 5064354
+        },
+        {
+          "callout": "K170",
+          "part_number": "AEN74532605",
+          "title": "Clutch",
+          "description": "Clutch and tub bearing assembly, top load washer",
+          "price": "368.55",
+          "status": "In Stock",
+          "part_id": 4952889
+        },
+        {
+          "callout": "K170",
+          "part_number": "AEN74532607",
+          "title": "Clutch",
+          "description": "Clutch and tub bearing assembly",
+          "price": "375.24",
+          "status": "In Stock",
+          "part_id": 4952890
+        },
+        {
+          "callout": "K170",
+          "part_number": "AEN74532611",
+          "title": "Clutch",
+          "description": "Clutch and tub bearing assembly, top load washer",
+          "price": "426.20",
+          "status": "In Stock",
+          "part_id": 4995424
+        },
+        {
+          "callout": "K200",
+          "part_number": "AJB73816015",
+          "title": "Stator Assembly",
+          "description": "Motor stator assembly",
+          "price": "192.04",
+          "status": "In Stock",
+          "part_id": 4873587
+        },
+        {
+          "callout": "K200",
+          "part_number": "AJB73816031",
+          "title": "Stator Assembly",
+          "description": "Stator assembly",
+          "price": "166.98",
+          "status": "In Stock",
+          "part_id": 4953497
+        },
+        {
+          "callout": "K200",
+          "part_number": "AJB76315035",
+          "title": "Stator Assembly",
+          "description": "Stator Assembly. This is a brand new genuine OEM part.",
+          "price": "209.49",
+          "status": "In Stock",
+          "part_id": 4995548
+        },
+        {
+          "callout": "K201",
+          "part_number": "AHL73894503",
+          "title": "Rotor Assembly",
+          "description": "Rotor assembly",
+          "price": "164.38",
+          "status": "In Stock",
+          "part_id": 4873505
+        },
+        {
+          "callout": "K201",
+          "part_number": "AHL73894509",
+          "title": "Rotor Assembly",
+          "description": "Rotor assembly",
+          "price": "137.60",
+          "status": "In Stock",
+          "part_id": 4953458
+        },
+        {
+          "callout": "K201",
+          "part_number": "AHL76195121",
+          "title": "Rotor Assembly",
+          "description": "Rotor assembly,combined",
+          "price": "164.38",
+          "status": "In Stock",
+          "part_id": 4995541
+        },
+        {
+          "callout": "K210",
+          "part_number": "4011FA4353B",
+          "title": "Bolt",
+          "description": "Bolt 8 x 62-mm",
+          "price": "11.59",
+          "status": "In Stock",
+          "part_id": 1267474
+        },
+        {
+          "callout": "K230",
+          "part_number": "EAU64283201",
+          "title": "Shift Actuator",
+          "description": "Motor assembly, dc, clutch (shift actuator",
+          "price": "88.34",
+          "status": "In Stock",
+          "part_id": 4877346
+        },
+        {
+          "callout": "K250",
+          "part_number": "EAD62708437",
+          "title": "Wire Harness",
+          "description": "Harness,multi",
+          "price": "101.53",
+          "status": "In Stock",
+          "part_id": 4876028
+        },
+        {
+          "callout": "K290",
+          "part_number": "4974EA2004A",
+          "title": "Guide,water",
+          "description": "",
+          "price": "5.52",
+          "status": "In Stock",
+          "part_id": 1338019
+        },
+        {
+          "callout": "K300",
+          "part_number": "FAD33190601",
+          "title": "Nut",
+          "description": "Rotor nut",
+          "price": "50.07",
+          "status": "In Stock",
+          "part_id": 4879271
+        },
+        {
+          "callout": "K310",
+          "part_number": "1WZZEA4002C",
+          "title": "Washer",
+          "description": "Washer,common",
+          "price": "7.98",
+          "status": "In Stock",
+          "part_id": 4869138
+        }
+      ],
+      "diagram_file": "03_EXPLODED_VIEW_OF_TUB_ASSEMBLY.jpg"
+    }
+  ]
+}

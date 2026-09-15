@@ -132,6 +132,13 @@ tasks:
     requires:
       vars: [TARGET]
 
+  parts:repairclinic:
+    desc: Download RepairClinic appliance assembly diagrams and bill of materials
+    cmds:
+      - uv run scripts/download_repairclinic_parts.py '{{.TARGET}}' {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET]
+
   test:
     desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:

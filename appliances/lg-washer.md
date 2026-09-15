@@ -20,7 +20,7 @@
 
 ## Part & Accessory Numbers
 
-- None noted in summary.
+- **Full Parts List & Assembly Diagrams**: [WT7800CW Bill of Materials](WT7800CW/bill_of_materials.md)
 
 ---
 

@@ -16,6 +16,7 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 - **Homebox API Integration**: Helper scripts and Taskfile commands for CRUD operations, search filtering, and image attachments.
 - **Appliance Manual Ingestion**: Parse PDF manuals from URL or local disk, create Homebox entities with attached manuals, and generate markdown lookup cheat sheets.
 - **Product URL Ingestion**: Scrape product metadata, model numbers, prices, and images from Amazon and retail URLs and create Homebox entities with deduplication.
+- **Appliance Parts & Diagram Cataloging**: Download high-resolution exploded view assembly diagrams and generate complete bills of materials (parts, callout tags, descriptions, pricing, stock status) in Markdown, CSV, and JSON formats for GE, Bosch, LG, and RepairClinic portals.
 
 ## :rocket: Usage
 
@@ -48,6 +49,24 @@ task manual:ingest FILE="<pdf_path_or_url>"
 Preview without creating Homebox entities:
 ```bash
 task manual:ingest FILE="<pdf_path_or_url>" DRY_RUN=1
+```
+
+### :wrench: Appliance Parts & Assembly Diagrams
+
+Download high-resolution schematics and catalog complete bills of materials (`bill_of_materials.md`, `bill_of_materials.csv`, `bill_of_materials.json`) into `appliances/<MODEL>/`:
+
+```bash
+# GE Appliances (GE Appliance Parts portal)
+task parts:download TARGET="https://www.geapplianceparts.com/store/parts/assembly/<MODEL>"
+
+# Bosch Appliances (Bosch Home spare parts list)
+task parts:bosch TARGET="https://www.bosch-home.com/us/en/spare-parts-list/<MODEL>"
+
+# LG Appliances (LGParts exploded view assembly)
+task parts:lg TARGET="https://lgparts.com/pages/exploded-view-assembly?mfg=ZEN&parentId=<ID>&assemblyId=<ID>&ariId=<ID>"
+
+# RepairClinic Portal (interactive diagrams and parts)
+task parts:repairclinic TARGET="https://www.repairclinic.com/ProductDetail/<ID>?tab=diagrams"
 ```
 
 ## :gear: Setup
@@ -101,6 +120,10 @@ uv run pytest tests/
 - `task process-vision` — Process pending local images and zip archives.
 - `task manual:ingest FILE='<path_or_url>'` — Ingest appliance manual into Homebox and generate cheat sheet (preview with `DRY_RUN=1`).
 - `task url:import URL='<product_url>'` — Import item from product URL into Homebox with image and price (preview with `DRY_RUN=1`).
+- `task parts:download TARGET='<url_or_model>'` — Download GE appliance assembly diagrams and bill of materials.
+- `task parts:bosch TARGET='<url_or_variant>'` — Download Bosch appliance spare parts assembly diagrams and bill of materials.
+- `task parts:lg TARGET='<url_or_parentId>'` — Download LG appliance spare parts assembly diagrams and bill of materials.
+- `task parts:repairclinic TARGET='<url_or_id>'` — Download RepairClinic appliance assembly diagrams and bill of materials.
 
 ## :balance_scale: License
 
