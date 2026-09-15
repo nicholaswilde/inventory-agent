@@ -139,6 +139,39 @@ tasks:
     requires:
       vars: [TARGET]
 
+  appliance:list:
+    desc: List all cataloged appliances and BOM status
+    cmds:
+      - uv run scripts/query_appliance.py list {{.CLI_ARGS}}
+
+  appliance:info:
+    desc: Get detailed specifications, error codes, and BOM for an appliance
+    cmds:
+      - uv run scripts/query_appliance.py info '{{.TARGET}}' {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET]
+
+  appliance:search:
+    desc: Unified search across appliances, specs, error codes, and BOM parts
+    cmds:
+      - uv run scripts/query_appliance.py search '{{.QUERY}}' {{.CLI_ARGS}}
+    requires:
+      vars: [QUERY]
+
+  appliance:part:
+    desc: Search appliance replacement parts by number, callout, or description
+    cmds:
+      - uv run scripts/query_appliance.py part '{{.QUERY}}' {{.CLI_ARGS}}
+    requires:
+      vars: [QUERY]
+
+  appliance:error:
+    desc: Search appliance error codes and troubleshooting actions
+    cmds:
+      - uv run scripts/query_appliance.py error '{{.QUERY}}' {{.CLI_ARGS}}
+    requires:
+      vars: [QUERY]
+
   test:
     desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:

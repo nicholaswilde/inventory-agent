@@ -17,6 +17,7 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 - **Appliance Manual Ingestion**: Parse PDF manuals from URL or local disk, create Homebox entities with attached manuals, and generate markdown lookup cheat sheets.
 - **Product URL Ingestion**: Scrape product metadata, model numbers, prices, and images from Amazon and retail URLs and create Homebox entities with deduplication.
 - **Appliance Parts & Diagram Cataloging**: Download high-resolution exploded view assembly diagrams and generate complete bills of materials (parts, callout tags, descriptions, pricing, stock status) in Markdown, CSV, and JSON formats for GE, Bosch, LG, and RepairClinic portals.
+- **Appliance Information Retrieval**: Query appliance specifications, troubleshooting error codes, and cataloged BOM replacement parts with diagram cross-references (`task appliance:search`, `task appliance:part`, `task appliance:info`).
 
 ## :rocket: Usage
 
@@ -68,6 +69,56 @@ task parts:lg TARGET="https://lgparts.com/pages/exploded-view-assembly?mfg=ZEN&p
 # RepairClinic Portal (interactive diagrams and parts)
 task parts:repairclinic TARGET="https://www.repairclinic.com/ProductDetail/<ID>?tab=diagrams"
 ```
+
+### :mag: Appliance Information Retrieval
+
+Query cataloged appliances, specifications, diagnostic error codes, and replacement parts directly from `appliances/`:
+
+```bash
+# List all cataloged appliances and BOM availability
+task appliance:list
+
+# View detailed specifications, error codes, and assemblies for an appliance
+task appliance:info TARGET="lg-dryer"
+
+# Unified search across appliances, specs, error codes, and BOM parts
+task appliance:search QUERY="compressor"
+
+# Search error codes and troubleshooting diagnostics
+task appliance:error QUERY="IE"
+```
+
+### :nut_and_bolt: Looking Up Part Numbers & Schematics
+
+You can look up replacement part numbers, callouts, pricing, stock status, and schematic diagram references using `task appliance:part` or `scripts/query_appliance.py`:
+
+1. **Search by Keyword Across All Appliances**:
+   ```bash
+   task appliance:part QUERY="relay"
+   task appliance:part QUERY="valve"
+   ```
+
+2. **Filter by Specific Appliance Model**:
+   ```bash
+   task appliance:part QUERY="board" CLI_ARGS="--model JT5500SF1SS"
+   task appliance:part QUERY="inlet valve" CLI_ARGS="--model DLGX7801WE"
+   ```
+
+3. **Look Up by Exact or Partial Part Number**:
+   ```bash
+   task appliance:part QUERY="WB27T11326"
+   ```
+
+4. **Locate Assembly Diagrams**:
+   Each search result displays the `Diagram` file (e.g. `01_CONTROL_PANEL.jpg`) and `Callout` number (e.g. `270`). View the matching schematic image in:
+   ```bash
+   appliances/<MODEL>/diagrams/<diagram_file>
+   ```
+
+5. **JSON Output for Scripting and `jq` Filtering**:
+   ```bash
+   uv run scripts/query_appliance.py part "valve" --json | jq '.[0] | {part: .part_number, desc: .description, price: .price}'
+   ```
 
 ## :gear: Setup
 
