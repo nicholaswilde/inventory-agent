@@ -210,3 +210,30 @@ def test_import_url_integration(tmp_path):
     assert res["homebox_id"] == "hb-imported-777"
     assert mock_post.call_count == 2
     assert mock_put.call_count == 1
+
+
+def test_create_homebox_entity_truncates_notes():
+    mock_resp_create = MagicMock()
+    mock_resp_create.json.return_value = {"id": "hb-notes-123"}
+    mock_resp_create.raise_for_status.return_value = None
+
+    mock_resp_update = MagicMock()
+    mock_resp_update.raise_for_status.return_value = None
+
+    # Multi-byte characters (each 3 bytes in UTF-8)
+    long_notes = "【Feature】" * 150
+    data = {
+        "name": "Test Item",
+        "notes": long_notes,
+    }
+
+    with patch("requests.post", return_value=mock_resp_create) as mock_post, \
+         patch("requests.put", return_value=mock_resp_update) as mock_put, \
+         patch.dict(os.environ, {"HOMEBOX_IP": "127.0.0.1", "HOMEBOX_API_KEY": "fake-key"}):
+        eid = create_homebox_entity(data)
+        assert eid == "hb-notes-123"
+        post_payload = mock_post.call_args[1]["json"]
+        put_payload = mock_put.call_args[1]["json"]
+        assert len(post_payload["notes"].encode("utf-8")) <= 1000
+        assert len(put_payload["notes"].encode("utf-8")) <= 1000
+

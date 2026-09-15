@@ -1,0 +1,947 @@
+{
+  "model": "DLGX7801WE",
+  "parent_id": "131154",
+  "assemblies": [
+    {
+      "assembly_id": "131157",
+      "name": "Cabinet and Door Assembly: Gas Type",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/f600bd4d-8279-4860-a1ac-4d1febd047e7/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "K730",
+          "part_number": "AJU73432602",
+          "description": "DRYER WATER INLET VALVE",
+          "price": "103.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A131",
+          "part_number": "AEJ33026601",
+          "description": "WASHER CABINET CLIP",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A212",
+          "part_number": "3300ER4003A",
+          "description": "DRYER TOP PANEL REAR CLIP",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A300",
+          "part_number": "MEF62782201",
+          "description": "DRYER HINGE",
+          "price": "72.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A305",
+          "part_number": "AEH74256601",
+          "description": "HINGE ASSEMBLY",
+          "price": "52.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A310",
+          "part_number": "ACQ86644201",
+          "description": "COVER ASSEMBLY",
+          "price": "141.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A311",
+          "part_number": "4930ER4003A",
+          "description": "DRYER CABINET CLIP",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A314",
+          "part_number": "MBL62213306",
+          "description": "HOLE CAP",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A315",
+          "part_number": "4000FD4191A",
+          "description": "DRYER SCREW",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A320",
+          "part_number": "4027EL1001C",
+          "description": "DOOR STRIKE",
+          "price": "34.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A325",
+          "part_number": "1SZZEL2001A",
+          "description": "SCREW",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A330",
+          "part_number": "6601EL3001A",
+          "description": "DRYER DOOR SWITCH",
+          "price": "50.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A330",
+          "part_number": "EBF61496101",
+          "description": "DRYER DOOR SWITCH",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A340",
+          "part_number": "FAB32258901",
+          "description": "SCREW",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A360",
+          "part_number": "MBL62213301",
+          "description": "HOLE COVER CAP",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A365",
+          "part_number": "ACV73430101",
+          "description": "DAMPER ASSEMBLY",
+          "price": "103.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A370",
+          "part_number": "MAZ63869301",
+          "description": "HINGE BRACKET",
+          "price": "34.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A380",
+          "part_number": "MAZ61975501",
+          "description": "BRACKET",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A390",
+          "part_number": "4930ER4002B",
+          "description": "HOLDER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A400",
+          "part_number": "ADC74129537",
+          "description": "DOOR ASSEMBLY",
+          "price": "337.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A410",
+          "part_number": "4026EL3007C",
+          "description": "DRYER DOOR LATCH",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A420",
+          "part_number": "ADV74568901",
+          "description": "FRAME ASSEMBLY",
+          "price": "271.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A430",
+          "part_number": "MEF62782101",
+          "description": "HINGE",
+          "price": "72.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A431",
+          "part_number": "MEF62782001",
+          "description": "HINGE",
+          "price": "68.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A435",
+          "part_number": "MJH63096901",
+          "description": "SUPPORTER,HINGE",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A436",
+          "part_number": "MAZ63869201",
+          "description": "HINGE BRACKET",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A438",
+          "part_number": "MBL67041501",
+          "description": "Cap cover",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A440",
+          "part_number": "MEB63034501",
+          "description": "HANDLE ASSEMBLY",
+          "price": "103.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A441",
+          "part_number": "AED73953301",
+          "description": "HANDLE ASSEMBLY",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A450",
+          "part_number": "ADV74568801",
+          "description": "FRAME ASSEMBLY",
+          "price": "271.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A451",
+          "part_number": "MEF63921901",
+          "description": "HINGE",
+          "price": "52.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A460",
+          "part_number": "MDS61982901",
+          "description": "GASKET",
+          "price": "62.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A475",
+          "part_number": "MFG63878901",
+          "description": "BODY LOCKER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A480",
+          "part_number": "MAK63888501",
+          "description": "Bar,connector",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A481",
+          "part_number": "MAK62727101",
+          "description": "BAR,CONNECTOR",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A482",
+          "part_number": "MFG63098601",
+          "description": "LOCKER,HANDLE",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A483",
+          "part_number": "MFG63098701",
+          "description": "LOCKER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A484",
+          "part_number": "MHY63244301",
+          "description": "COIL SPRING",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A485",
+          "part_number": "MHY63244302",
+          "description": "COIL SPRING",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A486",
+          "part_number": "MHY63244303",
+          "description": "COIL SPRING",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A487",
+          "part_number": "MBL65958102",
+          "description": "CAP COVER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A488",
+          "part_number": "MBL65958101",
+          "description": "CAP COVER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A490",
+          "part_number": "1SZZEL4001B",
+          "description": "SCREW,CUSTOMIZED",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A491",
+          "part_number": "1TTL0402418",
+          "description": "MICROWAVE SCREW",
+          "price": "10.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A500",
+          "part_number": "ABJ73928220",
+          "description": "CABINET ASSEMBLY",
+          "price": "288.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A510",
+          "part_number": "5006EL3001D",
+          "description": "DRYER SIDE VENT HOLE COVER (WHITE)",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A520",
+          "part_number": "4810EL3001A",
+          "description": "DRYER LEVELING LEG BRACKET",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A540",
+          "part_number": "4778EL3001E",
+          "description": "LEG",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A545",
+          "part_number": "4930EL3004A",
+          "description": "HOLDER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A550",
+          "part_number": "6411ER1005B",
+          "description": "DRYER POWER CORD",
+          "price": "82.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A590",
+          "part_number": "MCK62423301",
+          "description": "SAFETY COVER",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A600",
+          "part_number": "EAD60946430",
+          "description": "HARNESS,MULTI",
+          "price": "197.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A700",
+          "part_number": "3750EL0001C",
+          "description": "DRYER DRYING RACK",
+          "price": "39.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A800",
+          "part_number": "383EEL9001B",
+          "description": "DRYER SIDE OR BOTTOM EXHAUST VENT KIT",
+          "price": "222.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "01_Cabinet_and_Door_Assembly_Gas_Type.jpg"
+    },
+    {
+      "assembly_id": "131156",
+      "name": "Control Panel and Plate Assembly",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/7528db7c-9022-4f85-b354-6fbdda54e97d/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "A110",
+          "part_number": "AGL75452952",
+          "description": "PANEL ASSEMBLY,FRONT",
+          "price": "222.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A120",
+          "part_number": "EBR86268007",
+          "description": "DISPLAY PCB ASSEMBLY",
+          "price": "267.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A140",
+          "part_number": "AEZ73913401",
+          "description": "Knob assembly",
+          "price": "68.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A210",
+          "part_number": "AGU72925502",
+          "description": "DRYER TOP PANEL ASSEMBLY",
+          "price": "271.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A210",
+          "part_number": "AGU72925524",
+          "description": "PLATE ASSEMBLY,TOP",
+          "price": "222.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A211",
+          "part_number": "3300EL4001A",
+          "description": "PLATE CLIP U",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A160",
+          "part_number": "MCR66471701",
+          "description": "DECOR,PANEL",
+          "price": "123.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A130",
+          "part_number": "EBR85130516",
+          "description": "PCB ASSEMBLY,MAIN",
+          "price": "246.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A215",
+          "part_number": "MGC64406319",
+          "description": "REAR PANEL",
+          "price": "93.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "02_Control_Panel_and_Plate_Assembly.jpg"
+    },
+    {
+      "assembly_id": "131158",
+      "name": "Drum and Motor Assembly: Gas Type",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/9fcccb88-0b56-4994-8d66-01232bdb0c89/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "F200",
+          "part_number": "5209EL1001E",
+          "description": "DRYER HEAT DUCT",
+          "price": "105.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K100",
+          "part_number": "3045EL1002Q",
+          "description": "DRYER DRUM",
+          "price": "305.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K100",
+          "part_number": "3045EL1002S",
+          "description": "TUB ASSEMBLY,DRUM",
+          "price": "311.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K120",
+          "part_number": "4432EL1002A",
+          "description": "DRYER DRUM BAFFLE",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K130",
+          "part_number": "4400EL2001A",
+          "description": "DRYER DRUM BELT",
+          "price": "72.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K130",
+          "part_number": "4400EL2001F",
+          "description": "DRYER DRUM BELT",
+          "price": "33.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K140",
+          "part_number": "4036EL3001A",
+          "description": "DRYER DRUM SEAL, REAR",
+          "price": "42.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K141",
+          "part_number": "1FTF0503507",
+          "description": "SCREW,TAPTITE",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K210",
+          "part_number": "3045EL1005D",
+          "description": "DRUM ASSEMBLY",
+          "price": "311.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K230",
+          "part_number": "MCD62587102",
+          "description": "CONNECTOR,NOZZLE",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K240",
+          "part_number": "5209EL1002A",
+          "description": "DRYER EXHAUST DUCT",
+          "price": "82.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K250",
+          "part_number": "4581EL2002H",
+          "description": "ROLLER ASSEMBLY",
+          "price": "40.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K251",
+          "part_number": "4581EL3001E",
+          "description": "DRYER DRUM SUPPORT ROLLER ASSEMBLY",
+          "price": "16.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K252",
+          "part_number": "4W50100F",
+          "description": "WASHER,CUSTOMIZED",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K310",
+          "part_number": "5231EL1001C",
+          "description": "DRYER LINT SCREEN",
+          "price": "32.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K320",
+          "part_number": "3550EL1005C",
+          "description": "COVER,GUIDE",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K330",
+          "part_number": "4974EL1002B",
+          "description": "DRYER LINT SCREEN COVER",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K335",
+          "part_number": "3550EL2004B",
+          "description": "DRYER LINT FILTER GUIDE COVER",
+          "price": "34.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K336",
+          "part_number": "4970EL4002C",
+          "description": "SPRING",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K340",
+          "part_number": "6500EL3001A",
+          "description": "DRYER MOISTURE SENSOR",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K350",
+          "part_number": "6631EL3003B",
+          "description": "DRYER MOISTURE SENSOR WIRE HARNESS",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K400",
+          "part_number": "3044EL0002T",
+          "description": "TUB,DRUM(REA",
+          "price": "197.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K410",
+          "part_number": "MCR65109901",
+          "description": "DECOR,GUARD",
+          "price": "52.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K502",
+          "part_number": "ADZ73410101",
+          "description": "DRYER GENERATOR ASSEMBLY",
+          "price": "180.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K502",
+          "part_number": "ADZ73410102",
+          "description": "GENERATOR ASSEMBLY",
+          "price": "141.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K505",
+          "part_number": "MEJ62404702",
+          "description": "INLET HOSE",
+          "price": "52.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K507",
+          "part_number": "EAD39301914",
+          "description": "MULTI HARNESS",
+          "price": "93.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K509",
+          "part_number": "MAZ64606102",
+          "description": "FRAME BRACKET",
+          "price": "34.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K510",
+          "part_number": "5835EL1002A",
+          "description": "DRYER BLOWER WHEEL",
+          "price": "82.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K515",
+          "part_number": "383EEL9001G",
+          "description": "DRYER BLOWER WHEEL RETAINER ASSEMBLY",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K520",
+          "part_number": "MEK37661701",
+          "description": "DRYER BLOWER HOUSING",
+          "price": "126.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K530",
+          "part_number": "5209EL1006A",
+          "description": "DRYER EXHAUST DUCT",
+          "price": "50.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K540",
+          "part_number": "4975EL3001A",
+          "description": "DRYER BLOWER DUCT GUIDE",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K550",
+          "part_number": "6323EL2001B",
+          "description": "DRYER THERMISTOR",
+          "price": "50.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K560",
+          "part_number": "6931EL3002M",
+          "description": "DRYER BLOWER THERMOSTAT",
+          "price": "48.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K600",
+          "part_number": "MAZ66065301",
+          "description": "BRACKET,MOTOR",
+          "price": "68.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K610",
+          "part_number": "4681EL1008A",
+          "description": "DRYER MOTOR ASSEMBLY",
+          "price": "282.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K620",
+          "part_number": "4860EL3001A",
+          "description": "DRYER MOTOR CLAMP",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K640",
+          "part_number": "3W40025D",
+          "description": "DRYER BELT SWITCH",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K640",
+          "part_number": "EBF61734701",
+          "description": "DRYER BELT SWITCH",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K650",
+          "part_number": "4561EL3002A",
+          "description": "DRYER IDLER PULLEY",
+          "price": "62.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K651",
+          "part_number": "4560EL3001A",
+          "description": "DRYER IDLER PULLEY",
+          "price": "28.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K655",
+          "part_number": "1SZZEL3001A",
+          "description": "SCREW",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K660",
+          "part_number": "1TPL0303218",
+          "description": "SCREW",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K720",
+          "part_number": "MCD63206801",
+          "description": "CONNECTOR,NOZZLE",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K740",
+          "part_number": "AAA75232311",
+          "description": "ASSEMBLY ACCESSORY",
+          "price": "123.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K741",
+          "part_number": "5215FD3715V",
+          "description": "WASHER FILL HOSE",
+          "price": "45.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K742",
+          "part_number": "MCD63306801",
+          "description": "CONNECTOR,PIPE",
+          "price": "27.95",
+          "status": "Available"
+        },
+        {
+          "callout": "K743",
+          "part_number": "5215FD3715W",
+          "description": "HOSE,INLE",
+          "price": "72.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M110",
+          "part_number": "5221EL2002A",
+          "description": "DRYER GAS VALVE",
+          "price": "210.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M140",
+          "part_number": "4974EL1001A",
+          "description": "DRYER BURNER BRACKET",
+          "price": "72.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M141",
+          "part_number": "4810EL3002A",
+          "description": "BRACKET",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M150",
+          "part_number": "5201EL3001A",
+          "description": "DRYER BURNER",
+          "price": "93.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M160",
+          "part_number": "5318EL3001A",
+          "description": "DRYER BURNER IGNITER",
+          "price": "123.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M170",
+          "part_number": "4948EL4001B",
+          "description": "DRYER NATURAL GAS ORIFICE",
+          "price": "34.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M171",
+          "part_number": "383EEL3002D",
+          "description": "DRYER LP CONVERSION KIT",
+          "price": "17.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M180",
+          "part_number": "4932EL4001A",
+          "description": "CONNECTOR",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M181",
+          "part_number": "4036EL3002A",
+          "description": "DRYER GAS SUPPLY PIPE CONNECTOR SEAL",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M190",
+          "part_number": "5201EL2001A",
+          "description": "DRYER GAS MANIFOLD",
+          "price": "68.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M210",
+          "part_number": "3016EL1001A",
+          "description": "DRYER BURNER DUCT ASSEMBLY",
+          "price": "82.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M220",
+          "part_number": "6931EL3004B",
+          "description": "DRYER HIGH-LIMIT THERMOSTAT",
+          "price": "44.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M230",
+          "part_number": "6931EL3003C",
+          "description": "DRYER HIGH-LIMIT THERMOSTAT",
+          "price": "28.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M240",
+          "part_number": "6501EL3001A",
+          "description": "DRYER RADIANT SENSOR",
+          "price": "136.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M250",
+          "part_number": "4980EL3001A",
+          "description": "DRYER BURNER FUNNEL BRACKET",
+          "price": "19.95",
+          "status": "Available"
+        },
+        {
+          "callout": "M260",
+          "part_number": "383EEL9001D",
+          "description": "PARTS ASSEMBL",
+          "price": "68.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A221",
+          "part_number": "EAQ61400801",
+          "description": "DRYER LED LAMP",
+          "price": "52.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A850",
+          "part_number": "AAA75904801",
+          "description": "ASSEMBLY ACCESSORY",
+          "price": "50.95",
+          "status": "Available"
+        },
+        {
+          "callout": "A401",
+          "part_number": "1SZZEL2001A",
+          "description": "SCREW",
+          "price": "13.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "03_Drum_and_Motor_Assembly_Gas_Type.jpg"
+    }
+  ]
+}

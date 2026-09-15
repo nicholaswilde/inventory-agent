@@ -20,6 +20,7 @@
 
 ## Part & Accessory Numbers
 
+- **Full Parts List & Assembly Diagrams**: [LRDCS2603S Bill of Materials](LRDCS2603S/bill_of_materials.md)
 - Water Filter: LT1000P, LT1000PC, LT1000PCS, MDJ64844601
 
 ---

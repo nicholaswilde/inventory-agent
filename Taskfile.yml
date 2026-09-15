@@ -111,6 +111,27 @@ tasks:
     requires:
       vars: [URL]
 
+  parts:download:
+    desc: Download GE appliance parts assembly diagrams and bill of materials
+    cmds:
+      - uv run scripts/download_ge_parts.py '{{.TARGET}}' {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET]
+
+  parts:bosch:
+    desc: Download Bosch appliance spare parts assembly diagrams and bill of materials
+    cmds:
+      - uv run scripts/download_bosch_parts.py '{{.TARGET}}' {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET]
+
+  parts:lg:
+    desc: Download LG appliance spare parts assembly diagrams and bill of materials
+    cmds:
+      - uv run scripts/download_lg_parts.py '{{.TARGET}}' {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET]
+
   test:
     desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:

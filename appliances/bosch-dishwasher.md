@@ -21,6 +21,13 @@
 
 ---
 
+## Part & Accessory Numbers
+
+- **Full Parts List & Assembly Diagrams**: [SHXM98W75N-01 Bill of Materials](SHXM98W75N-01/bill_of_materials.md)
+- **Manual Part / Document Number**: `9001240453` (Rev 9609)
+
+---
+
 ## Common Indicators & Troubleshooting
 
 | Indicator / Symptom | Possible Cause | Recommended Action |

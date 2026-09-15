@@ -186,7 +186,8 @@ def extract_product_data(raw_html: str, url: str) -> dict[str, Any]:
     )
     for b in bullet_matches:
         cleaned = _clean_text(b)
-        if len(cleaned) > 15 and not any(skip in cleaned.lower() for skip in ["shipping", "sign in", "prime"]):
+        skip_phrases = ["shipping", "sign in", "prime", "return", "drop off", "customer service", "to your orders"]
+        if len(cleaned) > 15 and not any(skip in cleaned.lower() for skip in skip_phrases):
             if cleaned not in bullets:
                 bullets.append(cleaned)
 
@@ -281,6 +282,15 @@ def check_duplicate(
     return None
 
 
+def truncate_to_bytes(s: str, max_bytes: int = 1000) -> str:
+    """Safely truncate UTF-8 string to a maximum byte length without splitting multi-byte characters."""
+    encoded = s.encode("utf-8")
+    if len(encoded) <= max_bytes:
+        return s
+    truncated = encoded[: max_bytes - 3]
+    return truncated.decode("utf-8", errors="ignore") + "..."
+
+
 def create_homebox_entity(
     data: dict[str, Any],
     image_bytes: bytes | None = None,
@@ -291,13 +301,15 @@ def create_homebox_entity(
     base_url = f"http://{ip}:7745/api/v1"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
 
+    notes = truncate_to_bytes(data.get("notes", ""), max_bytes=1000)
+
     payload: dict[str, Any] = {
         "name": data["name"],
         "description": data.get("description", ""),
         "manufacturer": data.get("manufacturer", ""),
         "modelNumber": data.get("model_number", ""),
         "quantity": 1,
-        "notes": data.get("notes", ""),
+        "notes": notes,
     }
     if data.get("purchase_price") is not None:
         payload["purchasePrice"] = data["purchase_price"]

@@ -1,0 +1,1448 @@
+{
+  "variant_id": "SHXM98W75N-01",
+  "source_url": "https://www.bosch-home.com/us/en/spare-parts-list/SHXM98W75N-01",
+  "sections": [
+    {
+      "section_num": "01",
+      "diagram_file": "01_diagram.png",
+      "parts": [
+        {
+          "callout": "0101",
+          "part_number": "11019860",
+          "description": "Dishwasher Control Module",
+          "price": "154.58",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-operating-module-pro-11019860-ap6240911.html"
+        },
+        {
+          "callout": "0109",
+          "part_number": "12008387",
+          "description": "Dishwasher Wire Harness",
+          "price": "12.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-cable-harness-12008387-ap5986071.html"
+        },
+        {
+          "callout": "0120",
+          "part_number": "00775803",
+          "description": "Dishwasher Control Panel Face Cover",
+          "price": "85.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-panel-facia-00775803-ap6240784.html"
+        },
+        {
+          "callout": "0121",
+          "part_number": "00745747",
+          "description": "Seal",
+          "price": "4.45",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-sealing-745747-ap5691320.html"
+        },
+        {
+          "callout": "0130",
+          "part_number": "00752273",
+          "description": "Dishwasher Door Handle",
+          "price": "14.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-handle-752273-ap5691440.html"
+        },
+        {
+          "callout": "0143",
+          "part_number": "00648135",
+          "description": "Dishwasher Wire Harness",
+          "price": "80.41",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-cable-648135-ap4483343.html"
+        },
+        {
+          "callout": "0197",
+          "part_number": "10003483",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0199",
+          "part_number": "00341334",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0199",
+          "part_number": "10009014",
+          "description": "Dishwasher Detergent Dispenser Door Lid",
+          "price": "47.71",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-lid-10009014-ap6833217.html"
+        },
+        {
+          "callout": "0199",
+          "part_number": "12039064",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "02",
+      "diagram_file": "02_diagram.png",
+      "parts": [
+        {
+          "callout": "0201",
+          "part_number": "12008380",
+          "description": "Dishwasher Detergent Dispenser",
+          "price": "60.55",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-dispenser-12008380-ap5984937.html"
+        },
+        {
+          "callout": "0202",
+          "part_number": "00645144",
+          "description": "Dishwasher Detergent Dispenser Seal",
+          "price": "14.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-sealing-645144-ap4483280.html"
+        },
+        {
+          "callout": "0203",
+          "part_number": "00611574",
+          "description": "Dishwasher Turbidity Sensor",
+          "price": "31.43",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-sensor-611574-ap4483013.html"
+        },
+        {
+          "callout": "0204",
+          "part_number": "00611575",
+          "description": "Dishwasher Rinse Aid Dispenser Lid",
+          "price": "25.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-lid-611575-ap4483014.html"
+        },
+        {
+          "callout": "0205",
+          "part_number": "00611576",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0222",
+          "part_number": "00611659",
+          "description": "Dishwasher Mounting Screw",
+          "price": "6.41",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-611659-ap4339618.html"
+        },
+        {
+          "callout": "0225",
+          "part_number": "00747394",
+          "description": "Insulating Part (Insulator)",
+          "price": "12.11",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-747394-ap5691357.html"
+        },
+        {
+          "callout": "0226",
+          "part_number": "00748026",
+          "description": "Insulating Part",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-748026-ap5691376.html"
+        },
+        {
+          "callout": "0227",
+          "part_number": "00628338",
+          "description": "Lock Clamp",
+          "price": "4.45",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-lock-clamp-00628338-ap5953288.html"
+        },
+        {
+          "callout": "0240",
+          "part_number": "00770166",
+          "description": "Dishwasher Inner Door Panel",
+          "price": "122.62",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-door-inner-770166-ap5691505.html"
+        },
+        {
+          "callout": "0241",
+          "part_number": "00611311",
+          "description": "Screw, 1 Piece",
+          "price": "12.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-611311-ap4339684.html"
+        },
+        {
+          "callout": "0242",
+          "part_number": "00151703",
+          "description": "Dishwasher Inner Door Screw Kit",
+          "price": "10.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-inner-door-151703-ap2802179.html"
+        },
+        {
+          "callout": "0243",
+          "part_number": "00744884",
+          "description": "Dishwasher Lower Door Seal",
+          "price": "31.43",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-seal-door-744884-ap5691303.html"
+        },
+        {
+          "callout": "0244",
+          "part_number": "00744814",
+          "description": "Dishwasher Overflow Tube",
+          "price": "11.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-overflow-744814-ap5691298.html"
+        },
+        {
+          "callout": "0245",
+          "part_number": "00630783",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0250",
+          "part_number": "00744918",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0260",
+          "part_number": "00689996",
+          "description": "Dishwasher Outer Door Panel",
+          "price": "144.46",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-door-outer-689996-ap5691255.html"
+        },
+        {
+          "callout": "0280",
+          "part_number": "00746443",
+          "description": "Door Handle",
+          "price": "81.36",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-handle-door-746443-ap5691329.html"
+        },
+        {
+          "callout": "0282",
+          "part_number": "00628998",
+          "description": "Dishwasher Door Handle End Cap",
+          "price": "8.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-handle-cap-shaped-628998-ap5690748.html"
+        },
+        {
+          "callout": "0285",
+          "part_number": "00611862",
+          "description": "Dishwasher Hardware Washer",
+          "price": "5.57",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-washer-611862-ap4339813.html"
+        },
+        {
+          "callout": "0286",
+          "part_number": "00628999",
+          "description": "Dishwasher Mounting Screw",
+          "price": "8.28",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-628999-ap5690749.html"
+        }
+      ]
+    },
+    {
+      "section_num": "03",
+      "diagram_file": "03_diagram.png",
+      "parts": [
+        {
+          "callout": "0310",
+          "part_number": "00745107",
+          "description": "Dishwasher Insulation Blanket",
+          "price": "62.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-745107-ap5691316.html"
+        },
+        {
+          "callout": "0311",
+          "part_number": "00751612",
+          "description": "Insulating Part",
+          "price": "5.02",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-751612-ap5691405.html"
+        },
+        {
+          "callout": "0312",
+          "part_number": "00751467",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0313",
+          "part_number": "00744998",
+          "description": "Dishwasher Side Trim Strip",
+          "price": "16.65",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-strip-744998-ap5691313.html"
+        },
+        {
+          "callout": "0314",
+          "part_number": "00745001",
+          "description": "Dishwasher Upper Trim Strip",
+          "price": "6.42",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-strip-745001-ap5690752.html"
+        },
+        {
+          "callout": "0316",
+          "part_number": "12017579",
+          "description": "Insulating Part",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-12017579-ap6241053.html"
+        },
+        {
+          "callout": "0321",
+          "part_number": "00752529",
+          "description": "Insulating Part (Insulator), 1-Piece",
+          "price": "12.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-752529-ap5691448.html"
+        },
+        {
+          "callout": "0322",
+          "part_number": "00752310",
+          "description": "Dishwasher Insulation Shield",
+          "price": "3.76",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-752310-ap5691441.html"
+        },
+        {
+          "callout": "0324",
+          "part_number": "00746529",
+          "description": "Insulating Part (Thermal Insulator), 1 Pc",
+          "price": "36.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insulating-part-746529-ap5691334.html"
+        },
+        {
+          "callout": "0326",
+          "part_number": "00423896",
+          "description": "Screw, M4 X 8 (Toe Kick)",
+          "price": "12.16",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-m4-x-423896-ap3775492.html"
+        },
+        {
+          "callout": "0327",
+          "part_number": "00189670",
+          "description": "Dishwasher Mounting Screw",
+          "price": "8.02",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-mounting-screw-m4-189670-ap2823819.html"
+        },
+        {
+          "callout": "0330",
+          "part_number": "00744912",
+          "description": "Cover Sheet",
+          "price": "32.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-cover-sheet-744912-ap5691305.html"
+        },
+        {
+          "callout": "0331",
+          "part_number": "00494772",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0332",
+          "part_number": "00630783",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0337",
+          "part_number": "00669255",
+          "description": "Dishwasher Upper Rack Rail Kit",
+          "price": "35.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-rail-669255-ap4359664.html"
+        },
+        {
+          "callout": "0338",
+          "part_number": "00744815",
+          "description": "Cutlery Drawer Rail Kit",
+          "price": "23.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-rail-744815-ap5691299.html"
+        },
+        {
+          "callout": "0391",
+          "part_number": "00628371",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0392",
+          "part_number": "10004568",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "04",
+      "diagram_file": "04_diagram.png",
+      "parts": [
+        {
+          "callout": "0401",
+          "part_number": "00744882",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0402",
+          "part_number": "00623541",
+          "description": "Cover",
+          "price": "30.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-cover-623541-ap5617761.html"
+        },
+        {
+          "callout": "0430",
+          "part_number": "00752078",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0431",
+          "part_number": "00611320",
+          "description": "Dishwasher Check Valve",
+          "price": "22.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-valve-non-return-611320-ap4327582.html"
+        },
+        {
+          "callout": "0432",
+          "part_number": "00167241",
+          "description": "Dishwasher Sump Screw",
+          "price": "5.52",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-sump-screw-167241-ap2802369.html"
+        },
+        {
+          "callout": "0433",
+          "part_number": "00611321",
+          "description": "Dishwasher Sump Cover",
+          "price": "18.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-cover-611321-ap4327566.html"
+        },
+        {
+          "callout": "0434",
+          "part_number": "00611322",
+          "description": "Dishwasher Drain Pump Lid",
+          "price": "20.57",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-lid-611322-ap4355303.html"
+        },
+        {
+          "callout": "0435",
+          "part_number": "00611323",
+          "description": "Turbidity Sensor",
+          "price": "43.63",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-sensor-611323-ap4482988.html"
+        },
+        {
+          "callout": "0436",
+          "part_number": "00668104",
+          "description": "Sump To Water Inlet Hose",
+          "price": "12.79",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hose-668104-ap4483460.html"
+        },
+        {
+          "callout": "0440",
+          "part_number": "00751950",
+          "description": "Diverter Valve",
+          "price": "59.52",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-altern-water-distributor-751950-ap5691407.html"
+        },
+        {
+          "callout": "0441",
+          "part_number": "00615820",
+          "description": "Motor",
+          "price": "53.34",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-motor-615820-ap4483125.html"
+        },
+        {
+          "callout": "0450",
+          "part_number": "12008381",
+          "description": "Dishwasher Circulation Pump And Heater Assembly",
+          "price": "137.41",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-heat-pump-12008381-ap5984938.html"
+        },
+        {
+          "callout": "0451",
+          "part_number": "00172272",
+          "description": "Dishwasher Pump To Heater Hose Clamp",
+          "price": "26.24",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hose-clamp-pump-172272-ap2802455.html"
+        },
+        {
+          "callout": "0452",
+          "part_number": "00611330",
+          "description": "Dishwasher Suspension Damper",
+          "price": "8.02",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-suspension-611330-ap4327604.html"
+        },
+        {
+          "callout": "0455",
+          "part_number": "00631200",
+          "description": "Dishwasher Drain Pump",
+          "price": "44.79",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-pump-drain-00631200-ap5972147.html"
+        },
+        {
+          "callout": "0482",
+          "part_number": "00628306",
+          "description": "Dishwasher Diverter Valve Seal",
+          "price": "4.45",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-sealing-628306-ap5691116.html"
+        },
+        {
+          "callout": "0488",
+          "part_number": "00617642",
+          "description": "Dishwasher Hose Clamp",
+          "price": "5.57",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hose-clamp-00617642-ap5781602.html"
+        },
+        {
+          "callout": "0489",
+          "part_number": "00751456",
+          "description": "Dishwasher Fill Hose",
+          "price": "5.57",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hose-751456-ap5691393.html"
+        }
+      ]
+    },
+    {
+      "section_num": "05",
+      "diagram_file": "05_diagram.png",
+      "parts": [
+        {
+          "callout": "0510",
+          "part_number": "00744881",
+          "description": "Dishwasher Drain Hose",
+          "price": "27.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hose-drain-744881-ap5691300.html"
+        },
+        {
+          "callout": "0512",
+          "part_number": "00751408",
+          "description": "Dishwasher Mounting Clip Holder",
+          "price": "5.57",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-751408-ap5691392.html"
+        },
+        {
+          "callout": "0520",
+          "part_number": "00689332",
+          "description": "Dishwasher Bottom Case",
+          "price": "79.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-case-bottom-689332-ap5691227.html"
+        },
+        {
+          "callout": "0521",
+          "part_number": "00617585",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0522",
+          "part_number": "00611337",
+          "description": "Spring",
+          "price": "21.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-spring-611337-ap5618101.html"
+        },
+        {
+          "callout": "0524",
+          "part_number": "00622036",
+          "description": "Dishwasher Water Level Float",
+          "price": "21.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-float-622036-ap5618072.html"
+        },
+        {
+          "callout": "0525",
+          "part_number": "00751391",
+          "description": "Dishwasher Float Housing",
+          "price": "10.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-housing-751391-ap5691388.html"
+        },
+        {
+          "callout": "0528",
+          "part_number": "11019629",
+          "description": "Dishwasher Base Panel",
+          "price": "53.21",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-panel-base-11019629-ap6240906.html"
+        },
+        {
+          "callout": "0530",
+          "part_number": "11006502",
+          "description": "Worm Gear (Plastic Worm), 1 Pack",
+          "price": "12.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-worm-gear-11006502-ap5962030.html"
+        },
+        {
+          "callout": "0531",
+          "part_number": "00609843",
+          "description": "Dishwasher Leveling Foot",
+          "price": "15.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-foot-609843-ap5657280.html"
+        },
+        {
+          "callout": "0540",
+          "part_number": "00632896",
+          "description": "Dishwasher Door Spring Retainer",
+          "price": "7.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-00632896-ap5950432.html"
+        },
+        {
+          "callout": "0543",
+          "part_number": "00628793",
+          "description": "Terminal",
+          "price": "8.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-terminal-628793-ap5691130.html"
+        },
+        {
+          "callout": "0544",
+          "part_number": "00628334",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0545",
+          "part_number": "10005178",
+          "description": "Support",
+          "price": "5.57",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-support-10005178-ap6281857.html"
+        },
+        {
+          "callout": "0546",
+          "part_number": "00751409",
+          "description": "Dishwasher Holder Retainer",
+          "price": "4.45",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-00751409-ap5953579.html"
+        },
+        {
+          "callout": "0548",
+          "part_number": "00628344",
+          "description": "Support",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-support-628344-ap5691121.html"
+        },
+        {
+          "callout": "0550",
+          "part_number": "11002762",
+          "description": "Dishwasher Left Hinge Plate",
+          "price": "25.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hinge-hinge-plate-11002762-ap5948599.html"
+        },
+        {
+          "callout": "0551",
+          "part_number": "10000412",
+          "description": "Dishwasher Door Cable",
+          "price": "10.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-rope-10000412-ap6027517.html"
+        },
+        {
+          "callout": "0552",
+          "part_number": "00165296",
+          "description": "Dishwasher Door Hinge Bushing",
+          "price": "13.34",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hinge-bushing-165296-ap2821583.html"
+        },
+        {
+          "callout": "0553",
+          "part_number": "00752103",
+          "description": "Dishwasher Door Hinge Lever",
+          "price": "16.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-lever-752103-ap5691431.html"
+        },
+        {
+          "callout": "0555",
+          "part_number": "00623536",
+          "description": "Dishwasher Door Cable Guide",
+          "price": "16.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-guide-623536-ap5617708.html"
+        },
+        {
+          "callout": "0560",
+          "part_number": "11002763",
+          "description": "Dishwasher Door Hinge Plate",
+          "price": "26.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-hinge-hinge-plate-11002763-ap5948600.html"
+        },
+        {
+          "callout": "0563",
+          "part_number": "00752102",
+          "description": "Dishwasher Door Hinge Lever",
+          "price": "16.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-lever-752102-ap5691430.html"
+        },
+        {
+          "callout": "0566",
+          "part_number": "00424819",
+          "description": "Dishwasher Indicator Light",
+          "price": "52.23",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-display-424819-ap3782870.html"
+        },
+        {
+          "callout": "0570",
+          "part_number": "12008382",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0570",
+          "part_number": "12016887",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0575",
+          "part_number": "00752018",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0576",
+          "part_number": "12008383",
+          "description": "Dishwasher Cable Harness",
+          "price": "65.74",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-cable-harness-12008383-ap5986067.html"
+        },
+        {
+          "callout": "0579",
+          "part_number": "00637225",
+          "description": "Dishwasher Mounting Clip",
+          "price": "3.34",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-clip-00637225-ap5985902.html"
+        },
+        {
+          "callout": "0581",
+          "part_number": "00633945",
+          "description": "Dishwasher Torx T20 Screw",
+          "price": "10.42",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-00633945-ap5985878.html"
+        },
+        {
+          "callout": "0582",
+          "part_number": "00423896",
+          "description": "Screw, M4 X 8 (Toe Kick)",
+          "price": "12.16",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-m4-x-423896-ap3775492.html"
+        },
+        {
+          "callout": "0585",
+          "part_number": "00628739",
+          "description": "Dishwasher Panel Mounting Screw",
+          "price": "5.52",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-screw-628739-ap5690747.html"
+        },
+        {
+          "callout": "0595",
+          "part_number": "00188670",
+          "description": "4 X 16 Screw",
+          "price": "12.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-pt-screw-4x16-188670-ap2825210.html"
+        }
+      ]
+    },
+    {
+      "section_num": "06",
+      "diagram_file": "06_diagram.png",
+      "parts": [
+        {
+          "callout": "0601",
+          "part_number": "11018097",
+          "description": "Dishwasher Spray Arm Water Supply Tube",
+          "price": "42.23",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-11018097-11018097-ap6043325.html"
+        },
+        {
+          "callout": "0603",
+          "part_number": "00745856",
+          "description": "Dishwasher Spray Arm",
+          "price": "28.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-spray-arm-745856-ap5691325.html"
+        },
+        {
+          "callout": "0604",
+          "part_number": "00744883",
+          "description": "Dishwasher Lower Spray Arm",
+          "price": "13.34",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-spray-arm-744883-ap5691302.html"
+        },
+        {
+          "callout": "0605",
+          "part_number": "00645036",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0610",
+          "part_number": "00751458",
+          "description": "Dishwasher Fine Filter",
+          "price": "27.23",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-filter-fine-751458-ap5691395.html"
+        },
+        {
+          "callout": "0611",
+          "part_number": "00645038",
+          "description": "Dishwasher Micro Mesh Filter",
+          "price": "41.95",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-filter-micro-645038-ap4339631.html"
+        },
+        {
+          "callout": "0620",
+          "part_number": "00775315",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0621",
+          "part_number": "10004364",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0621",
+          "part_number": "12004485",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0622",
+          "part_number": "00628469",
+          "description": "Dishwasher Dishrack Handle",
+          "price": "15.86",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-handle-628469-ap5691125.html"
+        },
+        {
+          "callout": "0623",
+          "part_number": "10002103",
+          "description": "Dishwasher Tine Clip Holder",
+          "price": "4.45",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-10002103-10002103-ap6043164.html"
+        },
+        {
+          "callout": "0624",
+          "part_number": "00611981",
+          "description": "Dishwasher Tine Row Holder Clip",
+          "price": "6.41",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-611981-ap4397877.html"
+        },
+        {
+          "callout": "0625",
+          "part_number": "12014575",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0626",
+          "part_number": "12014099",
+          "description": "Insert",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-12014099-12014099-ap6043472.html"
+        },
+        {
+          "callout": "0627",
+          "part_number": "12014098",
+          "description": "Insert",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-12014098-12014098-ap6043471.html"
+        },
+        {
+          "callout": "0628",
+          "part_number": "00617903",
+          "description": "Dishwasher Tine Holder",
+          "price": "7.69",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-tine-holder-617903-ap4588397.html"
+        },
+        {
+          "callout": "0629",
+          "part_number": "00611980",
+          "description": "Dishwasher Upper Rack Tine Row Holder",
+          "price": "7.69",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-611980-ap4359202.html"
+        },
+        {
+          "callout": "0638",
+          "part_number": "10002102",
+          "description": "Dishwasher Dishrack Tine Row Holder",
+          "price": "4.45",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-10002102-10002102-ap6043163.html"
+        },
+        {
+          "callout": "0640",
+          "part_number": "00775830",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0641",
+          "part_number": "12014546",
+          "description": "Dishrack Slide Rail",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-rail-pull-out-12014546-ap6043492.html"
+        },
+        {
+          "callout": "0642",
+          "part_number": "12014547",
+          "description": "Dishwasher Dishrack Rail Assembly",
+          "price": "N/A",
+          "status": "Out of Stock / Inquire",
+          "url": "https://www.appliancepartspros.com/bosch-rail-pull-out-12014547-ap6043493.html"
+        },
+        {
+          "callout": "0644",
+          "part_number": "00616989",
+          "description": "Dishwasher Tine Row Holder",
+          "price": "6.41",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-616989-ap4512896.html"
+        },
+        {
+          "callout": "0646",
+          "part_number": "12014622",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0647",
+          "part_number": "00616990",
+          "description": "Dishwasher Tine Row Holder",
+          "price": "6.41",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-616990-ap4512897.html"
+        },
+        {
+          "callout": "0649",
+          "part_number": "10003481",
+          "description": "Insert",
+          "price": "8.28",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insert-10003481-ap6246339.html"
+        },
+        {
+          "callout": "0650",
+          "part_number": "00745108",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0660",
+          "part_number": "00704855",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0670",
+          "part_number": "00775978",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "0672",
+          "part_number": "00625710",
+          "description": "Dishwasher Dishrack Roller",
+          "price": "52.23",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-holder-625710-ap5669112.html"
+        },
+        {
+          "callout": "0674",
+          "part_number": "11019630",
+          "description": "Dishwasher Dishrack Insert",
+          "price": "32.23",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-insert-11019630-ap6240907.html"
+        },
+        {
+          "callout": "0680",
+          "part_number": "00628804",
+          "description": "Dishwasher Door Handle",
+          "price": "16.68",
+          "status": "Available",
+          "url": "https://www.appliancepartspros.com/bosch-handle-628804-ap5691131.html"
+        },
+        {
+          "callout": "0686",
+          "part_number": "12014621",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "81",
+      "diagram_file": "81_diagram.png",
+      "parts": [
+        {
+          "callout": "8102",
+          "part_number": "00428216",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8111",
+          "part_number": "SMZPC002UC(00)",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8112",
+          "part_number": "SGZ1010UC/01",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8116",
+          "part_number": "SMZ4000UC(00)",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8117",
+          "part_number": "SMZ5002UC(00)",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8130",
+          "part_number": "00617210",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "83",
+      "diagram_file": "83_diagram.png",
+      "parts": [
+        {
+          "callout": "8301",
+          "part_number": "18026299",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8310",
+          "part_number": "18026308",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "84",
+      "diagram_file": "84_diagram.png",
+      "parts": [
+        {
+          "callout": "8401",
+          "part_number": "18026311",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "85",
+      "diagram_file": "85_diagram.png",
+      "parts": [
+        {
+          "callout": "8501",
+          "part_number": "00311781",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8501",
+          "part_number": "00460038",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8502",
+          "part_number": "00311506",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8503",
+          "part_number": "00311565",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8503",
+          "part_number": "00576338",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8504",
+          "part_number": "00311566",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8506",
+          "part_number": "00311580",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8507",
+          "part_number": "00311581",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8508",
+          "part_number": "00311600",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "section_num": "86",
+      "diagram_file": "86_diagram.png",
+      "parts": [
+        {
+          "callout": "8601",
+          "part_number": "00311918",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8602",
+          "part_number": "00311919",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8603",
+          "part_number": "00311920",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8604",
+          "part_number": "00311921",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8605",
+          "part_number": "00311886",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8606",
+          "part_number": "00311922",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8607",
+          "part_number": "00311923",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8608",
+          "part_number": "00311924",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8609",
+          "part_number": "00311984",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8610",
+          "part_number": "00311993",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8611",
+          "part_number": "00311994",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8612",
+          "part_number": "00311995",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8613",
+          "part_number": "00311996",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8614",
+          "part_number": "00311997",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8615",
+          "part_number": "00311998",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8616",
+          "part_number": "00312213",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8618",
+          "part_number": "00312193",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8619",
+          "part_number": "00312194",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8620",
+          "part_number": "00312195",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8621",
+          "part_number": "00312257",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8622",
+          "part_number": "00312258",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        },
+        {
+          "callout": "8623",
+          "part_number": "00312259",
+          "description": "",
+          "price": "N/A",
+          "status": "Available",
+          "url": ""
+        }
+      ]
+    }
+  ]
+}

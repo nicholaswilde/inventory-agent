@@ -28,6 +28,7 @@
 - **CitruShine Stainless Steel Wipes**: `WX10X10007`
 - **CeramaBryte Stainless Cleaner**: `PM10X311`
 - **Oven Light Bulb**: 40W appliance bulb (check socket type)
+- **Full Parts List & Assembly Diagrams**: [JT5500SF1SS Bill of Materials](JT5500SF1SS/bill_of_materials.md)
 
 ---
 

@@ -1,0 +1,536 @@
+{
+  "model": "LRDCS2603S",
+  "parent_id": "40660",
+  "assemblies": [
+    {
+      "assembly_id": "40662",
+      "name": "CASE PARTS",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/afc2ea52-3a6a-4e03-8356-2e37eb17607b/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "105A",
+          "part_number": "5251JA3003K",
+          "description": "TUBE ASSEMBLY,DRAIN",
+          "price": "29.95",
+          "status": "Available"
+        },
+        {
+          "callout": "120A",
+          "part_number": "ADJ75472302",
+          "description": "DUCT ASSEMBLY,MULTI",
+          "price": "205.95",
+          "status": "Available"
+        },
+        {
+          "callout": "128E",
+          "part_number": "AEJ74940602",
+          "description": "HOLDER ASSEMBLY",
+          "price": "77.95",
+          "status": "Available"
+        },
+        {
+          "callout": "128F",
+          "part_number": "MEG64760002",
+          "description": "HOLDER,RAIL",
+          "price": "48.95",
+          "status": "Available"
+        },
+        {
+          "callout": "145A",
+          "part_number": "MBL68417401",
+          "description": "CAP,DUCT",
+          "price": "29.95",
+          "status": "Available"
+        },
+        {
+          "callout": "150D",
+          "part_number": "MCR66849210",
+          "description": "DECOR,COVER",
+          "price": "48.95",
+          "status": "Available"
+        },
+        {
+          "callout": "158F",
+          "part_number": "ABQ76660201",
+          "description": "CASE ASSEMBLY,LAMP",
+          "price": "77.95",
+          "status": "Available"
+        },
+        {
+          "callout": "280A",
+          "part_number": "ABQ75822439",
+          "description": "CASE ASSEMBLY,DISPLAY",
+          "price": "261.95",
+          "status": "Available"
+        },
+        {
+          "callout": "281B",
+          "part_number": "AEH75256503",
+          "description": "HINGE ASSEMBLY,UPPER",
+          "price": "59.95",
+          "status": "Available"
+        },
+        {
+          "callout": "281D",
+          "part_number": "AEH75256504",
+          "description": "HINGE ASSEMBLY,UPPER",
+          "price": "59.95",
+          "status": "Available"
+        },
+        {
+          "callout": "282B",
+          "part_number": "AEH75957701",
+          "description": "HINGE ASSEMBLY,CENTER",
+          "price": "59.95",
+          "status": "Available"
+        },
+        {
+          "callout": "301A",
+          "part_number": "ADL76521401",
+          "description": "EVAPORATOR ASSEMBLY",
+          "price": "240.95",
+          "status": "Available"
+        },
+        {
+          "callout": "304A",
+          "part_number": "ACQ90351401",
+          "description": "COVER ASSEMBLY,MACHINERY(REAR)",
+          "price": "48.95",
+          "status": "Available"
+        },
+        {
+          "callout": "305B",
+          "part_number": "4580JJ3001A",
+          "description": "REFRIGERATOR ROLLER",
+          "price": "32.95",
+          "status": "Available"
+        },
+        {
+          "callout": "305C",
+          "part_number": "1PZZJA3013B",
+          "description": "REFRIGERATOR ROLLER WHEEL AXLE PIN",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "307A",
+          "part_number": "TCA37032028",
+          "description": "COMPRESSOR,SET ASSEMBLY",
+          "price": "403.95",
+          "status": "Available"
+        },
+        {
+          "callout": "314A",
+          "part_number": "4620JA3015A",
+          "description": "REFRIGERATOR COMPRESSOR MOUNT RETAINER CLIP",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "318A",
+          "part_number": "MEG64900401",
+          "description": "Drier holder",
+          "price": "21.95",
+          "status": "Available"
+        },
+        {
+          "callout": "319A",
+          "part_number": "MJS65111701",
+          "description": "TRAY,DRIP",
+          "price": "49.95",
+          "status": "Available"
+        },
+        {
+          "callout": "319B",
+          "part_number": "AJP76194501",
+          "description": "TRAY ASSEMBLY,DRAIN",
+          "price": "48.95",
+          "status": "Available"
+        },
+        {
+          "callout": "319C",
+          "part_number": "MEA65930101",
+          "description": "GUIDE,FAN",
+          "price": "261.95",
+          "status": "Available"
+        },
+        {
+          "callout": "319G",
+          "part_number": "MCK66690601",
+          "description": "Refrigerator Motor Cover",
+          "price": "29.95",
+          "status": "Available"
+        },
+        {
+          "callout": "323B",
+          "part_number": "ACG76304502",
+          "description": "CONDENSER ASSEMBLY,WIRE",
+          "price": "163.95",
+          "status": "Available"
+        },
+        {
+          "callout": "329C",
+          "part_number": "ADP73273401",
+          "description": "FAN ASSEMBLY",
+          "price": "42.95",
+          "status": "Available"
+        },
+        {
+          "callout": "332C",
+          "part_number": "AEB73564909",
+          "description": "GRILLE ASSEMBLY,FAN",
+          "price": "281.95",
+          "status": "Available"
+        },
+        {
+          "callout": "401A",
+          "part_number": "ACM75678706",
+          "description": "CONTROLLER ASSEMBLY",
+          "price": "49.95",
+          "status": "Available"
+        },
+        {
+          "callout": "405C",
+          "part_number": "5040JA2009B",
+          "description": "REFRIGERATOR MOTOR SUPPORT DAMPER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "405F",
+          "part_number": "5040JA2004B",
+          "description": "REFRIGERATOR MOTOR SUPPORT DAMPER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "411A",
+          "part_number": "EAD61445253",
+          "description": "POWER CORD ASSEMBLY",
+          "price": "117.95",
+          "status": "Available"
+        },
+        {
+          "callout": "412D",
+          "part_number": "EAD64168633",
+          "description": "HARNESS ASSEMBLY",
+          "price": "42.95",
+          "status": "Available"
+        },
+        {
+          "callout": "418A",
+          "part_number": "MEE64065001",
+          "description": "HEATER,SHEATH",
+          "price": "107.95",
+          "status": "Available"
+        },
+        {
+          "callout": "419B",
+          "part_number": "MGE39575301",
+          "description": "Pipe,compres",
+          "price": "21.95",
+          "status": "Available"
+        },
+        {
+          "callout": "419B",
+          "part_number": "MGE62010602",
+          "description": "PIPE,COMPRESSOR SEALING",
+          "price": "185.95",
+          "status": "Available"
+        },
+        {
+          "callout": "420A",
+          "part_number": "EAU63103301",
+          "description": "MOTOR,DC",
+          "price": "107.95",
+          "status": "Available"
+        },
+        {
+          "callout": "501A",
+          "part_number": "EBR81182789",
+          "description": "PCB ASSEMBLY,MAIN",
+          "price": "300.95",
+          "status": "Available"
+        },
+        {
+          "callout": "607A",
+          "part_number": "AEJ73579702",
+          "description": "Refrigerator holder assembly",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "611E",
+          "part_number": "ADQ73693405",
+          "description": "FILTER ASSEMBLY,WATER",
+          "price": "126.95",
+          "status": "Available"
+        },
+        {
+          "callout": "611F",
+          "part_number": "ADQ36772702",
+          "description": "Refrigerator Water Filter Cover",
+          "price": "64.95",
+          "status": "Available"
+        },
+        {
+          "callout": "903E",
+          "part_number": "6500JB2002X",
+          "description": "Refrigerator Temperature Sensor",
+          "price": "32.95",
+          "status": "Available"
+        },
+        {
+          "callout": "315A",
+          "part_number": "AAN77268901",
+          "description": "BASE ASSEMBLY,COMPRESSOR",
+          "price": "107.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "01_CASE_PARTS.jpg"
+    },
+    {
+      "assembly_id": "40665",
+      "name": "DOOR PARTS",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/a3b828ec-f15b-49b4-903d-564114817224/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "200A",
+          "part_number": "ADC52734156",
+          "description": "DOOR ASSEMBLY,FREEZER",
+          "price": "460.95",
+          "status": "Available"
+        },
+        {
+          "callout": "203A",
+          "part_number": "ADX75550601",
+          "description": "GASKET ASSEMBLY,DOOR",
+          "price": "64.95",
+          "status": "Available"
+        },
+        {
+          "callout": "230A",
+          "part_number": "ADC74207271",
+          "description": "DOOR ASSEMBLY,REFRIGERATOR",
+          "price": "281.95",
+          "status": "Available"
+        },
+        {
+          "callout": "233A",
+          "part_number": "ADX75550605",
+          "description": "GASKET ASSEMBLY,DOOR",
+          "price": "42.95",
+          "status": "Available"
+        },
+        {
+          "callout": "243A",
+          "part_number": "MJB63010703",
+          "description": "STOPPER,DOOR",
+          "price": "59.95",
+          "status": "Available"
+        },
+        {
+          "callout": "244A",
+          "part_number": "AED37082916",
+          "description": "REFRIGERATOR DOOR HANDLE ASSEMBLY",
+          "price": "104.95",
+          "status": "Available"
+        },
+        {
+          "callout": "250A",
+          "part_number": "4270JJ3001K",
+          "description": "BAR",
+          "price": "49.95",
+          "status": "Available"
+        },
+        {
+          "callout": "286A",
+          "part_number": "4984JJ3003A",
+          "description": "REFRIGERATOR DOOR HINGE BUSHING",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "621C",
+          "part_number": "MCD61841107",
+          "description": "CONNECTOR,RAIL",
+          "price": "88.95",
+          "status": "Available"
+        },
+        {
+          "callout": "621G",
+          "part_number": "MCK67227902",
+          "description": "COVER,DOOR SWITCH",
+          "price": "21.95",
+          "status": "Available"
+        },
+        {
+          "callout": "B04",
+          "part_number": "FAB30025701",
+          "description": "Laundry appliance screw",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "212G",
+          "part_number": "MFT62346511",
+          "description": "Refrigerator Nameplate",
+          "price": "48.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "02_DOOR_PARTS.jpg"
+    },
+    {
+      "assembly_id": "100069",
+      "name": "FREEZER PARTS",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/b1e6b146-4396-413b-a725-7e1d622a082b/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "131A",
+          "part_number": "MJS62312001",
+          "description": "Refrigerator Freezer Drawer Bin",
+          "price": "107.95",
+          "status": "Available"
+        },
+        {
+          "callout": "136B",
+          "part_number": "AJP73574518",
+          "description": "TRAY ASSEMBLY,DRAWER",
+          "price": "261.95",
+          "status": "Available"
+        },
+        {
+          "callout": "136C",
+          "part_number": "AJP75234914",
+          "description": "TRAY ASSEMBLY,DRAWER",
+          "price": "454.95",
+          "status": "Available"
+        },
+        {
+          "callout": "237A",
+          "part_number": "MEA62651201",
+          "description": "GUIDE,DRAWER",
+          "price": "78.95",
+          "status": "Available"
+        },
+        {
+          "callout": "136D",
+          "part_number": "MJS63852101",
+          "description": "TRAY,DRAWER",
+          "price": "98.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "03_FREEZER_PARTS.jpg"
+    },
+    {
+      "assembly_id": "100070",
+      "name": "ICE MAKER PARTS",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/c8638e09-698b-4b17-a516-965110e98279/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "619A",
+          "part_number": "AJU72911118",
+          "description": "VALVE ASSEMBLY,WATER",
+          "price": "107.95",
+          "status": "Available"
+        },
+        {
+          "callout": "623B",
+          "part_number": "MBL67039201",
+          "description": "CAP,COVER",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "625A",
+          "part_number": "MCK69290701",
+          "description": "COVER,TUBE",
+          "price": "13.95",
+          "status": "Available"
+        },
+        {
+          "callout": "627A",
+          "part_number": "4770JA3001E",
+          "description": "Refrigerator water tubing holder",
+          "price": "13.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "04_ICE_MAKER_PARTS.jpg"
+    },
+    {
+      "assembly_id": "40664",
+      "name": "REFRIGERATOR PARTS",
+      "image_url": "https://cdn.datamanager.arinet.com/image/ZEN/fa3b8a89-7b03-4c26-9654-1beaae014b70/ExtraLarge?ariz=4",
+      "parts": [
+        {
+          "callout": "128A",
+          "part_number": "AEC74897812",
+          "description": "GUIDE ASSEMBLY,RAIL",
+          "price": "49.95",
+          "status": "Available"
+        },
+        {
+          "callout": "141A",
+          "part_number": "MHL62812405",
+          "description": "SHELF,REFRIGERATOR",
+          "price": "98.95",
+          "status": "Available"
+        },
+        {
+          "callout": "145D",
+          "part_number": "AJP75235113",
+          "description": "TRAY ASSEMBLY,FRESH ROOM",
+          "price": "131.95",
+          "status": "Available"
+        },
+        {
+          "callout": "145J",
+          "part_number": "ACQ90063007",
+          "description": "COVER ASSEMBLY,TRAY",
+          "price": "42.95",
+          "status": "Available"
+        },
+        {
+          "callout": "146E",
+          "part_number": "ACQ89579411",
+          "description": "COVER ASSEMBLY,TRAY",
+          "price": "126.95",
+          "status": "Available"
+        },
+        {
+          "callout": "151A",
+          "part_number": "AJP75235022",
+          "description": "TRAY ASSEMBLY,VEGETABLE",
+          "price": "261.95",
+          "status": "Available"
+        },
+        {
+          "callout": "151B",
+          "part_number": "AJP75235023",
+          "description": "TRAY ASSEMBLY,VEGETABLE",
+          "price": "261.95",
+          "status": "Available"
+        },
+        {
+          "callout": "167B",
+          "part_number": "ACQ89579309",
+          "description": "COVER ASSEMBLY,TV",
+          "price": "240.95",
+          "status": "Available"
+        },
+        {
+          "callout": "128B",
+          "part_number": "AEC74897814",
+          "description": "GUIDE ASSEMBLY,RAIL",
+          "price": "59.95",
+          "status": "Available"
+        }
+      ],
+      "diagram_file": "05_REFRIGERATOR_PARTS.jpg"
+    }
+  ]
+}

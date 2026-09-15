@@ -1,0 +1,1440 @@
+{
+  "model_id": "JT5500SF1SS",
+  "source_url": "https://www.geapplianceparts.com/store/parts/assembly/JT5500SF1SS",
+  "assemblies": [
+    {
+      "section_num": 1,
+      "name": "CONTROL_PANEL",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/1/0/0/0/CONTROL_PANEL",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p01_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p01_2325.jpg",
+      "diagram_file": "01_CONTROL_PANEL.jpg",
+      "parts": [
+        {
+          "callout": "1",
+          "part_number": "WB07T10769",
+          "description": "Double Wall oven Control panel with glass touch STAINLESS 30\" models",
+          "price": "418.39",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10769"
+        },
+        {
+          "callout": "7",
+          "part_number": "WB07T10740",
+          "description": "Wall oven Control mounting bracket 30\" models",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10740"
+        },
+        {
+          "callout": "13",
+          "part_number": "WB18T10506",
+          "description": "JUMPER",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB18T10506"
+        },
+        {
+          "callout": "16",
+          "part_number": "WB27X20240",
+          "description": "CONTROL BOARD T012 ELE",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB27X20240"
+        },
+        {
+          "callout": "19",
+          "part_number": "WB27T11453",
+          "description": "Range- connector used for NewFI or sum module hook-up",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB27T11453"
+        },
+        {
+          "callout": "21",
+          "part_number": "WB27T11116",
+          "description": "FILTER CLOCK DISPLAY",
+          "price": "12.48",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB27T11116"
+        },
+        {
+          "callout": "32",
+          "part_number": "WB26T10066",
+          "description": "Wall oven- upper cooling fan motor",
+          "price": "110.74",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB26T10066"
+        },
+        {
+          "callout": "133",
+          "part_number": "WB03T10341",
+          "description": "Wall oven Grommet- screw mounted to frame",
+          "price": "6.09",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB03T10341"
+        },
+        {
+          "callout": "255",
+          "part_number": "WB17K10001",
+          "description": "BLOCK TERMINAL",
+          "price": "7.98",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB17K10001"
+        },
+        {
+          "callout": "266",
+          "part_number": "WB07T10805",
+          "description": "Wall oven Upper trim BLACK",
+          "price": "35.28",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10805"
+        },
+        {
+          "callout": "270",
+          "part_number": "WB27T11326",
+          "description": "BOARD DAUGHTER RELAY 6",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB27T11326"
+        },
+        {
+          "callout": "400",
+          "part_number": "WB34T10164",
+          "description": "Wall oven- control cover/right side/ all models",
+          "price": "30.55",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10164"
+        },
+        {
+          "callout": "402",
+          "part_number": "WB44T10126",
+          "description": "Wall oven- control cover/left side/ all models",
+          "price": "20.79",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB44T10126"
+        },
+        {
+          "callout": "404",
+          "part_number": "WB34T10150",
+          "description": "Wall oven Upper oven vent cover",
+          "price": "6.73",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10150"
+        },
+        {
+          "callout": "410",
+          "part_number": "WB37T10026",
+          "description": "Wall oven Cooling fan motor mount bracket",
+          "price": "28.77",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10026"
+        },
+        {
+          "callout": "416",
+          "part_number": "WB34T10165",
+          "description": "Wall oven- control cover/top/ all models",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10165"
+        },
+        {
+          "callout": "418",
+          "part_number": "WB34T10157",
+          "description": "Wall oven- rear top cover/all",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10157"
+        },
+        {
+          "callout": "426",
+          "part_number": "WB35T10273",
+          "description": "Wall oven Top cover - rear terminal- 30\"",
+          "price": "27.72",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10273"
+        },
+        {
+          "callout": "578",
+          "part_number": "WB24T10147",
+          "description": "Range High Amp Switch",
+          "price": "14.76",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB24T10147"
+        },
+        {
+          "callout": "599",
+          "part_number": "WB27T11463",
+          "description": "Wall oven- upper cooling fan motor sensor board/single or double oven",
+          "price": "59.10",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB27T11463"
+        },
+        {
+          "callout": "600",
+          "part_number": "WB18T10573",
+          "description": "Double Wall oven Harness- conduit from house supply to unit- double",
+          "price": "83.44",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB18T10573"
+        },
+        {
+          "callout": "600",
+          "part_number": "WB18T10580",
+          "description": "Double Wall oven Optional 72\" harness conduit- double",
+          "price": "264.96",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB18T10580"
+        },
+        {
+          "callout": "605",
+          "part_number": "WB18T10596",
+          "description": "Cooking Products Main Wire Harness",
+          "price": "173.79",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB18T10596"
+        },
+        {
+          "callout": "607",
+          "part_number": "WB18X20178",
+          "description": "HARNESS WIRE LATCH COM",
+          "price": "50.99",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB18X20178"
+        },
+        {
+          "callout": "770",
+          "part_number": "WB01K5072",
+          "description": "SCREW TF10-32X.911HEXZN",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5072"
+        },
+        {
+          "callout": "801",
+          "part_number": "WD02X10129",
+          "description": "Dishwasher 6-19 X 1/4 TORX PAN HEAD Screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WD02X10129"
+        },
+        {
+          "callout": "813",
+          "part_number": "WB01X1261",
+          "description": "SCREW GROUND",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01X1261"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        },
+        {
+          "callout": "880",
+          "part_number": "WB01T10128",
+          "description": "Wall oven cooling fan motor isolation grommet",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10128"
+        },
+        {
+          "callout": "962",
+          "part_number": "WB02T10093",
+          "description": "STANDOFF PCB",
+          "price": "5.67",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB02T10093"
+        },
+        {
+          "callout": "978",
+          "part_number": "WB01X1259",
+          "description": "HEX NUT10-32",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01X1259"
+        },
+        {
+          "callout": "984",
+          "part_number": "WB01T10130",
+          "description": "Range- ground screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10130"
+        }
+      ]
+    },
+    {
+      "section_num": 2,
+      "name": "UPPER_OVEN",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/2/0/0/0/UPPER_OVEN",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p02_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p02_2325.jpg",
+      "diagram_file": "02_UPPER_OVEN.jpg",
+      "parts": [
+        {
+          "callout": "133",
+          "part_number": "WB03T10341",
+          "description": "Wall oven Grommet- screw mounted to frame",
+          "price": "6.09",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB03T10341"
+        },
+        {
+          "callout": "157",
+          "part_number": "WB24T10164",
+          "description": "HIGH LIMIT SWITCH OVEN BK",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB24T10164"
+        },
+        {
+          "callout": "203",
+          "part_number": "WB63T10169",
+          "description": "Micro module oven Rear insulation retainer 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB63T10169"
+        },
+        {
+          "callout": "207",
+          "part_number": "WB34T10137",
+          "description": "Wall oven Rear air channel - center - double",
+          "price": "42.90",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10137"
+        },
+        {
+          "callout": "208",
+          "part_number": "WB34T10140",
+          "description": "Double Wall oven Bottom trim -air vent- for pedestal BLACK",
+          "price": "77.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10140"
+        },
+        {
+          "callout": "209",
+          "part_number": "WB34T10133",
+          "description": "Wall oven- air channel/left side as viewed from front",
+          "price": "23.50",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10133"
+        },
+        {
+          "callout": "214",
+          "part_number": "WB55X10971",
+          "description": "Wall oven Air channel- left side looking from rear",
+          "price": "40.79",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB55X10971"
+        },
+        {
+          "callout": "217",
+          "part_number": "WB34T10136",
+          "description": "Wall oven- rear wire cover/double oven upper",
+          "price": "53.49",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10136"
+        },
+        {
+          "callout": "231",
+          "part_number": "WB35X10019",
+          "description": "INSULATION TOP",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35X10019"
+        },
+        {
+          "callout": "241",
+          "part_number": "WB48T10114",
+          "description": "Wall oven- 30\" rack assembly",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB48T10114"
+        },
+        {
+          "callout": "251",
+          "part_number": "WB44T10129",
+          "description": "Wall oven Bake element 30\"",
+          "price": "63.05",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB44T10129"
+        },
+        {
+          "callout": "252",
+          "part_number": "WB44T10128",
+          "description": "Wall oven Broil element",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB44T10128"
+        },
+        {
+          "callout": "253",
+          "part_number": "WB21X10165",
+          "description": "Wall oven- oven sensor",
+          "price": "17.83",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB21X10165"
+        },
+        {
+          "callout": "254",
+          "part_number": "WB25T10101",
+          "description": "Wall Oven Halogen Side-Mounted Bulb - G9",
+          "price": "11.80",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25T10101"
+        },
+        {
+          "callout": "257",
+          "part_number": "WB25T10102",
+          "description": "Wall Oven Halogen Top-Mounted Bulb - G9",
+          "price": "11.86",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25T10102"
+        },
+        {
+          "callout": "258",
+          "part_number": "WB25X20199",
+          "description": "Wall Oven Halogen Bulb Assembly top-mounted - 2/250 18AWG",
+          "price": "79.10",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25X20199"
+        },
+        {
+          "callout": "260",
+          "part_number": "WB25X21385",
+          "description": "Wall Oven Halogen Bulb Assembly, Side- mounted - 2/250, 18AWG",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25X21385"
+        },
+        {
+          "callout": "261",
+          "part_number": "WB34T10145",
+          "description": "Wall oven Top mounted - lens only",
+          "price": "23.82",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10145"
+        },
+        {
+          "callout": "262",
+          "part_number": "WB07T10770",
+          "description": "Double Wall oven Vertical trim double oven BLACK",
+          "price": "40.01",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10770"
+        },
+        {
+          "callout": "263",
+          "part_number": "WB34T10144",
+          "description": "Wall oven Side mounted - lens only",
+          "price": "23.82",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10144"
+        },
+        {
+          "callout": "265",
+          "part_number": "WB07T10798",
+          "description": "Wall oven Lower trim 30\" BLACK",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10798"
+        },
+        {
+          "callout": "266",
+          "part_number": "WB07T10805",
+          "description": "Wall oven Upper trim BLACK",
+          "price": "35.28",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10805"
+        },
+        {
+          "callout": "277",
+          "part_number": "WB07T10763",
+          "description": "Double Wall oven Vertical brace BLACK - RIGHT double 30\" models",
+          "price": "71.30",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10763"
+        },
+        {
+          "callout": "277",
+          "part_number": "WB07T10764",
+          "description": "Double Wall oven Vertical brace BLACK - LEFT double 30\" models",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10764"
+        },
+        {
+          "callout": "301",
+          "part_number": "WB35T10256",
+          "description": "Wall oven Foil covered insulation BAKE 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10256"
+        },
+        {
+          "callout": "302",
+          "part_number": "WB35T10257",
+          "description": "Wall oven Insulation BAKE 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10257"
+        },
+        {
+          "callout": "304",
+          "part_number": "WB35T10274",
+          "description": "Wall oven Insulation BAKE 30\"",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10274"
+        },
+        {
+          "callout": "350",
+          "part_number": "WB07T10787",
+          "description": "Wall oven Trim front frame BROIL 30\"",
+          "price": "13.26",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10787"
+        },
+        {
+          "callout": "490",
+          "part_number": "WB55T10197",
+          "description": "Wall oven Cover BAKE 30\"",
+          "price": "84.67",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB55T10197"
+        },
+        {
+          "callout": "512",
+          "part_number": "WB37T10024",
+          "description": "Wall oven Convection top air duct 30\"",
+          "price": "63.26",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10024"
+        },
+        {
+          "callout": "752",
+          "part_number": "WB01K5200",
+          "description": "Screw",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5200"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        },
+        {
+          "callout": "876",
+          "part_number": "WB01T10127",
+          "description": "Wall oven- nut for rack supports",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10127"
+        }
+      ]
+    },
+    {
+      "section_num": 3,
+      "name": "CENTER_SPACER",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/3/0/0/0/CENTER_SPACER",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p03_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p03_2325.jpg",
+      "diagram_file": "03_CENTER_SPACER.jpg",
+      "parts": [
+        {
+          "callout": "8",
+          "part_number": "WB34X20282",
+          "description": "Double Wall oven Rear cover- plug holder 30\"",
+          "price": "10.37",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34X20282"
+        },
+        {
+          "callout": "11",
+          "part_number": "WB34T10146",
+          "description": "Double Wall oven Structural support - double oven only",
+          "price": "25.80",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10146"
+        },
+        {
+          "callout": "31",
+          "part_number": "WB26T10068",
+          "description": "Wall oven- lower cooling fan motor/double oven",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB26T10068"
+        },
+        {
+          "callout": "34",
+          "part_number": "WB01T10133",
+          "description": "Double Wall oven lower cooling motor FAN board hex nut M4-.7 THREAD",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10133"
+        },
+        {
+          "callout": "266",
+          "part_number": "WB07T10805",
+          "description": "Wall oven Upper trim BLACK",
+          "price": "35.28",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10805"
+        },
+        {
+          "callout": "267",
+          "part_number": "WB07X20180",
+          "description": "Wall oven middle trim vent",
+          "price": "37.30",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07X20180"
+        },
+        {
+          "callout": "411",
+          "part_number": "WB37T10027",
+          "description": "Double Wall oven Lower cooling motor mount bracket- rear",
+          "price": "27.90",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10027"
+        },
+        {
+          "callout": "598",
+          "part_number": "WB27T11451",
+          "description": "Wall oven- lower cooling fan motor sensor board/double oven",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB27T11451"
+        },
+        {
+          "callout": "807",
+          "part_number": "WB01K5165",
+          "description": "SCREW-BLK",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5165"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        }
+      ]
+    },
+    {
+      "section_num": 4,
+      "name": "LOWER_OVEN",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/4/0/0/0/LOWER_OVEN",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p04_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p04_2325.jpg",
+      "diagram_file": "04_LOWER_OVEN.jpg",
+      "parts": [
+        {
+          "callout": "133",
+          "part_number": "WB03T10341",
+          "description": "Wall oven Grommet- screw mounted to frame",
+          "price": "6.09",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB03T10341"
+        },
+        {
+          "callout": "157",
+          "part_number": "WB24T10164",
+          "description": "HIGH LIMIT SWITCH OVEN BK",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB24T10164"
+        },
+        {
+          "callout": "159",
+          "part_number": "WB24T10180",
+          "description": "Double Wall oven Neutral line limit switch - double only",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB24T10180"
+        },
+        {
+          "callout": "207",
+          "part_number": "WB34T10137",
+          "description": "Wall oven Rear air channel - center - double",
+          "price": "42.90",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10137"
+        },
+        {
+          "callout": "209",
+          "part_number": "WB34T10133",
+          "description": "Wall oven- air channel/left side as viewed from front",
+          "price": "23.50",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10133"
+        },
+        {
+          "callout": "213",
+          "part_number": "WB34T10163",
+          "description": "Double Wall oven Lower Bake air divider - 30\"",
+          "price": "19.11",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10163"
+        },
+        {
+          "callout": "214",
+          "part_number": "WB55X10971",
+          "description": "Wall oven Air channel- left side looking from rear",
+          "price": "40.79",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB55X10971"
+        },
+        {
+          "callout": "216",
+          "part_number": "WB34T10139",
+          "description": "Double Wall oven Rear air channel - center - lower- double",
+          "price": "20.20",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10139"
+        },
+        {
+          "callout": "218",
+          "part_number": "WB34T10141",
+          "description": "Double Wall oven Rear wire cover 30\"",
+          "price": "57.20",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10141"
+        },
+        {
+          "callout": "231",
+          "part_number": "WB35X10019",
+          "description": "INSULATION TOP",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35X10019"
+        },
+        {
+          "callout": "241",
+          "part_number": "WB48T10114",
+          "description": "Wall oven- 30\" rack assembly",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB48T10114"
+        },
+        {
+          "callout": "251",
+          "part_number": "WB44T10129",
+          "description": "Wall oven Bake element 30\"",
+          "price": "63.05",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB44T10129"
+        },
+        {
+          "callout": "252",
+          "part_number": "WB44T10128",
+          "description": "Wall oven Broil element",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB44T10128"
+        },
+        {
+          "callout": "253",
+          "part_number": "WB21X10165",
+          "description": "Wall oven- oven sensor",
+          "price": "17.83",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB21X10165"
+        },
+        {
+          "callout": "254",
+          "part_number": "WB25T10101",
+          "description": "Wall Oven Halogen Side-Mounted Bulb - G9",
+          "price": "11.80",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25T10101"
+        },
+        {
+          "callout": "257",
+          "part_number": "WB25T10102",
+          "description": "Wall Oven Halogen Top-Mounted Bulb - G9",
+          "price": "11.86",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25T10102"
+        },
+        {
+          "callout": "258",
+          "part_number": "WB25X20199",
+          "description": "Wall Oven Halogen Bulb Assembly top-mounted - 2/250 18AWG",
+          "price": "79.10",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25X20199"
+        },
+        {
+          "callout": "260",
+          "part_number": "WB25X21385",
+          "description": "Wall Oven Halogen Bulb Assembly, Side- mounted - 2/250, 18AWG",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB25X21385"
+        },
+        {
+          "callout": "261",
+          "part_number": "WB34T10145",
+          "description": "Wall oven Top mounted - lens only",
+          "price": "23.82",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10145"
+        },
+        {
+          "callout": "263",
+          "part_number": "WB34T10144",
+          "description": "Wall oven Side mounted - lens only",
+          "price": "23.82",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10144"
+        },
+        {
+          "callout": "265",
+          "part_number": "WB07T10798",
+          "description": "Wall oven Lower trim 30\" BLACK",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10798"
+        },
+        {
+          "callout": "266",
+          "part_number": "WB07T10805",
+          "description": "Wall oven Upper trim BLACK",
+          "price": "35.28",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10805"
+        },
+        {
+          "callout": "268",
+          "part_number": "WB07T10786",
+          "description": "Wall oven- small bottom trim/stainless",
+          "price": "45.90",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10786"
+        },
+        {
+          "callout": "301",
+          "part_number": "WB35T10256",
+          "description": "Wall oven Foil covered insulation BAKE 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10256"
+        },
+        {
+          "callout": "302",
+          "part_number": "WB35T10257",
+          "description": "Wall oven Insulation BAKE 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10257"
+        },
+        {
+          "callout": "304",
+          "part_number": "WB35T10274",
+          "description": "Wall oven Insulation BAKE 30\"",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10274"
+        },
+        {
+          "callout": "350",
+          "part_number": "WB07T10787",
+          "description": "Wall oven Trim front frame BROIL 30\"",
+          "price": "13.26",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10787"
+        },
+        {
+          "callout": "405",
+          "part_number": "WB34T10160",
+          "description": "Double Wall oven Lower oven vent cover",
+          "price": "17.40",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10160"
+        },
+        {
+          "callout": "424",
+          "part_number": "WB34T10158",
+          "description": "Wall oven- bottom/ all 30\" models",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10158"
+        },
+        {
+          "callout": "490",
+          "part_number": "WB55T10197",
+          "description": "Wall oven Cover BAKE 30\"",
+          "price": "84.67",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB55T10197"
+        },
+        {
+          "callout": "512",
+          "part_number": "WB37T10024",
+          "description": "Wall oven Convection top air duct 30\"",
+          "price": "63.26",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10024"
+        },
+        {
+          "callout": "752",
+          "part_number": "WB01K5200",
+          "description": "Screw",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5200"
+        },
+        {
+          "callout": "807",
+          "part_number": "WB01K5165",
+          "description": "SCREW-BLK",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5165"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        }
+      ]
+    },
+    {
+      "section_num": 5,
+      "name": "UPPER_DOOR",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/5/0/0/0/UPPER_DOOR",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p05_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p05_2325.jpg",
+      "diagram_file": "05_UPPER_DOOR.jpg",
+      "parts": [
+        {
+          "callout": "55",
+          "part_number": "WB02T10589",
+          "description": "Range GE Badge",
+          "price": "9.65",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB02T10589"
+        },
+        {
+          "callout": "101",
+          "part_number": "WB35T10265",
+          "description": "Wall oven inner door insulation TOP 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10265"
+        },
+        {
+          "callout": "102",
+          "part_number": "WB35T10264",
+          "description": "Wall oven- Door insulation/all models/sides",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10264"
+        },
+        {
+          "callout": "112",
+          "part_number": "WB55T10199",
+          "description": "Wall oven- inner door liner/30\" models",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB55T10199"
+        },
+        {
+          "callout": "113",
+          "part_number": "WB34T10131",
+          "description": "Wall oven Inner door assembly 30\" - insulation retainer",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10131"
+        },
+        {
+          "callout": "118",
+          "part_number": "WB06T10018",
+          "description": "Wall oven-spacer for hinge",
+          "price": "18.50",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB06T10018"
+        },
+        {
+          "callout": "120",
+          "part_number": "WB06T10019",
+          "description": "SUPPORT DOOR LINER",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB06T10019"
+        },
+        {
+          "callout": "132",
+          "part_number": "WB04T10091",
+          "description": "Wall oven -gasket",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB04T10091"
+        },
+        {
+          "callout": "136",
+          "part_number": "WB15T10205",
+          "description": "HANDLE AND END CAPS SS",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB15T10205"
+        },
+        {
+          "callout": "140",
+          "part_number": "WB57T10378",
+          "description": "Wall oven- outer door glass assembly/30\" models/Stainless",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB57T10378"
+        },
+        {
+          "callout": "144",
+          "part_number": "WB02T10603",
+          "description": "Wall oven Bracket for door handle",
+          "price": "9.33",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB02T10603"
+        },
+        {
+          "callout": "145",
+          "part_number": "WB34T10142",
+          "description": "Wall oven Inner door assembly 30\" - deflector under handle support",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10142"
+        },
+        {
+          "callout": "281",
+          "part_number": "WB10T10137",
+          "description": "Wall oven - left door hinge",
+          "price": "37.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB10T10137"
+        },
+        {
+          "callout": "281",
+          "part_number": "WB10T10136",
+          "description": "Wall oven - right door hinge",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB10T10136"
+        },
+        {
+          "callout": "338",
+          "part_number": "WB56T10351",
+          "description": "Wall oven- inner door glass/30\" models",
+          "price": "62.46",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB56T10351"
+        },
+        {
+          "callout": "339",
+          "part_number": "WB37T10030",
+          "description": "Wall oven Spacer- inner door glass assembly",
+          "price": "17.30",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10030"
+        },
+        {
+          "callout": "699",
+          "part_number": "WB01K5150",
+          "description": "SCREW ST10-16X.437HEX ZN",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5150"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        },
+        {
+          "callout": "927",
+          "part_number": "WB01X0119",
+          "description": "CONTOURED WASHER",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01X0119"
+        },
+        {
+          "callout": "936",
+          "part_number": "WB01T10129",
+          "description": "Wall oven Door assembly screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10129"
+        },
+        {
+          "callout": "937",
+          "part_number": "WB01T10135",
+          "description": "Range door handle mounting screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10135"
+        },
+        {
+          "callout": "1005",
+          "part_number": "WB01T10008",
+          "description": "Range Screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10008"
+        }
+      ]
+    },
+    {
+      "section_num": 6,
+      "name": "LOWER_DOOR",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/6/0/0/0/LOWER_DOOR",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p06_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p06_2325.jpg",
+      "diagram_file": "06_LOWER_DOOR.jpg",
+      "parts": [
+        {
+          "callout": "101",
+          "part_number": "WB35T10265",
+          "description": "Wall oven inner door insulation TOP 30\"",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10265"
+        },
+        {
+          "callout": "102",
+          "part_number": "WB35T10264",
+          "description": "Wall oven- Door insulation/all models/sides",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10264"
+        },
+        {
+          "callout": "112",
+          "part_number": "WB55T10199",
+          "description": "Wall oven- inner door liner/30\" models",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB55T10199"
+        },
+        {
+          "callout": "113",
+          "part_number": "WB34T10131",
+          "description": "Wall oven Inner door assembly 30\" - insulation retainer",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10131"
+        },
+        {
+          "callout": "118",
+          "part_number": "WB06T10018",
+          "description": "Wall oven-spacer for hinge",
+          "price": "18.50",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB06T10018"
+        },
+        {
+          "callout": "120",
+          "part_number": "WB06T10019",
+          "description": "SUPPORT DOOR LINER",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB06T10019"
+        },
+        {
+          "callout": "132",
+          "part_number": "WB04T10091",
+          "description": "Wall oven -gasket",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB04T10091"
+        },
+        {
+          "callout": "136",
+          "part_number": "WB15T10205",
+          "description": "HANDLE AND END CAPS SS",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB15T10205"
+        },
+        {
+          "callout": "141",
+          "part_number": "WB57T10383",
+          "description": "Wall oven- outer door glass assembly/30\" models/Stainless",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB57T10383"
+        },
+        {
+          "callout": "144",
+          "part_number": "WB02T10603",
+          "description": "Wall oven Bracket for door handle",
+          "price": "9.33",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB02T10603"
+        },
+        {
+          "callout": "145",
+          "part_number": "WB34T10142",
+          "description": "Wall oven Inner door assembly 30\" - deflector under handle support",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB34T10142"
+        },
+        {
+          "callout": "281",
+          "part_number": "WB10T10137",
+          "description": "Wall oven - left door hinge",
+          "price": "37.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB10T10137"
+        },
+        {
+          "callout": "281",
+          "part_number": "WB10T10136",
+          "description": "Wall oven - right door hinge",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB10T10136"
+        },
+        {
+          "callout": "338",
+          "part_number": "WB56T10351",
+          "description": "Wall oven- inner door glass/30\" models",
+          "price": "62.46",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB56T10351"
+        },
+        {
+          "callout": "339",
+          "part_number": "WB37T10030",
+          "description": "Wall oven Spacer- inner door glass assembly",
+          "price": "17.30",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10030"
+        },
+        {
+          "callout": "699",
+          "part_number": "WB01K5150",
+          "description": "SCREW ST10-16X.437HEX ZN",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01K5150"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        },
+        {
+          "callout": "927",
+          "part_number": "WB01X0119",
+          "description": "CONTOURED WASHER",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01X0119"
+        },
+        {
+          "callout": "936",
+          "part_number": "WB01T10129",
+          "description": "Wall oven Door assembly screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10129"
+        },
+        {
+          "callout": "937",
+          "part_number": "WB01T10135",
+          "description": "Range door handle mounting screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10135"
+        },
+        {
+          "callout": "1005",
+          "part_number": "WB01T10008",
+          "description": "Range Screw",
+          "price": "6.07",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10008"
+        }
+      ]
+    },
+    {
+      "section_num": 7,
+      "name": "DOOR_LOCK",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/7/0/0/0/DOOR_LOCK",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p07_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p07_2325.jpg",
+      "diagram_file": "07_DOOR_LOCK.jpg",
+      "parts": [
+        {
+          "callout": "150",
+          "part_number": "WB14T10095",
+          "description": "LATCH ASM",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB14T10095"
+        },
+        {
+          "callout": "875",
+          "part_number": "WH02X0930",
+          "description": "SCREW 8-18 AB HXW 3/8",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WH02X0930"
+        }
+      ]
+    },
+    {
+      "section_num": 8,
+      "name": "CONVECTION_FAN",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/8/0/0/0/CONVECTION_FAN",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p08_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p08_2325.jpg",
+      "diagram_file": "08_CONVECTION_FAN.jpg",
+      "parts": [
+        {
+          "callout": "43",
+          "part_number": "WB02T10598",
+          "description": "Wall oven Convection fan blade",
+          "price": "30.48",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB02T10598"
+        },
+        {
+          "callout": "223",
+          "part_number": "WB35T10259",
+          "description": "Wall oven- Convection models/insulation",
+          "price": "8.66",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB35T10259"
+        },
+        {
+          "callout": "298",
+          "part_number": "WB44T10127",
+          "description": "Wall oven Convection element",
+          "price": "35.72",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB44T10127"
+        },
+        {
+          "callout": "511",
+          "part_number": "WB26T10067",
+          "description": "Wall oven- upper/single oven convection motor",
+          "price": "53.55",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB26T10067"
+        },
+        {
+          "callout": "514",
+          "part_number": "WB37T10021",
+          "description": "Wall oven Convection fan cover 30\"",
+          "price": "62.46",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10021"
+        },
+        {
+          "callout": "515",
+          "part_number": "WB04T10071",
+          "description": "GASKET CONV FAN",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB04T10071"
+        },
+        {
+          "callout": "516",
+          "part_number": "WB37T10022",
+          "description": "Wall oven Duct- convection fan 30\"",
+          "price": "20.12",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10022"
+        },
+        {
+          "callout": "951",
+          "part_number": "WB01T10134",
+          "description": "Double Wall oven convection cover mounting screw",
+          "price": "5.67",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB01T10134"
+        },
+        {
+          "callout": "977",
+          "part_number": "WB02T10608",
+          "description": "Wall oven Convection fan blade mounting nut/LH threads",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB02T10608"
+        }
+      ]
+    },
+    {
+      "section_num": 9,
+      "name": "PEDESTAL",
+      "url": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/JT5500SF1SS/9/0/0/0/PEDESTAL",
+      "diagram_thumb_url": "https://assets.geappliances.io/parts/00100000/00118700/480/00118767.p09_480.jpg",
+      "diagram_highres_url": "https://assets.geappliances.io/parts/00100000/00118700/00118767.p09_2325.jpg",
+      "diagram_file": "09_PEDESTAL.jpg",
+      "parts": [
+        {
+          "callout": "268",
+          "part_number": "WB07T10786",
+          "description": "Wall oven- small bottom trim/stainless",
+          "price": "45.90",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10786"
+        },
+        {
+          "callout": "269",
+          "part_number": "WB07T10791",
+          "description": "Wall oven- small bottom trim/stainless",
+          "price": "65.99",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB07T10791"
+        },
+        {
+          "callout": "352",
+          "part_number": "WB37T10028",
+          "description": "Double Wall oven CHANNEL PEDESTAL RIGHT",
+          "price": "44.39",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10028"
+        },
+        {
+          "callout": "353",
+          "part_number": "WB37T10029",
+          "description": "Double Wall oven CHANNEL PEDESTAL LEFT",
+          "price": "49.22",
+          "status": "Available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB37T10029"
+        },
+        {
+          "callout": "354",
+          "part_number": "WB63T10172",
+          "description": "Double Wall oven Pedestal 30\" STAINLESS",
+          "price": "N/A",
+          "status": "No longer available",
+          "spec_url": "https://www.geapplianceparts.com/store/parts/spec/WB63T10172"
+        }
+      ]
+    }
+  ]
+}

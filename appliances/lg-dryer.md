@@ -20,6 +20,7 @@
 
 ## Part & Accessory Numbers
 
+- **Full Parts List & Assembly Diagrams**: [DLGX7801WE Bill of Materials](DLGX7801WE/bill_of_materials.md)
 - Do not repair or replace any part of the appliance. All repairs and servicing must be performed by
 - Certain internal parts are intentionally grounded and may present a risk of electronic shock only
 - Drying Rack (No. 3750EL001C)
