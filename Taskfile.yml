@@ -1,5 +1,7 @@
 version: '3'
 
+dotenv: ['.env']
+
 tasks:
   init:
     desc: Copy .env.example to .env
@@ -175,7 +177,17 @@ tasks:
   test:
     desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:
-      - uv run pytest -v tests/
+      - uv run pytest -v {{.CLI_ARGS | default "tests/"}}
+
+  test:coverage:
+    desc: Run all tests with code coverage (terminal and coverage.xml reports)
+    cmds:
+      - uv run pytest -v --cov=scripts --cov-report=term --cov-report=xml:coverage.xml {{.CLI_ARGS | default "tests/"}}
+
+  coveralls:
+    desc: Report test coverage to Coveralls.io using coveralls binary
+    cmds:
+      - coveralls report {{.CLI_ARGS}}
 
   default:
     cmds:

@@ -1,6 +1,7 @@
 # Inventory Agent
 
 [![task](https://img.shields.io/badge/Task-Enabled-brightgreen?style=for-the-badge&logo=task&logoColor=white)](https://taskfile.dev/#/)
+[![Coverage Status](https://coveralls.io/repos/github/nicholaswilde/inventory-agent/badge.svg?branch=main)](https://coveralls.io/github/nicholaswilde/inventory-agent?branch=main)
 
 Intelligent image and issue ingestion agent for [Homebox](https://homebox.software) inventory management.
 
@@ -145,6 +146,22 @@ Run full test suite (spins up Docker container for Homebox integration tests, ve
 task test
 ```
 
+Run test suite with code coverage (generates terminal and `coverage.xml` reports):
+
+```bash
+task test:coverage
+```
+
+Report coverage to Coveralls.io using the system `coveralls` binary:
+
+```bash
+# Preview upload payload without submitting:
+task coveralls -- --dry-run
+
+# Submit coverage report (uses COVERALLS_REPO_TOKEN from environment or .env):
+task coveralls
+```
+
 Or run directly via pytest:
 ```bash
 uv run pytest tests/
@@ -156,6 +173,8 @@ uv run pytest tests/
 - `task encrypt` — Encrypt `.env` to `.env.enc` using SOPS.
 - `task decrypt` — Decrypt `.env.enc` to `.env` using SOPS.
 - `task test` — Run complete test suite (API, bash scripts, image pipeline).
+- `task test:coverage` — Run test suite with code coverage (terminal and `coverage.xml` reports).
+- `task coveralls` — Report code coverage to Coveralls.io using `coveralls` CLI.
 - `task homebox:list` — List all Homebox entities.
 - `task homebox:search QUERY='<name>'` — Search Homebox entities by name.
 - `task homebox:get ID=<id>` — Get details for an entity.

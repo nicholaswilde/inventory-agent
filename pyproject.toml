@@ -6,6 +6,19 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
     "requests>=2.34.2",
     "testcontainers>=4.15.0",
+]
+
+[tool.coverage.run]
+source = ["scripts"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
 ]
