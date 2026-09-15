@@ -97,6 +97,20 @@ tasks:
     requires:
       vars: [ISSUE]
 
+  manual:ingest:
+    desc: Ingest an appliance manual (PDF path or URL) into Homebox and generate quick lookup doc
+    cmds:
+      - uv run scripts/ingest_manual.py '{{.FILE}}' {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [FILE]
+
+  url:import:
+    desc: Import an item into Homebox from a product URL (Amazon, retail, product pages)
+    cmds:
+      - uv run scripts/import_url.py '{{.URL}}' {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [URL]
+
   test:
     desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:

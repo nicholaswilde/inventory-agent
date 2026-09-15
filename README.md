@@ -14,6 +14,8 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
 - **Local Image & Zip Processing**: Ingest local photos and zip files from `images/pending/` into Homebox and move them to `images/processed/`.
 - **Duplicate Management**: Detect, merge, and clean up duplicate Homebox entities using fuzzy text matching.
 - **Homebox API Integration**: Helper scripts and Taskfile commands for CRUD operations, search filtering, and image attachments.
+- **Appliance Manual Ingestion**: Parse PDF manuals from URL or local disk, create Homebox entities with attached manuals, and generate markdown lookup cheat sheets.
+- **Product URL Ingestion**: Scrape product metadata, model numbers, prices, and images from Amazon and retail URLs and create Homebox entities with deduplication.
 
 ## :rocket: Usage
 
@@ -25,6 +27,28 @@ Intelligent image and issue ingestion agent for [Homebox](https://homebox.softwa
    task process-vision
    ```
 3. Processed files are automatically organized into `images/processed/`.
+
+### :link: Product URL Ingestion
+
+Import an item from an Amazon or product URL into Homebox with extracted metadata, price, and product image attachment:
+```bash
+task url:import URL="<product_url>"
+```
+Preview extracted data without writing to Homebox:
+```bash
+task url:import URL="<product_url>" DRY_RUN=1
+```
+
+### :page_facing_up: Appliance Manual Ingestion
+
+Ingest a user manual (PDF path or URL) into Homebox and generate a cheat sheet in `appliances/`:
+```bash
+task manual:ingest FILE="<pdf_path_or_url>"
+```
+Preview without creating Homebox entities:
+```bash
+task manual:ingest FILE="<pdf_path_or_url>" DRY_RUN=1
+```
 
 ## :gear: Setup
 
@@ -75,6 +99,8 @@ uv run pytest tests/
 - `task homebox:entity-types` — List all Homebox entity types (useful for finding Location ID).
 - `task issue:extract ISSUE=<id>` — Extract issue attachments and run quiet OCR.
 - `task process-vision` — Process pending local images and zip archives.
+- `task manual:ingest FILE='<path_or_url>'` — Ingest appliance manual into Homebox and generate cheat sheet (preview with `DRY_RUN=1`).
+- `task url:import URL='<product_url>'` — Import item from product URL into Homebox with image and price (preview with `DRY_RUN=1`).
 
 ## :balance_scale: License
 
