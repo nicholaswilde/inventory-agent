@@ -1,7 +1,7 @@
 # Inventory Agent
 
 [![task](https://img.shields.io/badge/Task-Enabled-brightgreen?style=for-the-badge&logo=task&logoColor=white)](https://taskfile.dev/#/)
-[![Coverage Status](https://coveralls.io/repos/github/nicholaswilde/inventory-agent/badge.svg?branch=main)](https://coveralls.io/github/nicholaswilde/inventory-agent?branch=main)
+[![Coverage Status](https://img.shields.io/coverallsCoverage/github/nicholaswilde/inventory-agent?branch=main&style=for-the-badge&logo=coveralls)](https://coveralls.io/github/nicholaswilde/inventory-agent?branch=main)
 
 Intelligent image and issue ingestion agent for [Homebox](https://homebox.software) inventory management.
 
