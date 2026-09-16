@@ -1,6 +1,7 @@
 # Inventory Agent
 
 [![task](https://img.shields.io/badge/Task-Enabled-brightgreen?style=for-the-badge&logo=task&logoColor=white)](https://taskfile.dev/#/)
+[![CI](https://img.shields.io/github/actions/workflow/status/nicholaswilde/inventory-agent/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/nicholaswilde/inventory-agent/actions/workflows/ci.yml)
 [![Coverage Status](https://img.shields.io/coverallsCoverage/github/nicholaswilde/inventory-agent?branch=main&style=for-the-badge&logo=coveralls)](https://coveralls.io/github/nicholaswilde/inventory-agent?branch=main)
 
 Intelligent image and issue ingestion agent for [Homebox](https://homebox.software) inventory management.
@@ -78,6 +79,15 @@ task parts:lg TARGET="https://lgparts.com/pages/exploded-view-assembly?mfg=ZEN&p
 
 # RepairClinic Portal (interactive diagrams and parts)
 task parts:repairclinic TARGET="https://www.repairclinic.com/ProductDetail/<ID>?tab=diagrams"
+```
+
+Upload cataloged appliance assembly diagrams to Homebox entities:
+```bash
+task diagrams:upload
+```
+Preview diagram upload without uploading files:
+```bash
+task diagrams:upload -- --dry-run
 ```
 
 ### :mag: Appliance Information Retrieval

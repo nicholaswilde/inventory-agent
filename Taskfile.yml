@@ -153,6 +153,11 @@ tasks:
     requires:
       vars: [TARGET]
 
+  diagrams:upload:
+    desc: Upload appliance assembly diagrams to Homebox entities
+    cmds:
+      - uv run scripts/upload_appliance_diagrams.py {{.CLI_ARGS}}
+
   appliance:list:
     desc: List all cataloged appliances and BOM status
     cmds:
