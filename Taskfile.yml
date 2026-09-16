@@ -99,6 +99,11 @@ tasks:
     requires:
       vars: [ISSUE]
 
+  manuals:pull:
+    desc: Pull appliance PDF manuals from Homebox to local directory
+    cmds:
+      - uv run scripts/pull_appliance_manuals.py {{.CLI_ARGS}}
+
   manual:ingest:
     desc: Ingest an appliance manual (PDF path or URL) into Homebox and generate quick lookup doc
     cmds:

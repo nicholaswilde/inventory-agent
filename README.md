@@ -42,7 +42,7 @@ Preview extracted data without writing to Homebox:
 task url:import URL="<product_url>" DRY_RUN=1
 ```
 
-### :page_facing_up: Appliance Manual Ingestion
+### :page_facing_up: Appliance Manual Ingestion & Local Download
 
 Ingest a user manual (PDF path or URL) into Homebox and generate a cheat sheet in `appliances/`:
 ```bash
@@ -51,6 +51,15 @@ task manual:ingest FILE="<pdf_path_or_url>"
 Preview without creating Homebox entities:
 ```bash
 task manual:ingest FILE="<pdf_path_or_url>" DRY_RUN=1
+```
+
+Pull all appliance manual PDFs from Homebox to local `manuals/` directory:
+```bash
+task manuals:pull
+```
+Preview download without saving files:
+```bash
+task manuals:pull -- --dry-run
 ```
 
 ### :wrench: Appliance Parts & Assembly Diagrams
