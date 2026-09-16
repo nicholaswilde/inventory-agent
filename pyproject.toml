@@ -1,7 +1,7 @@
 [project]
 name = "inventory-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Intelligent Homebox inventory management agent for image ingestion and querying appliance specifications, manuals, and parts"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

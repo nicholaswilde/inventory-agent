@@ -1,10 +1,10 @@
-# Inventory Agent
+# :package: Inventory Agent :robot:
 
 [![task](https://img.shields.io/badge/Task-Enabled-brightgreen?style=for-the-badge&logo=task&logoColor=white)](https://taskfile.dev/#/)
 [![CI](https://img.shields.io/github/actions/workflow/status/nicholaswilde/inventory-agent/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/nicholaswilde/inventory-agent/actions/workflows/ci.yml)
 [![Coverage Status](https://img.shields.io/coverallsCoverage/github/nicholaswilde/inventory-agent?branch=main&style=for-the-badge&logo=coveralls)](https://coveralls.io/github/nicholaswilde/inventory-agent?branch=main)
 
-Intelligent image and issue ingestion agent for [Homebox](https://homebox.software) inventory management.
+Intelligent inventory management agent for [Homebox](https://homebox.software), featuring image and issue ingestion alongside querying and retrieval of appliance specifications, manuals, error codes, and replacement parts diagrams.
 
 > [!IMPORTANT]
 > **Compatibility**: This repository only supports **Homebox v0.26.0+** (which uses the unified Entities API). Older versions using deprecated `/api/locations` and `/api/items` endpoints are not supported.
