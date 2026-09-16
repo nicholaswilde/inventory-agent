@@ -109,3 +109,39 @@ def test_generate_csv_bom():
     assert len(lines) == 2
     assert "Diagram ID,Diagram Name,Callout,Part Number,Title,Description,Price,Status,Diagram File" in lines[0]
     assert lines[1].startswith('1129403,"EXPLODED VIEW OF TOP COVER ASSEMBLY",F000,ABJ75767801,"Housing Panel","Cabinet assembly",180.84,In Stock,01_EXPLODED_VIEW_OF_TOP_COVER_ASSEMBLY.jpg')
+
+
+def test_download_repairclinic_parts_orchestration(tmp_path):
+    from unittest.mock import patch
+    from scripts.download_repairclinic_parts import download_repairclinic_parts
+
+    out_dir = tmp_path / "appliances" / "WT7800CW"
+
+    def mock_api(endpoint):
+        if "/model/" in endpoint and "diagrams" not in endpoint:
+            return {"name": "WT7800CW/00"}
+        if "/diagrams?" in endpoint:
+            return {"diagrams": [{"diagram_id": 1129403, "large_image_url": "http://example.com/page_1.jpg"}]}
+        if "/diagrams/1129403" in endpoint:
+            return SAMPLE_DIAGRAM_JSON
+        return {}
+
+    with patch("scripts.download_repairclinic_parts.fetch_api_json", side_effect=mock_api), \
+         patch("scripts.download_repairclinic_parts.fetch_url", return_value=b"fake-image"), \
+         patch("time.sleep", return_value=None):
+        res = download_repairclinic_parts("2453006", output_dir=out_dir)
+        assert res == out_dir
+        assert (out_dir / "bill_of_materials.json").exists()
+        assert (out_dir / "bill_of_materials.csv").exists()
+        assert (out_dir / "bill_of_materials.md").exists()
+        assert (out_dir / "diagrams" / "01_EXPLODED_VIEW_OF_TOP_COVER_ASSEMBLY.jpg").exists()
+
+
+def test_download_repairclinic_parts_main(tmp_path):
+    from unittest.mock import patch
+    from scripts.download_repairclinic_parts import main
+
+    with patch("sys.argv", ["download_repairclinic_parts.py", "2453006", "-o", str(tmp_path)]), \
+         patch("scripts.download_repairclinic_parts.download_repairclinic_parts") as mock_dl:
+        main()
+        mock_dl.assert_called_once_with("2453006", model_name=None, output_dir=str(tmp_path))

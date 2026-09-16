@@ -326,6 +326,30 @@ class TestComponentIdentification:
             assert comp["name"] == "LM7805 Voltage Regulator"
             assert mock_gemini.call_count == 1
 
+    def test_identify_component_prioritizes_meaningful_ocr_without_gemini(self, tmp_path):
+        """Verify identify_component does not call Gemini Vision API when OCR text is meaningful."""
+        img = tmp_path / "oled.jpg"
+        img.write_bytes(b"dummy")
+
+        ocr_text = "OLED Display I2C 128x64 0.96 inch\nSSD1306\n"
+        with patch("scripts.process_vision.run_local_ocr", return_value=ocr_text), \
+             patch("scripts.process_vision.query_gemini_vision") as mock_gemini:
+            comp = identify_component(img, api_key="test-key")
+            assert comp is not None
+            assert comp["name"] == "OLED Display I2C 128x64 0.96 inch"
+            assert comp["modelNumber"] == "SSD1306"
+            assert mock_gemini.call_count == 0
+
+    def test_identify_component_falls_back_to_filename_when_ocr_and_gemini_fail(self, tmp_path):
+        """Verify fallback to filename when OCR is not meaningful and Gemini fails."""
+        img = tmp_path / "custom_part.jpg"
+        img.write_bytes(b"dummy")
+        with patch("scripts.process_vision.run_local_ocr", return_value="??? 123"), \
+             patch("scripts.process_vision.query_gemini_vision", side_effect=Exception("API error")):
+            comp = identify_component(img)
+            assert comp is not None
+            assert "custom_part" in comp["name"]
+
 
 # ============================================================================
 # 4. Gemini Vision Fallback Tests
@@ -1002,3 +1026,25 @@ class TestFullPipelineE2EMock:
 
             # Gemini only called for img2_new and img3_fail
             assert mock_gemini.call_count == 2
+
+    def test_process_single_image_not_found(self, tmp_path):
+        from scripts.process_vision import process_single_image
+        assert process_single_image(tmp_path / "missing.jpg", tmp_path / "processed") is False
+
+    def test_process_single_image_attach_failures(self, tmp_path):
+        from scripts.process_vision import process_single_image
+        img = tmp_path / "chip.jpg"
+        img.write_bytes(b"data")
+
+        # 1. Duplicate found but attach fails
+        with patch("scripts.process_vision.identify_component", return_value={"name": "Chip", "modelNumber": "CHIP"}), \
+             patch("scripts.process_vision.search_entity", return_value="hb-existing"), \
+             patch("scripts.process_vision.attach_image", return_value=False):
+            assert process_single_image(img, tmp_path / "processed") is False
+
+        # 2. New created but attach fails
+        with patch("scripts.process_vision.identify_component", return_value={"name": "Chip", "modelNumber": "CHIP"}), \
+             patch("scripts.process_vision.search_entity", return_value=None), \
+             patch("scripts.process_vision.create_entity", return_value="hb-new"), \
+             patch("scripts.process_vision.attach_image", return_value=False):
+            assert process_single_image(img, tmp_path / "processed") is False

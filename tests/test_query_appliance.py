@@ -186,3 +186,72 @@ def test_cli_search_json(sample_appliances_dir, capsys):
     data = json.loads(captured.out)
     assert len(data["parts"]) == 1
     assert data["parts"][0]["part_number"] == "P10002"
+
+
+def test_cli_info_human_and_json(sample_appliances_dir, capsys):
+    ret = main(["--dir", str(sample_appliances_dir), "info", "sample-washer"])
+    assert ret == 0
+    out = capsys.readouterr().out
+    assert "Sample Washer" in out
+    assert "Specifications" in out
+    assert "Error Codes" in out
+    assert "Bill of Materials" in out
+
+    ret = main(["--dir", str(sample_appliances_dir), "info", "sample-washer", "--json"])
+    assert ret == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["name"] == "Sample Washer"
+
+    ret = main(["--dir", str(sample_appliances_dir), "info", "nonexistent"])
+    assert ret == 1
+
+
+def test_cli_part_human_and_json(sample_appliances_dir, capsys):
+    ret = main(["--dir", str(sample_appliances_dir), "part", "pump"])
+    assert ret == 0
+    out = capsys.readouterr().out
+    assert "P10002" in out
+
+    ret = main(["--dir", str(sample_appliances_dir), "part", "pump", "--json"])
+    assert ret == 0
+    data = json.loads(capsys.readouterr().out)
+    assert len(data) == 1
+
+    ret = main(["--dir", str(sample_appliances_dir), "part", "nonexistent_part"])
+    assert ret == 0
+    assert "No parts found" in capsys.readouterr().out
+
+
+def test_cli_error_human_and_json(sample_appliances_dir, capsys):
+    ret = main(["--dir", str(sample_appliances_dir), "error", "IE"])
+    assert ret == 0
+    out = capsys.readouterr().out
+    assert "Water Inlet Error" in out
+
+    ret = main(["--dir", str(sample_appliances_dir), "error", "IE", "--json"])
+    assert ret == 0
+    data = json.loads(capsys.readouterr().out)
+    assert len(data) == 1
+
+    ret = main(["--dir", str(sample_appliances_dir), "error", "XYZ999"])
+    assert ret == 0
+    assert "No error codes found" in capsys.readouterr().out
+
+
+def test_cli_search_human_readable(sample_appliances_dir, capsys):
+    ret = main(["--dir", str(sample_appliances_dir), "search", "washer"])
+    assert ret == 0
+    out = capsys.readouterr().out
+    assert "Search results for 'washer'" in out
+    assert "Matched Appliances" in out
+
+    ret = main(["--dir", str(sample_appliances_dir), "search", "zzzzzz_nonexistent"])
+    assert ret == 0
+    assert "No matches found" in capsys.readouterr().out
+
+
+def test_cli_list_json(sample_appliances_dir, capsys):
+    ret = main(["--dir", str(sample_appliances_dir), "list", "--json"])
+    assert ret == 0
+    data = json.loads(capsys.readouterr().out)
+    assert len(data) == 1

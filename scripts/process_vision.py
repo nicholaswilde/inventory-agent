@@ -399,16 +399,7 @@ def identify_component(
     image_path: Path | str,
     api_key: str | None = None,
 ) -> dict[str, Any] | None:
-    """Identify component via Gemini Vision API first, falling back to local OCR."""
-    # Always try Gemini Vision first — macro photos of electronics are too noisy for OCR alone
-    try:
-        gemini_res = query_gemini_vision(image_path, api_key=api_key)
-        if gemini_res:
-            return gemini_res
-    except Exception:
-        pass
-
-    # Fallback: local OCR if Gemini is unavailable or fails
+    """Identify component via local OCR first, falling back to Gemini Vision API."""
     ocr_text = run_local_ocr(image_path)
     stem = Path(image_path).stem
 
@@ -452,6 +443,14 @@ def identify_component(
             if pn_match:
                 component["modelNumber"] = pn_match.group(0)
             return component
+
+    # Fallback: query Gemini Vision API
+    try:
+        gemini_res = query_gemini_vision(image_path, api_key=api_key)
+        if gemini_res:
+            return gemini_res
+    except Exception:
+        pass
 
     # Last resort: filename-based fallback
     clean_lines = [

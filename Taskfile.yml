@@ -141,6 +141,13 @@ tasks:
     requires:
       vars: [TARGET]
 
+  parts:appliancepartspros:
+    desc: Download AppliancePartsPros appliance assembly diagrams and bill of materials
+    cmds:
+      - uv run scripts/download_appliancepartspros_parts.py '{{.TARGET}}' {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET]
+
   appliance:list:
     desc: List all cataloged appliances and BOM status
     cmds:

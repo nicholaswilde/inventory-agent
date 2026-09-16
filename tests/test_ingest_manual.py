@@ -333,5 +333,119 @@ def test_extract_microwave_data():
     assert any("NN-TK922S" in acc for acc in data["accessories"])
 
 
+def test_ingest_manual_generic_pdf_renaming_and_model_overrides(tmp_path):
+    from scripts.ingest_manual import ingest_manual
+
+    input_pdf = tmp_path / "manual.pdf"
+    input_pdf.write_bytes(b"%PDF-1.4 fake")
+
+    out_dir = tmp_path / "appliances"
+    proc_dir = tmp_path / "processed"
+
+    with patch("scripts.ingest_manual.run_pdf_extraction", return_value=SAMPLE_MICROWAVE_TEXT):
+        res = ingest_manual(
+            source=str(input_pdf),
+            output_dir=out_dir,
+            processed_dir=proc_dir,
+            dry_run=True,
+            model_override="NN-SD745S",
+        )
+        assert res["dry_run"] is True
+        assert res["entity"]["capacity"] == "1.6 cu. ft."
+        assert Path(res["entity"]["manual_path"]).name.endswith("_Manual.pdf")
+
+    # Test WT7800 model override
+    input_pdf2 = tmp_path / "washer.pdf"
+    input_pdf2.write_bytes(b"%PDF-1.4 fake")
+    with patch("scripts.ingest_manual.run_pdf_extraction", return_value=SAMPLE_WASHER_TEXT):
+        res = ingest_manual(
+            source=str(input_pdf2),
+            output_dir=out_dir,
+            processed_dir=proc_dir,
+            dry_run=True,
+            model_override="WT7800CW",
+        )
+        assert res["entity"]["capacity"] == "5.5 cu. ft. (Mega Capacity)"
+
+    # Test 2603 model override
+    input_pdf3 = tmp_path / "fridge.pdf"
+    input_pdf3.write_bytes(b"%PDF-1.4 fake")
+    with patch("scripts.ingest_manual.run_pdf_extraction", return_value=SAMPLE_REFRIGERATOR_TEXT):
+        res = ingest_manual(
+            source=str(input_pdf3),
+            output_dir=out_dir,
+            processed_dir=proc_dir,
+            dry_run=True,
+            model_override="LRDCS2603S",
+        )
+        assert res["entity"]["capacity"] == "25.5 cu. ft. (26 cu. ft. class)"
+
+
+def test_ingest_manual_main_cli(capsys):
+    from scripts.ingest_manual import main
+
+    with patch("sys.argv", ["ingest_manual.py", "http://example.com/manual.pdf", "--dry-run"]), \
+         patch("scripts.ingest_manual.ingest_manual", return_value={"entity": {"name": "Microwave"}, "homebox_id": "dry-run", "cheat_sheet": "appliances/microwave.md"}):
+        main()
+        out = capsys.readouterr().out
+        assert "Successfully ingested Microwave" in out
+
+    with patch("sys.argv", ["ingest_manual.py", "http://example.com/manual.pdf"]), \
+         patch("scripts.ingest_manual.ingest_manual", side_effect=ValueError("invalid source")), \
+         pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
+
+
+def test_download_or_copy_manual_url_and_missing(tmp_path):
+    from scripts.ingest_manual import download_or_copy_manual
+    proc_dir = tmp_path / "proc"
+
+    mock_resp = MagicMock()
+    mock_resp.iter_content.return_value = [b"chunk1", b"chunk2"]
+    mock_resp.raise_for_status.return_value = None
+
+    with patch("requests.get", return_value=mock_resp):
+        out_file = download_or_copy_manual("https://example.com/docs/appliance_manual.pdf", proc_dir)
+        assert out_file.name == "appliance_manual.pdf"
+        assert out_file.read_bytes() == b"chunk1chunk2"
+
+    with pytest.raises(FileNotFoundError):
+        download_or_copy_manual(str(tmp_path / "does_not_exist.pdf"), proc_dir)
+
+
+def test_run_pdf_extraction_lit_and_pdftotext(tmp_path):
+    from scripts.ingest_manual import run_pdf_extraction
+    pdf = tmp_path / "dummy.pdf"
+    pdf.write_bytes(b"dummy")
+
+    # 1. lit succeeds
+    with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="lit extracted text")):
+        assert run_pdf_extraction(pdf) == "lit extracted text"
+
+    # 2. lit fails, pdftotext succeeds
+    def mock_subp(cmd, *args, **kwargs):
+        if cmd[0] == "lit":
+            return MagicMock(returncode=1, stdout="")
+        return MagicMock(returncode=0, stdout="pdftotext extracted text")
+
+    with patch("subprocess.run", side_effect=mock_subp):
+        assert run_pdf_extraction(pdf) == "pdftotext extracted text"
+
+    # 3. Both fail
+    with patch("subprocess.run", return_value=MagicMock(returncode=1, stdout="")):
+        assert run_pdf_extraction(pdf) == ""
+
+
+def test_compress_pdf_if_large_gs_error(tmp_path):
+    from scripts.ingest_manual import compress_pdf_if_large
+    large_pdf = tmp_path / "large.pdf"
+    large_pdf.write_bytes(b"A" * 100)
+
+    with patch("subprocess.run", side_effect=FileNotFoundError):
+        res = compress_pdf_if_large(large_pdf, max_bytes=50)
+        assert res == large_pdf
+
+
 
 

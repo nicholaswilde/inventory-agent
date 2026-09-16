@@ -138,3 +138,46 @@ def test_resolve_model_id():
     assert resolve_model_id("40660", "CUSTOM_MODEL") == "CUSTOM_MODEL"
     assert resolve_model_id("999999") == "LG_999999"
 
+
+def test_download_lg_parts_orchestration(tmp_path):
+    from unittest.mock import patch
+    from scripts.download_lg_parts import download_lg_parts
+
+    out_dir = tmp_path / "appliances" / "DLGX7801WE"
+
+    def mock_fetch_details(parent_id, asm_id, **kwargs):
+        return {
+            "name": "Cabinet Assembly",
+            "image_url": "http://example.com/lg.jpg",
+            "parts": [
+                {
+                    "callout": "K730",
+                    "part_number": "AJU73432602",
+                    "description": "Water Valve",
+                    "price": "100.00",
+                    "status": "Available",
+                }
+            ],
+        }
+
+    with patch("scripts.download_lg_parts.fetch_lg_assemblies", return_value=[{"assembly_id": "131157", "name": "Cabinet Assembly"}]), \
+         patch("scripts.download_lg_parts.fetch_lg_assembly_details", side_effect=mock_fetch_details), \
+         patch("scripts.download_lg_parts.fetch_url", return_value=b"fake-image"), \
+         patch("time.sleep", return_value=None):
+        res = download_lg_parts("https://lgparts.com/pages/exploded-view-assembly?mfg=ZEN&parentId=131154", output_dir=out_dir)
+        assert res == out_dir
+        assert (out_dir / "bill_of_materials.json").exists()
+        assert (out_dir / "bill_of_materials.csv").exists()
+        assert (out_dir / "bill_of_materials.md").exists()
+        assert (out_dir / "diagrams" / "01_Cabinet_Assembly.jpg").exists()
+
+
+def test_download_lg_parts_main(tmp_path):
+    from unittest.mock import patch
+    from scripts.download_lg_parts import main
+
+    with patch("sys.argv", ["download_lg_parts.py", "131154", "-o", str(tmp_path)]), \
+         patch("scripts.download_lg_parts.download_lg_parts") as mock_dl:
+        main()
+        mock_dl.assert_called_once_with("131154", model_id=None, output_dir=str(tmp_path))
+

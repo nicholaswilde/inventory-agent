@@ -5,6 +5,7 @@
 - **Covered Models**: `NN-SD945S`
 - **Manual Part Number**: 
 - **Manual Attachment**: Stored in Homebox entity and locally at `images/processed/Panasonic_Microwave_Oven_Manual.pdf`
+- **Bill of Materials**: [`appliances/NN-SD945S/bill_of_materials.md`](NN-SD945S/bill_of_materials.md)
 
 ---
 

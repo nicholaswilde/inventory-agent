@@ -143,7 +143,6 @@ class TestMergeAndDelete(unittest.TestCase):
 
     @patch("homebox_dedup.call_homebox")
     def test_updates_quantity_when_merging(self, mock_hb):
-        mock_hb.return_value = MagicMock(returncode=0, stdout="{}", stderr="")
         items = [
             {"id": "keep-1", "name": "Foo Bar Baz", "quantity": 2},
             {"id": "del-1", "name": "Foo Bar Baz", "quantity": 3},
@@ -153,6 +152,85 @@ class TestMergeAndDelete(unittest.TestCase):
         assert len(update_calls) == 1
         payload = json.loads(update_calls[0][0][2])
         assert payload["quantity"] == 5
+
+    @patch("homebox_dedup.call_homebox")
+    def test_merge_dry_run_does_not_update(self, mock_hb):
+        items = [
+            {"id": "keep-1", "name": "Foo Bar Baz", "quantity": 2},
+            {"id": "del-1", "name": "Foo Bar Baz", "quantity": 3},
+        ]
+        merge_and_delete(items, dry_run=True, merge=True)
+        mock_hb.assert_not_called()
+
+
+class TestEnrichWithDetails(unittest.TestCase):
+    @patch("homebox_dedup.call_homebox")
+    def test_enrich_with_details(self, mock_hb):
+        from homebox_dedup import enrich_with_details
+        mock_hb.side_effect = [
+            MagicMock(returncode=0, stdout='{"id":"1","name":"A","quantity":5}'),
+            MagicMock(returncode=1, stdout="", stderr="err"),
+        ]
+        items = [{"id": "1", "name": "A"}, {"id": "2", "name": "B"}]
+        res = enrich_with_details(items)
+        assert len(res) == 2
+        assert res[0]["quantity"] == 5
+        assert res[1]["quantity"] == 1
+
+
+class TestNearDuplicateClustering(unittest.TestCase):
+    def test_transitive_clustering(self):
+        # a and b match, b and c match
+        items = [
+            {"id": "1", "name": "Arduino Uno R3 Microcontroller Board"},
+            {"id": "2", "name": "Arduino Uno R3 Microcontroller Board Blue"},
+            {"id": "3", "name": "Arduino Uno R3 Microcontroller Board Blue ATmega328P"},
+        ]
+        groups = detect_duplicates(items, threshold=0.5)
+        near_groups = [g for g in groups if g["type"] == "near"]
+        assert len(near_groups) == 1
+        assert len(near_groups[0]["items"]) == 3
+
+
+class TestRunAndMain(unittest.TestCase):
+    @patch("homebox_dedup.call_homebox")
+    def test_run_list_error(self, mock_hb):
+        from homebox_dedup import run
+        mock_hb.return_value = MagicMock(returncode=1, stdout="", stderr="API down")
+        code = run()
+        assert code == 1
+
+    @patch("homebox_dedup.call_homebox")
+    def test_run_no_duplicates(self, mock_hb):
+        from homebox_dedup import run
+        mock_hb.return_value = MagicMock(returncode=0, stdout="ID: 1 | Name: Resistor\nID: 2 | Name: Capacitor\n", stderr="")
+        code = run()
+        assert code == 0
+
+    @patch("homebox_dedup.call_homebox")
+    def test_run_exact_and_near_duplicates_with_merge_delete(self, mock_hb):
+        from homebox_dedup import run
+        list_output = (
+            "ID: 1 | Name: Resistor 10k\n"
+            "ID: 2 | Name: Resistor 10k\n"
+            "ID: 3 | Name: Arduino Uno Board Blue\n"
+            "ID: 4 | Name: Arduino Uno Board\n"
+        )
+        mock_hb.return_value = MagicMock(returncode=0, stdout=list_output, stderr="")
+        code = run(delete=True, merge=True, threshold=0.6)
+        assert code == 0
+
+    @patch("homebox_dedup.run", return_value=0)
+    def test_main(self, mock_run):
+        from homebox_dedup import main
+        code = main(["--threshold", "0.85", "--merge", "--dry-run"])
+        assert code == 0
+        mock_run.assert_called_once_with(
+            threshold=0.85,
+            delete=True,
+            merge=True,
+            dry_run=True,
+        )
 
 
 if __name__ == "__main__":

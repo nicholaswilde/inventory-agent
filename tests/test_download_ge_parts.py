@@ -138,3 +138,44 @@ def test_generate_csv_bom():
     assert len(lines) == 2
     assert "Section Number,Section Name,Callout,Part Number,Description,Price,Status,Diagram File" in lines[0]
     assert lines[1].startswith('1,CONTROL_PANEL,1,WB07T10769,"Control panel",418.39,Available,01_CONTROL_PANEL.jpg')
+
+
+def test_download_ge_parts_orchestration(tmp_path):
+    from scripts.download_ge_parts import download_ge_parts
+
+    out_dir = tmp_path / "appliances" / "JT5500SF1SS"
+
+    def mock_fetch(url):
+        if "assembly/" in url:
+            return SAMPLE_MODEL_PAGE_HTML.encode("utf-8")
+        if "ModelSectionParts" in url:
+            return SAMPLE_SECTION_HTML.encode("utf-8")
+        return b"fake-jpeg-bytes"
+
+    with patch("scripts.download_ge_parts.fetch_url", side_effect=mock_fetch):
+        res = download_ge_parts("JT5500SF1SS", output_dir=out_dir, delay=0)
+        assert res["model_id"] == "JT5500SF1SS"
+        assert (out_dir / "bill_of_materials.json").exists()
+        assert (out_dir / "bill_of_materials.csv").exists()
+        assert (out_dir / "bill_of_materials.md").exists()
+        assert (out_dir / "diagrams" / "01_CONTROL_PANEL.jpg").exists()
+
+
+def test_download_ge_parts_main(tmp_path):
+    from scripts.download_ge_parts import main
+
+    with patch("sys.argv", ["download_ge_parts.py", "JT5500SF1SS", "-o", str(tmp_path)]), \
+         patch("scripts.download_ge_parts.download_ge_parts") as mock_dl:
+        main()
+        mock_dl.assert_called_once_with(model_id="JT5500SF1SS", output_dir=str(tmp_path))
+
+    with patch("sys.argv", ["download_ge_parts.py", "https://www.geapplianceparts.com/store/parts/assembly/JT5500SF1SS"]), \
+         patch("scripts.download_ge_parts.download_ge_parts") as mock_dl:
+        main()
+        assert mock_dl.call_args[1]["model_id"] == "JT5500SF1SS"
+
+    with patch("sys.argv", ["download_ge_parts.py", "error"]), \
+         patch("scripts.download_ge_parts.download_ge_parts", side_effect=RuntimeError("boom")), \
+         pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1

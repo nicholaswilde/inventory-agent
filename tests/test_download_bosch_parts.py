@@ -106,3 +106,70 @@ def test_parse_appliancepartspros_section():
     assert parts[0]["description"] == "Dishwasher Control Module"
     assert parts[0]["price"] == "154.58"
 
+
+def test_fetch_appliancepartspros_catalog():
+    from scripts.download_bosch_parts import fetch_appliancepartspros_catalog
+
+    index_html = '<a href="/test-parts-for-bosch-shxm98w75n-01.html">Section</a>'
+    section_html = SAMPLE_APP_PARTS_PROS_HTML
+
+    def mock_fetch(url):
+        if "parts-for-bosch" in url and "test-" not in url:
+            return index_html.encode("utf-8")
+        return section_html.encode("utf-8")
+
+    with patch("scripts.download_bosch_parts.fetch_url", side_effect=mock_fetch):
+        cat = fetch_appliancepartspros_catalog("SHXM98W75N-01")
+        assert "11019860" in cat
+        assert cat["11019860"]["description"] == "Dishwasher Control Module"
+
+
+def test_fetch_appliancepartspros_catalog_error():
+    from scripts.download_bosch_parts import fetch_appliancepartspros_catalog
+
+    with patch("scripts.download_bosch_parts.fetch_url", side_effect=Exception("network down")):
+        cat = fetch_appliancepartspros_catalog("SHXM98W75N-01")
+        assert cat == {}
+
+
+def test_download_bosch_parts_orchestration(tmp_path):
+    from scripts.download_bosch_parts import download_bosch_parts
+
+    out_dir = tmp_path / "appliances" / "SHXM98W75N-01"
+
+    def mock_fetch(url):
+        if "media3.bsh-group.com" in url:
+            return b"fake-png-bytes"
+        if "appliancepartspros.com" in url:
+            return b""
+        return SAMPLE_BOSCH_HTML.encode("utf-8")
+
+    with patch("scripts.download_bosch_parts.fetch_url", side_effect=mock_fetch), \
+         patch("scripts.download_bosch_parts.fetch_appliancepartspros_catalog", return_value={"11019860": {"description": "Module", "price": "100.00", "status": "Available", "url": "http://example.com"}}):
+        res = download_bosch_parts("SHXM98W75N/01", output_dir=out_dir)
+        assert res["variant_id"] == "SHXM98W75N/01"
+        assert (out_dir / "bill_of_materials.json").exists()
+        assert (out_dir / "bill_of_materials.csv").exists()
+        assert (out_dir / "bill_of_materials.md").exists()
+        assert (out_dir / "diagrams" / "01_diagram.png").exists()
+
+
+def test_download_bosch_parts_main(tmp_path):
+    from scripts.download_bosch_parts import main
+
+    with patch("sys.argv", ["download_bosch_parts.py", "SHXM98W75N-01", "--output-dir", str(tmp_path)]), \
+         patch("scripts.download_bosch_parts.download_bosch_parts") as mock_dl:
+        main()
+        mock_dl.assert_called_once_with(variant_id="SHXM98W75N-01", output_dir=str(tmp_path))
+
+    with patch("sys.argv", ["download_bosch_parts.py", "https://www.bosch-home.com/us/en/spare-parts-list/SHXM98W75N-01"]), \
+         patch("scripts.download_bosch_parts.download_bosch_parts") as mock_dl:
+        main()
+        assert mock_dl.call_args[1]["variant_id"] == "SHXM98W75N-01"
+
+    with patch("sys.argv", ["download_bosch_parts.py", "fail"]), \
+         patch("scripts.download_bosch_parts.download_bosch_parts", side_effect=ValueError("bad variant")), \
+         pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
+

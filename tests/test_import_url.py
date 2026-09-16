@@ -237,3 +237,85 @@ def test_create_homebox_entity_truncates_notes():
         assert len(post_payload["notes"].encode("utf-8")) <= 1000
         assert len(put_payload["notes"].encode("utf-8")) <= 1000
 
+
+def test_import_url_duplicate_found():
+    with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
+         patch("scripts.import_url.check_duplicate", return_value={"id": "hb-existing-999"}), \
+         patch.dict(os.environ, {"HOMEBOX_IP": "127.0.0.1", "HOMEBOX_API_KEY": "fake-key"}):
+        res = import_url("https://www.amazon.com/dp/B0042RV0CY", dry_run=False)
+        assert res["existing"] is True
+        assert res["homebox_id"] == "hb-existing-999"
+
+
+def test_import_url_main_cli(capsys):
+    from scripts.import_url import main
+
+    # 1. Existing
+    with patch("sys.argv", ["import_url.py", "http://example.com/item"]), \
+         patch("scripts.import_url.import_url", return_value={"existing": True, "entity": {"name": "Existing Item"}, "homebox_id": "hb-123"}):
+        main()
+        assert "Item already exists in Homebox" in capsys.readouterr().out
+
+    # 2. Dry run
+    with patch("sys.argv", ["import_url.py", "http://example.com/item", "--dry-run"]), \
+         patch("scripts.import_url.import_url", return_value={"dry_run": True, "entity": {"name": "Dry Item"}}):
+        main()
+        assert "[DRY RUN]" in capsys.readouterr().out
+
+    # 3. Normal import
+    with patch("sys.argv", ["import_url.py", "http://example.com/item"]), \
+         patch("scripts.import_url.import_url", return_value={"existing": False, "dry_run": False, "entity": {"name": "New Item", "manufacturer": "Acme", "model_number": "M1", "purchase_price": "10.00"}, "homebox_id": "hb-new"}):
+        main()
+        assert "Successfully imported New Item" in capsys.readouterr().out
+
+    with patch("sys.argv", ["import_url.py", "http://example.com/item"]), \
+         patch("scripts.import_url.import_url", side_effect=RuntimeError("scrape failed")), \
+         pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
+
+
+def test_get_homebox_config(tmp_path, monkeypatch):
+    from scripts.import_url import get_homebox_config
+    monkeypatch.delenv("HOMEBOX_IP", raising=False)
+    monkeypatch.delenv("HOMEBOX_API_KEY", raising=False)
+
+    fake_env = tmp_path / ".env"
+    fake_env.write_text("HOMEBOX_IP=192.168.1.50\nHOMEBOX_API_KEY=secret-token\n# comment\n")
+    with patch("scripts.import_url.Path.exists", return_value=True), \
+         patch("scripts.import_url.Path.read_text", return_value=fake_env.read_text()):
+        ip, key = get_homebox_config()
+        assert ip == "192.168.1.50"
+        assert key == "secret-token"
+
+    with patch("scripts.import_url.Path.exists", return_value=False), \
+         pytest.raises(ValueError) as exc:
+        get_homebox_config()
+    assert "HOMEBOX_IP or HOMEBOX_API_KEY not set" in str(exc.value)
+
+
+def test_fetch_url_html():
+    from scripts.import_url import fetch_url_html
+    mock_resp = MagicMock()
+    mock_resp.text = "<html>ok</html>"
+    mock_resp.raise_for_status.return_value = None
+    with patch("requests.get", return_value=mock_resp):
+        assert fetch_url_html("http://example.com") == "<html>ok</html>"
+
+
+def test_check_duplicate_matches_name():
+    from scripts.import_url import check_duplicate
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {"items": [{"name": "Matching Name", "id": "hb-name-123"}]}
+    with patch("requests.get", return_value=mock_resp):
+        dup = check_duplicate(base_url="http://127.0.0.1:7745", headers={}, name="Matching Name", model_number=None)
+        assert dup["id"] == "hb-name-123"
+
+
+def test_truncate_to_bytes_and_clean_text():
+    from scripts.import_url import truncate_to_bytes, _clean_text
+    assert truncate_to_bytes("short string", 100) == "short string"
+    assert _clean_text("") == ""
+    assert _clean_text("Hello &amp; world") == "Hello & world"
+
