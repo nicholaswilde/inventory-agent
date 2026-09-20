@@ -6,6 +6,7 @@ creates a Homebox entity with the attached manual, and generates a markdown chea
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -21,14 +22,15 @@ KNOWN_MANUFACTURERS = [
     "LG", "Samsung", "Whirlpool", "Bosch", "GE", "GE Appliances",
     "KitchenAid", "Frigidaire", "Miele", "Maytag", "Electrolux",
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
-    "Moen", "Kohler", "Delta", "Grohe"
+    "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber"
 ]
 
 APPLIANCE_TYPES = [
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
     "Oven", "Range", "Refrigerator", "Fridge", "Freezer",
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
-    "Kitchen Faucet", "Faucet"
+    "Kitchen Faucet", "Faucet", "Thermal Laminator", "Laminator",
+    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill"
 ]
 
 
@@ -44,6 +46,47 @@ def resolve_download_url(source: str) -> str:
         return f"https://drive.usercontent.google.com/download?id={file_id}&export=download"
 
     return source
+
+
+def resolve_issue_source(issue_ref: str | int) -> tuple[str, str | None, int]:
+    """
+    Given a GitHub issue reference (#123, 123, or issue URL), retrieve issue details via gh CLI
+    and extract any attached/linked PDF manual URL and appliance title.
+    Returns (pdf_url, clean_title, issue_number).
+    """
+    s = str(issue_ref).strip()
+    match = re.search(r"(?:issues/|#)?(\d+)", s)
+    if not match:
+        raise ValueError(f"Invalid GitHub issue reference: {issue_ref}")
+    issue_num = int(match.group(1))
+
+    proc = subprocess.run(
+        ["gh", "issue", "view", str(issue_num), "--json", "number,title,body,comments"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"Failed to fetch issue #{issue_num}: {proc.stderr.strip()}")
+
+    data = json.loads(proc.stdout)
+    title = data.get("title", "").strip()
+    body = data.get("body", "") or ""
+    comments = data.get("comments", []) or []
+
+    full_text = body + "\n" + "\n".join(c.get("body", "") for c in comments if isinstance(c, dict))
+
+    # Match PDF URLs (e.g. github user attachments or standard http/https pdf links)
+    pdf_urls = re.findall(r"https://[^\s)\]\"']+\.pdf", full_text, re.IGNORECASE)
+    if not pdf_urls:
+        raise ValueError(f"No PDF manual URL found in GitHub issue #{issue_num} ({title}).")
+
+    pdf_url = pdf_urls[0]
+    clean_title = re.sub(r"^\[appliance\]\s*", "", title, flags=re.IGNORECASE).strip()
+    if not clean_title:
+        clean_title = None
+
+    return pdf_url, clean_title, issue_num
 
 
 def download_or_copy_manual(source: str, dest_dir: Path | str) -> Path:
@@ -185,7 +228,7 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = pat.group(1).strip()
 
     # Manual Part Number detection
-    man_match = re.search(r"\b(49-\d{4,}(?:-\d+)?|MFL\d+|Part\s*(?:No\.?|#)\s*[A-Z0-9-]+)\b", text[:4000], re.IGNORECASE)
+    man_match = re.search(r"\b(34-\d{4}-\d{4}-\d|49-\d{4,}(?:-\d+)?|MFL\d+|Part\s*(?:No\.?|#)\s*[A-Z0-9-]+)\b", text, re.IGNORECASE)
     if man_match:
         data["manual_number"] = man_match.group(1).strip()
 
@@ -198,14 +241,23 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
     if model_match:
         data["model_number"] = model_match.group(1).strip()
     else:
-        # Check for model list like JK5000 / JT5000
-        found_models = re.findall(r"\b([A-Z]{2}\d{4})\s*-\s*[0-9\"]+", text[:3000])
-        if found_models:
-            data["model_number"] = " / ".join(dict.fromkeys(found_models))
+        # Check for model list like JK5000 / JT5000 or EX4 / EX6
+        if re.search(r"\bEX[46]\b", text[:2000]):
+            found_ex = list(dict.fromkeys(re.findall(r"\b(EX[46])\b", text[:2000])))
+            data["model_number"] = " / ".join(found_ex)
         else:
-            pat = re.search(r"\b([A-Z]{2,}[*0-9A-Z_-]{4,}(?:\s*/\s*[A-Z]{2,}[*0-9A-Z_-]{4,})*)\b", text[:2000])
-            if pat:
-                data["model_number"] = pat.group(1).strip()
+            found_models = re.findall(r"\b([A-Z]{2}\d{4})\s*-\s*[0-9\"]+", text[:3000])
+            if found_models:
+                data["model_number"] = " / ".join(dict.fromkeys(found_models))
+            else:
+                pat = re.search(r"\b([A-Z]{2,}[*0-9A-Z_-]{4,}(?:\s*/\s*[A-Z]{2,}[*0-9A-Z_-]{4,})*)\b", text[:2000])
+                if pat:
+                    data["model_number"] = pat.group(1).strip()
+
+    if "Weber" in data["manufacturer"] and not data["manual_number"]:
+        w_man = re.search(r"\b(\d{5})\b(?:\s+en[A-Z]{2})?", text[:2000])
+        if w_man:
+            data["manual_number"] = w_man.group(1)
 
     # Dimensions
     dim_match = re.search(
@@ -242,15 +294,25 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["capacity"] = "2.2 cu. ft."
     elif "SD7" in data["model_number"]:
         data["capacity"] = "1.6 cu. ft."
+    elif not data["capacity"]:
+        hopper_match = re.search(r"hopper\s+holds[^\n]*?(\d+\s*kg[^\n]*?\(?\d+\s*pounds?\)?|\d+\s*lbs?)", text, re.IGNORECASE)
+        entry_width_match = re.search(r"Entry\s*Width[^\n:]*?[:\s\.]+\s*([0-9.]+\s*in\.?)", text, re.IGNORECASE)
+        if hopper_match:
+            data["capacity"] = f"Hopper: {hopper_match.group(1).strip()}"
+        elif entry_width_match:
+            data["capacity"] = f"{entry_width_match.group(1).strip()} Entry Width"
 
     # Net weight
     weight_match = re.search(
-        r"(?:Net\s*Weight|Weight)\s*[:\s\.]+\s*([A-Za-z0-9][^\n]*(?:lb|kg)[^\n]*)",
+        r"(?:Net\s*Weight|Nominal\s*Weight|Weight)\s*[:\s\.]+\s*([A-Za-z0-9][^\n]*(?:lb|kg|1b)[^\n]*)",
         text,
         re.IGNORECASE,
     )
     if weight_match:
-        data["weight"] = weight_match.group(1).strip()
+        w_val = weight_match.group(1).strip()
+        w_val = re.sub(r"^Poids\s+nominal\s*", "", w_val, flags=re.IGNORECASE)
+        w_val = re.sub(r"(\d+(?:\.\d+)?)\s*1b\.?", r"\1 lb.", w_val)
+        data["weight"] = w_val
 
     if "7800" in data["model_number"] or "7880" in data["model_number"] or "7900" in data["model_number"]:
         if re.search(r"132\.3\s*(?:lbs?|kg)", text):
@@ -387,6 +449,49 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "meaning": "Oven door locked due to high internal temperature",
                 "action": "Allow oven to cool below locking temperature",
             })
+
+    if "Laminator" in data["appliance_type"]:
+        data["error_codes"].extend([
+            {
+                "code": "Pouch Jam / Misfeed",
+                "meaning": "Pouch jammed or misfed into rollers (often caused by inserting open-end first or cutting pouch before laminating)",
+                "action": "Unplug laminator immediately and allow to cool. Use jam release lever on back of machine to gently pull pouch out from entry side.",
+            },
+            {
+                "code": "Hazy / White Blotches",
+                "meaning": "Lamination pouch appears hazy or has white blotches due to insufficient heat/speed",
+                "action": "Ensure laminator is fully heated (Ready light on) and correct mil setting is selected (3 mil vs 5 mil). Re-feed pouch sealed-end first.",
+            },
+            {
+                "code": "Wrinkling / Curling",
+                "meaning": "Item wrinkled or curled exiting rollers",
+                "action": "Ensure item is aligned straight, not thicker than 0.015 in., and allow laminated item to cool flat upon exit.",
+            },
+        ])
+
+    if "Grill" in data["appliance_type"] or "Barbecue" in data["appliance_type"] or "Weber" in data["manufacturer"]:
+        weber_codes = [
+            ("E1", "Auger Jam", "Auger jam detected; grill attempts auto-clear. If persistent, turn off, let cool, and remove burn pot to clear auger tube."),
+            ("E2", "Fan Error", "Fan motor error; do not unplug during shutdown. Check fan intake for obstructions."),
+            ("E3", "Barbecue Flame is Out", "Flame out detected; clean cookbox and burn pot of ash/debris, check pellets, restart."),
+            ("E4", "Communication Failure", "Controller communication error; wait for shutdown cycle, power switch off 30s, then restart."),
+            ("E5", "Barbecue is too Hot", "Excess temperature detected; allow grill to cool down completely, clean burn pot/cookbox of grease/pellets."),
+            ("E6", "Start Up Failure", "Glow plug / ignition failure; inspect glow plug in burn pot, replace if worn or unheated."),
+            ("E7", "Motor Failure", "Auger drive motor failure; do not unplug during shutdown. Contact Weber customer service."),
+            ("E8", "Thermocouple Error", "Cookbox thermocouple probe error; verify probe is clean and firmly connected."),
+            ("E9", "Low Fuel Detection Error", "Pellet hopper fuel sensor error or empty hopper; replenish hopper with pellets."),
+        ]
+        for c, m, a in weber_codes:
+            if not any(e["code"] == c for e in data["error_codes"]):
+                if re.search(rf"\b{re.escape(c)}\b", text):
+                    data["error_codes"].append({"code": c, "meaning": m, "action": a})
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Weber SmokeFire All Natural Hardwood Pellets (No. 18295 / 18296)",
+                "SmokeFire Glow Plug (Part # 70040)",
+                "Flavorizer Bars (Porcelain-Enameled)",
+                "Weber Connect Smart Grilling Hub Probe",
+            ])
 
     # Appliance full name
     mfg_part = data["manufacturer"] if data["manufacturer"] != "Unknown" else ""
@@ -538,6 +643,14 @@ def ingest_manual(
     proc_path = Path(processed_dir)
     proc_path.mkdir(parents=True, exist_ok=True)
 
+    # Resolve GitHub issue reference if provided
+    s_source = str(source).strip()
+    if s_source.startswith("#") or (s_source.isdigit() and not Path(s_source).exists()) or ("github.com/" in s_source and "/issues/" in s_source):
+        issue_pdf_url, issue_title, _ = resolve_issue_source(s_source)
+        source = issue_pdf_url
+        if not name_override and issue_title:
+            name_override = issue_title
+
     # 1. Download or copy
     dest_file = download_or_copy_manual(source, dest_dir=proc_path)
 
@@ -570,10 +683,11 @@ def ingest_manual(
                 app_data["weight"] = "Approx. 31.5 lbs (14.3 kg)"
     app_data["manual_path"] = str(dest_file)
 
-    # Rename file sensibly if it was downloaded as generic manual.pdf
-    if dest_file.name == "manual.pdf":
-        slug = re.sub(r"[^a-zA-Z0-9]+", "_", app_data["name"]).strip("_")
-        renamed = proc_path / f"{slug}_Manual.pdf"
+    # Rename file sensibly if it was downloaded as generic manual.pdf or non-standard name
+    slug = re.sub(r"[^a-zA-Z0-9]+", "_", app_data["name"]).strip("_")
+    expected_filename = f"{slug}_Manual.pdf"
+    if dest_file.name == "manual.pdf" or not dest_file.name.lower().endswith("_manual.pdf"):
+        renamed = proc_path / expected_filename
         if renamed.resolve() != dest_file.resolve():
             shutil.move(dest_file, renamed)
             dest_file = renamed
@@ -601,7 +715,8 @@ def ingest_manual(
 
 def main():
     parser = argparse.ArgumentParser(description="Ingest appliance manual into Homebox and generate quick lookup doc.")
-    parser.add_argument("source", help="Path to PDF manual or URL (Google Drive / web link)")
+    parser.add_argument("source", nargs="?", default=None, help="Path to PDF manual, URL, or GitHub issue (#123)")
+    parser.add_argument("--issue", "-i", help="GitHub issue number, #123, or issue URL to ingest PDF manual from")
     parser.add_argument("--output-dir", default="appliances", help="Directory for markdown cheat sheets")
     parser.add_argument("--processed-dir", default="images/processed", help="Directory for processed manuals")
     parser.add_argument("--dry-run", action="store_true", help="Preview extraction without calling Homebox API")
@@ -610,13 +725,29 @@ def main():
 
     args = parser.parse_args()
 
+    source = args.source
+    name_override = args.name
+
+    if args.issue:
+        pdf_url, issue_title, _ = resolve_issue_source(args.issue)
+        source = pdf_url
+        if not name_override and issue_title:
+            name_override = issue_title
+    elif not source:
+        parser.error("Either source path/URL or --issue must be provided.")
+    elif source.startswith("#") or (source.isdigit() and not Path(source).exists()) or ("github.com/" in source and "/issues/" in source):
+        pdf_url, issue_title, _ = resolve_issue_source(source)
+        source = pdf_url
+        if not name_override and issue_title:
+            name_override = issue_title
+
     try:
         res = ingest_manual(
-            source=args.source,
+            source=source,
             output_dir=args.output_dir,
             processed_dir=args.processed_dir,
             dry_run=args.dry_run,
-            name_override=args.name,
+            name_override=name_override,
             model_override=args.model,
         )
         print(f"Successfully ingested {res['entity']['name']}")

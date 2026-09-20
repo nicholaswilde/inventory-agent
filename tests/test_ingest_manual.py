@@ -447,5 +447,134 @@ def test_compress_pdf_if_large_gs_error(tmp_path):
         assert res == large_pdf
 
 
+def test_extract_scotch_thermal_laminator():
+    sample = """
+User Manual of Product 1:
+Scotch Thermal Laminator, 2 Roller System for a Professional Finish (TL901X)
+Thermal Laminator TL901X USER MANUAL
+
+SPECIFICATIONS
+Laminating Speed   13.5 in/min
+Nominal Weight Poids nominal 2.4 lb.
+Number of Rollers  2
+Entry Width        9.5 in.
+Power Requirements 120 VAC / 60Hz / 300W / 2.5A
+Maximum Thickness  0.015 in.
+Ready Time         3-4 min
+34-8724-4757-7
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Scotch"
+    assert data["appliance_type"] == "Thermal Laminator"
+    assert "TL901X" in data["model_number"]
+    assert "Scotch Thermal Laminator" in data["name"]
+    assert "9.5" in data["capacity"] or "9.5" in data["dimensions"]
+    assert data["weight"] == "2.4 lb."
+    assert data["manual_number"] == "34-8724-4757-7"
+
+
+def test_resolve_issue_source_success():
+    from scripts.ingest_manual import resolve_issue_source
+    mock_issue = {
+        "number": 6,
+        "title": "[appliance] Weber SmokeFire",
+        "body": "![Smokefire-EX4-EX6-Owners-Guide.pdf](https://github.com/user-attachments/files/32426804/Smokefire-EX4-EX6-Owners-Guide.pdf)\n\n",
+        "comments": [],
+    }
+    with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=json.dumps(mock_issue))):
+        pdf_url, title, issue_num = resolve_issue_source("#6")
+        assert pdf_url == "https://github.com/user-attachments/files/32426804/Smokefire-EX4-EX6-Owners-Guide.pdf"
+        assert title == "Weber SmokeFire"
+        assert issue_num == 6
+
+
+def test_resolve_issue_source_no_pdf():
+    from scripts.ingest_manual import resolve_issue_source
+    mock_issue = {
+        "number": 7,
+        "title": "[appliance] Scotch thermal laminator",
+        "body": "",
+        "comments": [],
+    }
+    with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=json.dumps(mock_issue))):
+        with pytest.raises(ValueError, match="No PDF manual URL found in GitHub issue #7"):
+            resolve_issue_source("7")
+
+
+def test_resolve_issue_source_invalid_ref():
+    from scripts.ingest_manual import resolve_issue_source
+    with pytest.raises(ValueError, match="Invalid GitHub issue reference"):
+        resolve_issue_source("no-numbers-here")
+
+
+def test_resolve_issue_source_gh_error():
+    from scripts.ingest_manual import resolve_issue_source
+    with patch("subprocess.run", return_value=MagicMock(returncode=1, stderr="Not found")):
+        with pytest.raises(RuntimeError, match="Failed to fetch issue #99"):
+            resolve_issue_source(99)
+
+
+def test_ingest_manual_from_issue_ref(tmp_path):
+    mock_issue = {
+        "number": 6,
+        "title": "[appliance] Weber SmokeFire",
+        "body": "![Smokefire.pdf](https://example.com/Smokefire.pdf)",
+        "comments": [],
+    }
+    with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=json.dumps(mock_issue))), \
+         patch("scripts.ingest_manual.download_or_copy_manual") as mock_dl, \
+         patch("scripts.ingest_manual.run_pdf_extraction", return_value="WEBER SMOKEFIRE GRILL"), \
+         patch("scripts.ingest_manual.extract_appliance_data", return_value={"name": "Weber SmokeFire", "model_number": "EX4", "error_codes": [], "accessories": []}):
+
+        mock_pdf = tmp_path / "Smokefire_Manual.pdf"
+        mock_pdf.write_bytes(b"%PDF dummy")
+        mock_dl.return_value = mock_pdf
+
+        res = ingest_manual(
+            source="#6",
+            output_dir=tmp_path / "appliances",
+            processed_dir=tmp_path / "processed",
+            dry_run=True,
+        )
+        assert res["entity"]["name"] == "Weber SmokeFire"
+        assert Path(res["cheat_sheet"]).exists()
+
+
+def test_extract_weber_smokefire():
+    sample = """
+Weber SmokeFire
+EX4
+Wood Pellet Barbecue EX6
+OWNER’S MANUAL
+53524
+
+Large Hopper
+The large capacity hopper holds an entire 9kg (20 pound) bag of pellets.
+
+Error Code  Cause                     Solution
+E1        Auger Jam              Auger jam has been detected.
+E2        Fan Error              Fan error detected.
+E3        Barbecue Flame is Out  Flame out procedure.
+E4        Communication Failure  Communication error.
+E5        Barbecue is too Hot    Over temperature.
+E6        Start Up Failure       Glow plug issue.
+E7        Motor Failure          Drive motor failure.
+E8        Thermocouple Error     Temperature probe.
+E9        Low Fuel Detection     Low fuel error.
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Weber"
+    assert "Grill" in data["appliance_type"] or "Barbecue" in data["appliance_type"]
+    assert "EX4" in data["model_number"] and "EX6" in data["model_number"]
+    assert "20" in data["capacity"] or "9kg" in data["capacity"]
+    assert any("E1" in err["code"] for err in data["error_codes"])
+    assert any("E6" in err["code"] for err in data["error_codes"])
+    assert data["manual_number"] == "53524"
+
+
+
+
+
+
 
 

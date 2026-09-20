@@ -1,29 +1,39 @@
 ---
 name: ingest-manual
-description: Ingests appliance manuals (PDF or URL) into Homebox as inventory entities with attached manuals and generates quick-lookup markdown cheat sheets.
+description: Ingests appliance manuals (PDF, URL, or GitHub issue) into Homebox as inventory entities with attached manuals and generates quick-lookup markdown cheat sheets.
 ---
 
 # Ingest Appliance Manual
 
-Ingests appliance user and service manuals from local PDF files or URLs (Google Drive / web links), registers them in Homebox with attached PDF documents, and generates lightweight markdown cheat sheets in `appliances/` for rapid agent lookup.
+Ingests appliance user and service manuals from local PDF files, URLs (Google Drive / web links), or GitHub issues (issues with attached PDF manuals or appliance titles), registers them in Homebox with attached PDF documents, and generates lightweight markdown cheat sheets in `appliances/` for rapid agent lookup.
 
 ## Guidelines
 
 1. **Ingestion Trigger**:
-   - Use whenever user provides a user manual, installation manual, or service guide for a home appliance (dryer, washer, oven, dishwasher, etc.) via local path or URL.
+   - Use whenever user provides a user manual, installation manual, or service guide for a home appliance (dryer, washer, oven, dishwasher, laminator, etc.) via local path, URL, or GitHub issue reference (e.g. `issue #6`).
 2. **Execution**:
-   - Preview extraction with dry-run:
+   - **From GitHub Issue**:
      ```bash
-     task manual:ingest FILE="<path_or_url>" DRY_RUN=1
+     # Preview extraction
+     task manual:ingest-issue ISSUE="<issue_number>" DRY_RUN=1
+     # Ingest and upload to Homebox
+     task manual:ingest-issue ISSUE="<issue_number>"
      ```
-   - Ingest and upload to Homebox:
+   - **From File or URL**:
      ```bash
+     # Preview extraction with dry-run
+     task manual:ingest FILE="<path_or_url>" DRY_RUN=1
+     # Ingest and upload to Homebox
      task manual:ingest FILE="<path_or_url>"
      ```
-3. **Artifacts Produced**:
+3. **GitHub Issue Workflow**:
+   - If issue contains a PDF manual attachment (e.g. `https://github.com/user-attachments/files/.../*.pdf`), `task manual:ingest-issue ISSUE=<number>` automatically parses, downloads, extracts, and uploads the manual.
+   - If issue contains only an appliance name without an attachment, search online for the official manual PDF, then run `task manual:ingest FILE="<url>"`.
+   - After completing ingestion and verification, commit changes with `fixes #<issue_number>` to close the issue automatically upon push.
+4. **Artifacts Produced**:
    - **Processed Manual**: Saved to `images/processed/<Slug>_Manual.pdf` (gitignored to prevent repository bloat).
    - **Homebox Entity**: Created with model, manufacturer, capacity, specs, and uploaded PDF attachment.
    - **Quick Lookup Cheat Sheet**: Saved to `appliances/<slug>.md` containing specs, error codes, part numbers, and maintenance tips.
-4. **Appliance Information Lookup**:
+5. **Appliance Information Lookup**:
    - For fast lookups (error codes, specs, dimensions, replacement parts), read `appliances/<slug>.md` first.
    - Only retrieve/parse the full PDF manual when deep schematic or obscure troubleshooting details are not present in the cheat sheet.
