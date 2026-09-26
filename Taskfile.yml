@@ -126,6 +126,13 @@ tasks:
     requires:
       vars: [URL]
 
+  invoice:import:
+    desc: Import an Amazon PDF invoice into Homebox, filling missing item details or creating new items
+    cmds:
+      - uv run scripts/import_amazon_invoice.py '{{.FILE}}' {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{if eq .NO_ATTACH "1"}}--no-attach{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [FILE]
+
   parts:download:
     desc: Download GE appliance parts assembly diagrams and bill of materials
     cmds:

@@ -129,3 +129,12 @@ When adding or updating section and subsection headings in `README.md`, always i
 - **JSON Filtering**: Always use `jq` to filter API responses (like Homebox entities) to specific required fields (e.g., `jq '{name: .name, fields: .fields}'`). Do NOT dump full uncompressed JSON into context.
 - **Context-Mode for Data**: For heavy JSON analysis, use `context-mode/ctx_execute` to keep the payload in the sandbox and return only the derived answer.
 <!-- api-response-handling-end -->
+
+<!-- sensitive-information-protection-begin -->
+## Sensitive Information & PII Protection
+NEVER commit or stage sensitive personal, financial, or security data to the repository:
+1. **Financial & Payment Data**: Never commit full or partial credit card numbers, CVVs, expiration dates, or cardholder payment records (e.g., `Visa •••• 1234`).
+2. **Personal Identifiable Information (PII)**: Never commit real residential street addresses, personal phone numbers, or private personal emails. Anonymize invoice test fixtures, mock data, and examples with generic dummy placeholders (e.g., `Jane Doe`, `123 Test St`, `Visa •••• 0000`).
+3. **Secrets & Credentials**: Never commit `.env` files, API keys, bearer tokens, passwords, or private encryption keys.
+4. **Permitted Identifiers**: Invoice numbers, order IDs, appliance model numbers, part numbers, and public product metadata are permitted.
+<!-- sensitive-information-protection-end -->
