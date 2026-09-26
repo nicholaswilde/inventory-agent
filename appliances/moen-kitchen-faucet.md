@@ -5,6 +5,10 @@
 - **Model**: `7594EWSRS` (Arbor Pulldown Kitchen Faucet with MotionSense Wave)
 - **Finish**: Spot Resist Stainless (SRS)
 - **Manual Attachment**: Stored in Homebox entity and locally at `images/processed/Moen_Kitchen_Faucet_7594EWSRS_Manual.pdf`
+- **Purchase Date**: August 7, 2018 (`2018-08-07`)
+- **Purchased From**: Amazon
+- **Purchase Price**: $372.27
+- **Order Number**: `113-3740671-2345851`
 
 ---
 
