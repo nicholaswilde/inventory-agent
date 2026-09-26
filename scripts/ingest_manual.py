@@ -151,11 +151,11 @@ def compress_pdf_if_large(pdf_path: Path, max_bytes: int = 9_500_000) -> Path:
 
 
 def run_pdf_extraction(pdf_path: Path | str) -> str:
-    """Extract text from PDF using lit or pdftotext fallback."""
-    # 1. lit parse
+    """Extract text from PDF using lit (direct text first, then built-in OCR fallback), with pdftotext fallback."""
+    # 1. lit parse direct text extraction (fast, no OCR)
     try:
         proc = subprocess.run(
-            ["lit", "parse", str(pdf_path), "--quiet"],
+            ["lit", "parse", str(pdf_path), "--quiet", "--no-ocr"],
             capture_output=True,
             text=True,
             timeout=90,
@@ -166,7 +166,21 @@ def run_pdf_extraction(pdf_path: Path | str) -> str:
     except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
         pass
 
-    # 2. pdftotext fallback
+    # 2. lit parse built-in OCR fallback (for scanned or image-based PDFs)
+    try:
+        proc = subprocess.run(
+            ["lit", "parse", str(pdf_path), "--quiet"],
+            capture_output=True,
+            text=True,
+            timeout=180,
+            check=False,
+        )
+        if proc.returncode == 0 and proc.stdout.strip():
+            return proc.stdout
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        pass
+
+    # 3. pdftotext fallback
     try:
         proc = subprocess.run(
             ["pdftotext", str(pdf_path), "-"],

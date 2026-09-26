@@ -419,20 +419,38 @@ def test_run_pdf_extraction_lit_and_pdftotext(tmp_path):
     pdf = tmp_path / "dummy.pdf"
     pdf.write_bytes(b"dummy")
 
-    # 1. lit succeeds
-    with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="lit extracted text")):
-        assert run_pdf_extraction(pdf) == "lit extracted text"
+    # 1. lit --no-ocr direct text succeeds
+    def mock_subp_lit_no_ocr(cmd, *args, **kwargs):
+        if cmd[0] == "lit" and "--no-ocr" in cmd:
+            return MagicMock(returncode=0, stdout="lit direct text")
+        return MagicMock(returncode=1, stdout="")
 
-    # 2. lit fails, pdftotext succeeds
-    def mock_subp(cmd, *args, **kwargs):
+    with patch("subprocess.run", side_effect=mock_subp_lit_no_ocr):
+        assert run_pdf_extraction(pdf) == "lit direct text"
+
+    # 2. lit --no-ocr returns empty, falls back to lit built-in OCR
+    def mock_subp_lit_ocr(cmd, *args, **kwargs):
+        if cmd[0] == "lit" and "--no-ocr" in cmd:
+            return MagicMock(returncode=0, stdout="")
+        if cmd[0] == "lit" and "--no-ocr" not in cmd:
+            return MagicMock(returncode=0, stdout="lit ocr fallback text")
+        return MagicMock(returncode=1, stdout="")
+
+    with patch("subprocess.run", side_effect=mock_subp_lit_ocr):
+        assert run_pdf_extraction(pdf) == "lit ocr fallback text"
+
+    # 3. lit fails entirely, pdftotext succeeds
+    def mock_subp_pdftotext(cmd, *args, **kwargs):
         if cmd[0] == "lit":
             return MagicMock(returncode=1, stdout="")
-        return MagicMock(returncode=0, stdout="pdftotext extracted text")
+        if cmd[0] == "pdftotext":
+            return MagicMock(returncode=0, stdout="pdftotext extracted text")
+        return MagicMock(returncode=1, stdout="")
 
-    with patch("subprocess.run", side_effect=mock_subp):
+    with patch("subprocess.run", side_effect=mock_subp_pdftotext):
         assert run_pdf_extraction(pdf) == "pdftotext extracted text"
 
-    # 3. Both fail
+    # 4. Both fail
     with patch("subprocess.run", return_value=MagicMock(returncode=1, stdout="")):
         assert run_pdf_extraction(pdf) == ""
 

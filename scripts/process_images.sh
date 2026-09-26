@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # process_images.sh
-# Processes zip files and images in images/pending using lit and tesseract, then moves them to images/processed
+# Processes zip files and documents/images in images/pending using lit (with built-in OCR fallback), then moves them to images/processed
 
 PENDING_DIR="images/pending"
 PROCESSED_DIR="images/processed"
@@ -38,9 +38,8 @@ for img in "$PENDING_DIR"/*; do
     filename=$(basename "$img")
     echo "Processing $filename..."
     
-    # Run lit and tesseract (example pipeline based on guidelines)
-    # lit "$img" -o "${img}.lit.png"
-    # tesseract "${img}.lit.png" "${PENDING_DIR}/${filename%.*}"
+    # Run lit parse: direct text extraction for documents, built-in OCR as fallback
+    # lit parse -q --no-ocr "$img" || lit parse -q "$img"
     
     # Move to processed
     mv "$img" "$PROCESSED_DIR/"

@@ -93,6 +93,13 @@ When running Python scripts, always use the `uv` command (e.g., `uv run script.p
 When creating or modifying scripts and skills, always ensure you update the `Taskfile.yml` to include or update the relevant tasks so they can be easily executed.
 <!-- taskfile-update-end -->
 
+<!-- document-parsing-begin -->
+## Document Parsing Workflow
+When parsing documents (PDF, DOCX, XLSX, invoices, manuals) to extract information:
+1. Extract text with `lit parse -q --no-ocr <file>` first for rapid digital text extraction.
+2. If no text is extracted (e.g., scanned document or image-only PDF), fall back to `lit`'s built-in OCR with `lit parse -q <file>`.
+<!-- document-parsing-end -->
+
 <!-- image-parsing-begin -->
 ## Image Parsing Workflow
 When parsing images to extract text:

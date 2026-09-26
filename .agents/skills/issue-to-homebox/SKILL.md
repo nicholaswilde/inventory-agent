@@ -16,7 +16,8 @@ This skill guides the agent to process a GitHub issue, extract item details, map
 2. **Download & Process Files**: 
    - Download the attached file(s) from the issue. **Crucial**: Because GitHub attachment links often redirect, you must use `curl -L` or `curl -sL -o <filename>` to follow redirects and download the actual file, not an HTML page.
    - **If the file is a zip archive**: Extract the `.zip` file into a temporary directory first, then process all images inside.
-   - Follow the repository's primary image parsing workflow for each image: Process the image with `lit`, and then run `tesseract` on the output to extract text.
+   - **Documents (PDFs, invoices, spec sheets)**: Extract text using `lit parse -q --no-ocr <file>` first for instant direct text extraction, falling back to built-in OCR `lit parse -q <file>` if the document is scanned or empty.
+   - **Images**: Follow the primary image parsing workflow: Process the image with `lit` (or `lit parse -q <image>`), with built-in OCR / `tesseract` fallback.
    - **Vision Fallback**: If the OCR pipeline fails to extract meaningful text, or if the component's type/model is unclear from the text alone, use your native multimodal capabilities (e.g. via `view_file` tool on the image) to visually inspect the component or board to identify its type, manufacturer, and model.
 
 3. **Identify Item Details & Map to Homebox Fields**:

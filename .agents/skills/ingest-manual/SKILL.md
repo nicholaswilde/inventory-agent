@@ -37,3 +37,6 @@ Ingests appliance user and service manuals from local PDF files, URLs (Google Dr
 5. **Appliance Information Lookup**:
    - For fast lookups (error codes, specs, dimensions, replacement parts), read `appliances/<slug>.md` first.
    - Only retrieve/parse the full PDF manual when deep schematic or obscure troubleshooting details are not present in the cheat sheet.
+6. **Document Parsing & Text Extraction**:
+   - Extract text using `lit parse -q --no-ocr <path>` first for rapid direct digital text extraction.
+   - If the document is scanned, image-based, or returns empty text, fall back to `lit`'s built-in OCR with `lit parse -q <path>`.
