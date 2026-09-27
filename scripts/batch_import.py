@@ -214,6 +214,8 @@ def find_existing_item(
             return it
         if model and it_model and model.lower() == it_model:
             return it
+        if it_model and len(it_model) >= 3 and it_model in name.lower():
+            return it
         if len(name) > 15 and (name.lower() in it_name or it_name in name.lower()):
             return it
     return None

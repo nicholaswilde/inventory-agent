@@ -189,3 +189,28 @@ def test_batch_import_fallback_on_404(
     assert results[0]["entity_id"] == "nuc-id"
     assert results[0]["quantity"] == 2
     assert results[0]["fallback"] is True
+
+
+def test_find_existing_item():
+    from scripts.batch_import import find_existing_item
+
+    cached = [
+        {"id": "item-1", "name": "Moen Kitchen Faucet", "modelNumber": "7594EWSRS", "notes": ""},
+        {"id": "item-2", "name": "Moen Valve Trim", "modelNumber": "T4111BN-3330", "notes": "ASIN: B0042RV0CY"},
+    ]
+
+    # Match by ASIN in notes
+    match = find_existing_item("B0042RV0CY", "", "", cached)
+    assert match is not None
+    assert match["id"] == "item-2"
+
+    # Match by model number inside name
+    match = find_existing_item("", "Moen Arbor Motionsense Kitchen Faucet (7594EWSRS)", "", cached)
+    assert match is not None
+    assert match["id"] == "item-1"
+
+    # Match by model number direct
+    match = find_existing_item("", "", "7594EWSRS", cached)
+    assert match is not None
+    assert match["id"] == "item-1"
+
