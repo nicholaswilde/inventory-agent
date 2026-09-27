@@ -23,7 +23,8 @@ KNOWN_MANUFACTURERS = [
     "KitchenAid", "Frigidaire", "Miele", "Maytag", "Electrolux",
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
-    "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny"
+    "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny",
+    "Star Patio", "ZACHVO"
 ]
 
 APPLIANCE_TYPES = [
@@ -34,12 +35,17 @@ APPLIANCE_TYPES = [
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
     "Kitchen Faucet", "Faucet", "Thermal Laminator", "Laminator",
     "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill",
-    "Magnetic Rowing Machine", "Rowing Machine", "Rower"
+    "Magnetic Rowing Machine", "Rowing Machine", "Rower",
+    "Electric Patio Heater", "Patio Heater", "Outdoor Heater"
 ]
+
+MANUALS_PLUS_ASIN_MAP = {
+    "B0F8BPY28J": "https://images.thdstatic.com/catalog/pdfImages/a5/a5f398e8c67b46138cd47a32ca22835f.pdf",
+}
 
 
 def resolve_download_url(source: str) -> str:
-    """Normalize URLs, converting Google Drive sharing URLs to direct download endpoints."""
+    """Normalize URLs, converting Google Drive sharing URLs or known ASIN URLs to direct download endpoints."""
     if not source.startswith("http://") and not source.startswith("https://"):
         return source
 
@@ -48,6 +54,13 @@ def resolve_download_url(source: str) -> str:
     if gdrive_match:
         file_id = gdrive_match.group(1)
         return f"https://drive.usercontent.google.com/download?id={file_id}&export=download"
+
+    # Check for manuals.plus ASIN
+    mp_match = re.search(r"manuals\.plus/asin/([A-Z0-9]+)", source, re.IGNORECASE)
+    if mp_match:
+        asin = mp_match.group(1).upper()
+        if asin in MANUALS_PLUS_ASIN_MAP:
+            return MANUALS_PLUS_ASIN_MAP[asin]
 
     return source
 
@@ -226,12 +239,16 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
 
     if "sunny" in data["manufacturer"].lower():
         data["manufacturer"] = "Sunny Health & Fitness"
+    elif "star patio" in data["manufacturer"].lower() or "zachvo" in data["manufacturer"].lower():
+        data["manufacturer"] = "Star Patio"
 
     if data["manufacturer"] == "Unknown":
         if re.search(r"\bd\s*y\s*s\s*o\s*n\b", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Dyson"
         elif re.search(r"sunny\s*health|sunnyhealthfitness", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Sunny Health & Fitness"
+        elif re.search(r"star\s*patio|zachvo|\bZHQ1566", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Star Patio"
 
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
@@ -239,6 +256,9 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         if re.search(pattern, text[:3000], re.IGNORECASE):
             data["appliance_type"] = app_type
             break
+
+    if re.search(r"\b(electric\s+patio\s+heater|patio\s+heater)\b", text[:3000], re.IGNORECASE):
+        data["appliance_type"] = "Electric Patio Heater"
 
     # Model detection
     model_match = re.search(
@@ -334,6 +354,16 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 if v_match2:
                     data["manual_number"] = v_match2.group(1).replace("_", " ")
 
+    if "Star Patio" in data["manufacturer"] or "Patio Heater" in data["appliance_type"] or "ZHQ" in text:
+        z_model = re.search(r"\b(ZHQ\d+[A-Z0-9-]*)\b", text, re.IGNORECASE)
+        if z_model:
+            m = z_model.group(1).upper()
+            if "ZHQ1566" in m:
+                data["model_number"] = "ZHQ1566 Series (ZHQ1566-AT / ZHQ1566-C-S)"
+            else:
+                data["model_number"] = m
+        data["appliance_type"] = "Electric Patio Heater"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -378,6 +408,12 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["capacity"] = f"Hopper: {hopper_match.group(1).strip()}"
         elif entry_width_match:
             data["capacity"] = f"{entry_width_match.group(1).strip()} Entry Width"
+        elif "Star Patio" in data["manufacturer"] or "Patio Heater" in data["appliance_type"] or "ZHQ" in data["model_number"]:
+            pow_match = re.search(r"Power\s+consumption[^\n:]*?[:\s]+(\d+\s*W)\b", text, re.IGNORECASE)
+            if pow_match:
+                data["capacity"] = f"{pow_match.group(1).strip()} (Approx. 5,100 BTU)"
+            elif "1500" in text:
+                data["capacity"] = "1500 W (Approx. 5,100 BTU)"
 
     # Net weight
     weight_match = re.search(
@@ -739,6 +775,39 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Quick-Release Knob & Washer (M12 / #47)",
                 "Locking Pull Pin (Φ8*100*105 / #60)",
                 "Foam Handlebar Grips (#8)",
+            ])
+
+    if "Star Patio" in data["manufacturer"] or "Patio Heater" in data["appliance_type"] or "ZHQ" in data["model_number"]:
+        data["error_codes"].extend([
+            {
+                "code": "Heater Does Not Power On / No Glow",
+                "meaning": "Power cord unplugged, circuit breaker tripped, or pull switch unengaged",
+                "action": "Ensure power cord is connected to a grounded 120V 60Hz outlet; check main fuse/breaker; pull switch cord once to engage.",
+            },
+            {
+                "code": "Sudden Power Cut-Off",
+                "meaning": "Built-in tip-over safety switch activated or overheat protection triggered",
+                "action": "Place heater on a firm, flat, level surface in an upright position; allow unit to cool if thermal cut-off activated.",
+            },
+            {
+                "code": "Reduced Heat Output / Element Flickering",
+                "meaning": "Voltage drop from undersized extension cord or loose connection",
+                "action": "Plug directly into wall outlet or use minimum 14 AWG extension cord rated for >= 1875W.",
+            },
+            {
+                "code": "Surface Wear / Finish Degradation",
+                "meaning": "Harsh chemical cleaner or abrasive powder used",
+                "action": "Disconnect power and cool completely; wipe outer shell with soft damp cloth and mild detergent only.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Electric Halogen Heating Head Assembly (1500W)",
+                "Support Pole / Tubes",
+                "Weighted Base & Base Cover",
+                "M6 Base Screws & Washers",
+                "Φ3.5*14 mm Heater Mounting Screws (2pcs)",
+                "Pull-Cord Switch String",
             ])
 
     # Appliance full name

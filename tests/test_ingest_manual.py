@@ -754,3 +754,32 @@ Version 7.9
     assert any("Display" in err["code"] or "Battery" in err["code"] or "Stroke" in err["code"] for err in data["error_codes"])
 
 
+def test_extract_star_patio_heater():
+    sample = """
+Instruction Manual
+Electric Patio Heater
+ZHQ1566-AT
+
+Star Patio Electric Halogen Patio Heater
+Ratings: 120V~ 60Hz
+Power consumption: 1500 W
+Insulation: class I
+
+To operate the heater on 1500W, pull the Switch Cord once.
+Fix the heater with Φ3.5*14 screw 2pcs.
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Star Patio"
+    assert "Patio Heater" in data["appliance_type"] or "Heater" in data["appliance_type"]
+    assert "ZHQ1566" in data["model_number"]
+    assert "1500" in data["capacity"]
+    assert any("Screw" in acc or "Halogen" in acc or "Base" in acc for acc in data["accessories"])
+    assert any("Heat" in err["code"] or "Power" in err["code"] or "Tip" in err["code"] for err in data["error_codes"])
+
+
+def test_resolve_download_url_manuals_plus():
+    from scripts.ingest_manual import resolve_download_url
+    url = "https://manuals.plus/asin/B0F8BPY28J"
+    resolved = resolve_download_url(url)
+    assert resolved.endswith(".pdf")
+    assert "thdstatic" in resolved or "pdf" in resolved
