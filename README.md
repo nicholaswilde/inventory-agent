@@ -36,11 +36,29 @@ Intelligent inventory management agent for [Homebox](https://homebox.software), 
 
 Import an item from an Amazon or product URL into Homebox with extracted metadata, price, and product image attachment:
 ```bash
-task url:import URL="<product_url>"
+task url:import URL="<product_url_or_asin>"
 ```
 Preview extracted data without writing to Homebox:
 ```bash
-task url:import URL="<product_url>" DRY_RUN=1
+task url:import URL="<product_url_or_asin>" DRY_RUN=1
+```
+
+### :package: Batch Product Import
+
+Import multiple products into Homebox from a list of ASINs/URLs, a text file, or an Amazon Order History CSV:
+```bash
+# From list of ASINs or URLs
+task batch:import ITEMS="B005EXOK0Y B00IG46NL2 B09RS3W7M5"
+
+# From a text file (one URL/ASIN per line)
+task batch:import FILE="items.txt"
+
+# From Amazon Order History CSV (with specific ASINs or category/price filters)
+task batch:import ITEMS="B005EXOK0Y B00IG46NL2" CSV="orders.csv"
+task batch:import CSV="orders.csv" CATEGORY="tools" MIN_PRICE=50
+
+# Preview with dry-run
+task batch:import CSV="orders.csv" CATEGORY="smarthome" DRY_RUN=1
 ```
 
 ### :page_facing_up: Appliance Manual Ingestion & Local Download

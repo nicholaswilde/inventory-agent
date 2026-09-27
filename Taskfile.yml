@@ -126,6 +126,12 @@ tasks:
     requires:
       vars: [URL]
 
+  batch:import:
+    desc: Batch import items into Homebox from URLs, ASINs, text file, or Amazon CSV
+    cmds:
+      - uv run scripts/batch_import.py {{if .ITEMS}}{{.ITEMS}}{{end}} {{if .FILE}}--file '{{.FILE}}'{{end}} {{if .CSV}}--csv '{{.CSV}}'{{end}} {{if .CATEGORY}}--category '{{.CATEGORY}}'{{end}} {{if .MIN_PRICE}}--min-price {{.MIN_PRICE}}{{end}} {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{if eq .NO_ATTACH "1"}}--no-attach{{end}} {{if eq .UPDATE "1"}}--update-existing{{end}} {{.CLI_ARGS}}
+
+
   invoice:import:
     desc: Import an Amazon PDF invoice into Homebox, filling missing item details or creating new items
     cmds:
