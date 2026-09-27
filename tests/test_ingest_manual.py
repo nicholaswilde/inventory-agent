@@ -410,6 +410,17 @@ def test_download_or_copy_manual_url_and_missing(tmp_path):
         assert out_file.name == "appliance_manual.pdf"
         assert out_file.read_bytes() == b"chunk1chunk2"
 
+    # Test SSLError fallback
+    import requests
+    mock_resp2 = MagicMock()
+    mock_resp2.iter_content.return_value = [b"chunk_ssl"]
+    mock_resp2.raise_for_status.return_value = None
+    with patch("requests.get", side_effect=[requests.exceptions.SSLError("cert error"), mock_resp2]) as mock_get:
+        out_file2 = download_or_copy_manual("https://techinfo.example.com/manual.pdf", proc_dir)
+        assert out_file2.read_bytes() == b"chunk_ssl"
+        assert mock_get.call_count == 2
+        assert mock_get.call_args_list[1].kwargs.get("verify") is False
+
     with pytest.raises(FileNotFoundError):
         download_or_copy_manual(str(tmp_path / "does_not_exist.pdf"), proc_dir)
 
@@ -831,5 +842,25 @@ Nest Protect has tested its sensors.
     assert "06C" in data["model_number"]
     assert any("Lithium" in acc or "Battery" in acc for acc in data["accessories"])
     assert any("Sensor" in err["code"] or "Battery" in err["code"] for err in data["error_codes"])
+
+
+def test_extract_honda_accord_manual():
+    sample = """
+2000 Accord Sedan Online Reference Owner's Manual
+Honda Motor Co., Ltd.
+Malfunction Indicator Lamp (Check Engine Light): Comes on when there is a problem with the emissions control systems.
+Low Oil Pressure Indicator: Light comes on when the engine oil pressure drops critically low.
+Brake System Indicator: Parking brake is on or brake fluid level is low.
+Anti-lock Brake System (ABS) Indicator: Malfunction in the ABS.
+Recommended Engine Oil: API Service SJ Energy Conserving oil, 5W-30 or 5W-20.
+Headlights: High beam 9005 (HB3), Low beam 9006 (HB4).
+Capacities: Fuel tank: 17.1 US gal (64.7 l).
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Honda"
+    assert "Accord" in data["name"]
+    assert "2000" in data["name"] or "2000" in data["model_number"]
+    assert any("Check Engine" in err["code"] or "Oil Pressure" in err["code"] for err in data["error_codes"])
+    assert any("Oil" in acc or "9006" in acc or "Bulb" in acc for acc in data["accessories"])
 
 

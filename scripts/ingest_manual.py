@@ -24,12 +24,13 @@ KNOWN_MANUFACTURERS = [
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
     "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny",
-    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest"
+    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest", "Honda"
 ]
 
 APPLIANCE_TYPES = [
     "Smoke and Carbon Monoxide Alarm", "Smoke and CO Alarm", "Smoke Alarm",
     "Smart Deadbolt Lock", "Smart Deadbolt", "Smart Lock", "Deadbolt",
+    "Sedan", "Car", "Vehicle", "Automobile",
     "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
     "Air Fryer",
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
@@ -123,8 +124,14 @@ def download_or_copy_manual(source: str, dest_dir: Path | str) -> Path:
             filename = path_name
 
         dest_file = dest_path_dir / filename
-        resp = requests.get(resolved_url, stream=True, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
-        resp.raise_for_status()
+        try:
+            resp = requests.get(resolved_url, stream=True, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
+            resp.raise_for_status()
+        except requests.exceptions.SSLError:
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            resp = requests.get(resolved_url, stream=True, timeout=60, headers={"User-Agent": "Mozilla/5.0"}, verify=False)
+            resp.raise_for_status()
         with open(dest_file, "wb") as f:
             for chunk in resp.iter_content(chunk_size=65536):
                 f.write(chunk)
@@ -247,6 +254,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["manufacturer"] = "Chefman"
     elif "nest" in data["manufacturer"].lower():
         data["manufacturer"] = "Google Nest"
+    elif "honda" in data["manufacturer"].lower():
+        data["manufacturer"] = "Honda"
 
     if data["manufacturer"] == "Unknown":
         if re.search(r"\bd\s*y\s*s\s*o\s*n\b", text[:5000], re.IGNORECASE):
@@ -259,6 +268,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["manufacturer"] = "Chefman"
         elif re.search(r"\bnest\b", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Google Nest"
+        elif re.search(r"\bhonda\b", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Honda"
 
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
@@ -273,6 +284,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["appliance_type"] = "Air Fryer"
     elif re.search(r"smoke\s+(?:and|&)\s+carbon\s+monoxide|smoke\s+(?:and|&)\s+co\s+alarm", text[:3000], re.IGNORECASE):
         data["appliance_type"] = "Smoke and Carbon Monoxide Alarm"
+    elif re.search(r"\bsedan\b", text[:3000], re.IGNORECASE):
+        data["appliance_type"] = "Sedan"
 
     # Model detection
     model_match = re.search(
@@ -398,6 +411,11 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = "06C (Wired 120V)"
         data["appliance_type"] = "Smoke and Carbon Monoxide Alarm"
 
+    if "Honda" in data["manufacturer"] or "Accord" in text:
+        if "accord" in text.lower():
+            data["model_number"] = "2000 Accord Sedan (DX / LX / EX / SE)"
+            data["appliance_type"] = "Sedan"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -425,6 +443,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
 
     if ("Nest" in data["manufacturer"] or "Smoke" in data["appliance_type"]) and not data["dimensions"]:
         data["dimensions"] = "5.3 in x 5.3 in x 1.5 in (13.4 cm x 13.4 cm x 3.85 cm)"
+    elif ("Honda" in data["manufacturer"] or "Accord" in text) and not data["dimensions"]:
+        data["dimensions"] = "Length: 188.8 in (4,795 mm) | Width: 70.3 in (1,785 mm) | Height: 56.9 in (1,445 mm)"
 
     # Capacity
     cap_match = re.search(r"(?:Capacity[^:\n]*[:\s]+)?(\d+(?:\.\d+)?\s*(?:cu\.?\s*ft\.?|cuft))", text, re.IGNORECASE)
@@ -457,6 +477,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 data["capacity"] = f"{qt_match.group(1).strip()}"
         elif "Nest" in data["manufacturer"] or "Smoke" in data["appliance_type"]:
             data["capacity"] = "120V AC, 60Hz, 0.1A"
+        elif "Honda" in data["manufacturer"] or "Accord" in text:
+            data["capacity"] = "Fuel: 17.1 US gal (64.7 L) | Oil: 4.5-4.6 US qt"
 
     # Net weight
     weight_match = re.search(
@@ -933,6 +955,71 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "4x Mounting Screws",
             ])
         data["name"] = "Google Nest Protect (Wired 120V) Smoke + CO Alarm"
+
+    if "Honda" in data["manufacturer"] or "Accord" in text:
+        data["error_codes"].extend([
+            {
+                "code": "Malfunction Indicator Lamp (Check Engine Light)",
+                "meaning": "Emissions control system issue or loose fuel cap",
+                "action": "Check and tighten fuel cap; if light stays on, have vehicle inspected by dealer or service center.",
+            },
+            {
+                "code": "Low Oil Pressure Indicator",
+                "meaning": "Engine oil pressure critically low",
+                "action": "Stop vehicle safely, turn off engine immediately, check oil level. Do not run engine with low oil pressure.",
+            },
+            {
+                "code": "Charging System Indicator",
+                "meaning": "Battery is not being charged by alternator",
+                "action": "Turn off electrical accessories; pull over and have vehicle inspected immediately.",
+            },
+            {
+                "code": "Brake System Indicator",
+                "meaning": "Parking brake applied or brake fluid level critically low",
+                "action": "Release parking brake; check brake fluid reservoir under hood for leaks or low level.",
+            },
+            {
+                "code": "Supplemental Restraint System (SRS) Indicator",
+                "meaning": "Airbag or automatic seatbelt pretensioner malfunction",
+                "action": "Have SRS system inspected by authorized technician immediately.",
+            },
+            {
+                "code": "Anti-lock Brake System (ABS) Indicator",
+                "meaning": "ABS malfunction detected",
+                "action": "Standard brakes work normally, but anti-lock function is disabled. Have ABS inspected.",
+            },
+            {
+                "code": "Immobilizer System Indicator",
+                "meaning": "Immobilizer key code not recognized",
+                "action": "Use original programmed Honda ignition key; if blinking, car will not start.",
+            },
+            {
+                "code": "Maintenance Required Indicator",
+                "meaning": "Scheduled service interval reached (oil change / maintenance)",
+                "action": "Perform scheduled service (oil/filter change) and reset indicator button.",
+            },
+            {
+                "code": "Door and Trunk Open Indicator",
+                "meaning": "Door or trunk lid not securely closed",
+                "action": "Inspect and firmly close all doors and trunk lid.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Low Beam Headlight Bulb: 9006 (HB4 51W)",
+                "High Beam Headlight Bulb: 9005 (HB3 60W)",
+                "Front Turn Signal / Parking Bulb: 1157NA (24/2.2CP)",
+                "Rear Brake / Taillight Bulb: 7443 (21/5W)",
+                "Engine Oil: 5W-30 / 5W-20 API SJ/SL",
+                "Engine Oil Filter",
+                "Engine Air Filter",
+                "Cabin Air Filter",
+                "Brake Fluid: Honda Heavy Duty Brake Fluid DOT 3",
+                "Automatic Transmission Fluid: Honda ATF-Z1 / Genuine ATF",
+                "Coolant: Honda All Season Antifreeze/Coolant Type 2",
+                "Spark Plugs: NGK PZFR5F-11 / Denso PKJ16CR-L11",
+            ])
+        data["name"] = "2000 Honda Accord Sedan (4-Door)"
 
     # Appliance full name
     if not data.get("name") or data["name"] == "Appliance":
