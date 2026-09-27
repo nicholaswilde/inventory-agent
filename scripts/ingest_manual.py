@@ -27,6 +27,7 @@ KNOWN_MANUFACTURERS = [
 ]
 
 APPLIANCE_TYPES = [
+    "Smart Deadbolt Lock", "Smart Deadbolt", "Smart Lock", "Deadbolt",
     "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
     "Oven", "Range Hood", "Range", "Refrigerator", "Fridge", "Freezer",
@@ -248,7 +249,7 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = pat.group(1).strip()
 
     # Manual Part Number detection
-    man_match = re.search(r"\b(34-\d{4}-\d{4}-\d|49-\d{4,}(?:-\d+)?|MFL\d+|Part\s*(?:No\.?|#)\s*[A-Z0-9-]*\d[A-Z0-9-]*)\b", text, re.IGNORECASE)
+    man_match = re.search(r"\b(34-\d{4}-\d{4}-\d|49-\d{4,}(?:-\d+)?|MFL\d+|Part\s*(?:No\.?|#)\s*[A-Z0-9-]*\d[A-Z0-9-]*|\d{8})\b", text, re.IGNORECASE)
     if man_match:
         data["manual_number"] = man_match.group(1).strip()
 
@@ -304,6 +305,14 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         if b_model:
             data["model_number"] = b_model.group(1).upper()
         data["appliance_type"] = "Range Hood Insert"
+
+    if "Schlage" in data["manufacturer"]:
+        s_model = re.search(r"\b(BE\d+[A-Z0-9]*|FE\d+[A-Z0-9]*)\b", text, re.IGNORECASE)
+        if s_model:
+            data["model_number"] = s_model.group(1).upper()
+        elif "encodeplus" in text.lower() or "encode plus" in text.lower():
+            data["model_number"] = "BE499WB"
+        data["appliance_type"] = "Smart Deadbolt Lock"
 
     # Dimensions
     dim_match = re.search(
@@ -627,6 +636,43 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Hood Liner (LB30 / LB36)",
             ])
 
+    if "Schlage" in data["manufacturer"]:
+        data["error_codes"].extend([
+            {
+                "code": "Low Battery (Flashing Battery Icon)",
+                "meaning": "Batteries are low; warning triggers after code entry",
+                "action": "Replace all 4 AA alkaline batteries promptly.",
+            },
+            {
+                "code": "Critical Battery (Solid Battery Icon)",
+                "meaning": "Battery charge critical; electronic operation disabled",
+                "action": "Unlock using physical backup key; replace with 4 fresh AA alkaline batteries.",
+            },
+            {
+                "code": "Wrong User Code (\"X\" Icon Flashes)",
+                "meaning": "Incorrect access code entered",
+                "action": "Verify user code in Schlage/Apple Home app; wait for keypad lockout timeout if triggered.",
+            },
+            {
+                "code": "WiFi Connection Error (Flashing Comm Icon)",
+                "meaning": "Lock is searching or unable to connect to WiFi network",
+                "action": "Check 2.4 GHz WiFi router status and distance; verify Apple HomeKit / home hub connection.",
+            },
+            {
+                "code": "Factory Default Reset",
+                "meaning": "Reset lock to factory settings and default access codes",
+                "action": "Remove battery cover, disconnect battery pack, press and hold Inside Assembly button, reconnect battery pack, release button when LED flashes red and checkmark flashes green.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "4x AA Alkaline Batteries (1.5V)",
+                "Physical Backup Cylinder Key",
+                "Reinforcement Strike Plate & 3-Inch Screws",
+                "Inside Assembly Mounting Screws",
+                "Touchscreen Assembly & Gasket",
+            ])
+
     # Appliance full name
     mfg_part = data["manufacturer"] if data["manufacturer"] != "Unknown" else ""
     app_part = data["appliance_type"]
@@ -736,20 +782,34 @@ def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
     # Check if entity already exists by model number or name
     entity_id = None
     try:
-        items_resp = requests.get(f"{base_url}/entities", headers=headers, timeout=10)
-        if items_resp.status_code == 200:
-            items_list = items_resp.json()
-            items = items_list.get("items", []) if isinstance(items_list, dict) else items_list
-            model = (data.get("model_number") or "").lower()
-            for it in items:
-                it_model = (it.get("modelNumber") or "").lower()
-                it_name = (it.get("name") or "").lower()
-                if model and it_model and model == it_model:
-                    entity_id = it.get("id")
-                    break
-                if model and len(model) >= 4 and model in it_name:
-                    entity_id = it.get("id")
-                    break
+        model = (data.get("model_number") or "").strip()
+        if model:
+            search_resp = requests.get(
+                f"{base_url}/entities?q={urllib.parse.quote(model)}",
+                headers=headers,
+                timeout=10,
+            )
+            if search_resp.status_code == 200:
+                results = search_resp.json()
+                items = results.get("items", []) if isinstance(results, dict) else results
+                if items:
+                    entity_id = items[0].get("id")
+
+        if not entity_id:
+            items_resp = requests.get(f"{base_url}/entities", headers=headers, timeout=10)
+            if items_resp.status_code == 200:
+                items_list = items_resp.json()
+                items = items_list.get("items", []) if isinstance(items_list, dict) else items_list
+                model_lower = model.lower()
+                for it in items:
+                    it_model = (it.get("modelNumber") or "").lower()
+                    it_name = (it.get("name") or "").lower()
+                    if model_lower and it_model and (model_lower == it_model or model_lower in it_model or it_model in model_lower):
+                        entity_id = it.get("id")
+                        break
+                    if model_lower and len(model_lower) >= 4 and model_lower in it_name:
+                        entity_id = it.get("id")
+                        break
     except Exception:
         pass
 

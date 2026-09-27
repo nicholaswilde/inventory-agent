@@ -654,12 +654,55 @@ Light Switch B03295081
     assert any("Candelabra" in acc or "Blower" in acc for acc in data["accessories"])
 
 
+def test_extract_schlage_encode_plus():
+    sample = """
+Schlage deadbolt
+Start here! Visit alle.co/encodeplus
+Touchscreen
+Communication Icon
+Low Battery Icon
+Lock Button and “X” Icon
+Apple HomeKit
+47360452 Rev. 07/21-b
+BE499WB
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Schlage"
+    assert "Deadbolt" in data["appliance_type"] or "Lock" in data["appliance_type"]
+    assert "BE499WB" in data["model_number"]
+    assert "47360452" in data["manual_number"]
+    assert any("Low Battery" in err["code"] or "Battery" in err["code"] for err in data["error_codes"])
+    assert any("AA" in acc or "Battery" in acc or "Key" in acc for acc in data["accessories"])
 
 
+def test_create_homebox_entity_matches_partial_model(tmp_path):
+    from scripts.ingest_manual import create_homebox_entity
 
+    dummy_pdf = tmp_path / "manual.pdf"
+    dummy_pdf.write_bytes(b"%PDF-1.4 test")
 
+    data = {
+        "name": "Schlage Smart Deadbolt Lock",
+        "model_number": "BE499WB",
+        "manufacturer": "Schlage",
+    }
 
+    mock_entities = [
+        {
+            "id": "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d",
+            "name": "Schlage Encode Plus Smart WiFi Deadbolt Lock, Tap to Unlock, Aged Bronze",
+            "modelNumber": "BE499WB CAM 716",
+        }
+    ]
 
+    with patch("scripts.ingest_manual.get_homebox_config", return_value=("127.0.0.1", "test-key")), \
+         patch("requests.get") as mock_get, \
+         patch("requests.post") as mock_post:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = mock_entities
+        mock_post.return_value.status_code = 200
 
-
-
+        entity_id = create_homebox_entity(data, dummy_pdf)
+        assert entity_id == "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d"
+        # Should not create new entity
+        assert not any(call[0][0].endswith("/entities") and "json" in call[1] for call in mock_post.call_args_list)
