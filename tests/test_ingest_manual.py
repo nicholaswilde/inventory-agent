@@ -590,6 +590,29 @@ E9        Low Fuel Detection     Low fuel error.
     assert data["manual_number"] == "53524"
 
 
+def test_extract_roborock():
+    sample = """
+Roborock Q7 Max+
+Robotic Vacuum Cleaner User Manual
+Read this user manual with diagrams carefully before using
+this product and store it properly for future reference.
+
+Errors
+Error 1: LiDAR turret or laser blocked. Check for obstruction and retry.
+Error 2: Bumper stuck. Clean it and lightly tap to release it.
+Error 3: Wheels suspended. Move robot and restart.
+Error 5: Main brush jammed. Clean main brush and bearings.
+Error 18: Fan error. Reset robot.
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Roborock"
+    assert "Vacuum" in data["appliance_type"]
+    assert "Q7 Max+" in data["model_number"]
+    assert any("Error 1" in err["code"] or "1" in err["code"] for err in data["error_codes"])
+    assert any("Error 5" in err["code"] or "5" in err["code"] for err in data["error_codes"])
+
+
+
 
 
 

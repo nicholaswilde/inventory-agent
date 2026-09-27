@@ -22,15 +22,17 @@ KNOWN_MANUFACTURERS = [
     "LG", "Samsung", "Whirlpool", "Bosch", "GE", "GE Appliances",
     "KitchenAid", "Frigidaire", "Miele", "Maytag", "Electrolux",
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
-    "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber"
+    "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
+    "Roborock", "Dyson", "Eufy", "Broan", "Schlage"
 ]
 
 APPLIANCE_TYPES = [
+    "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
     "Oven", "Range", "Refrigerator", "Fridge", "Freezer",
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
     "Kitchen Faucet", "Faucet", "Thermal Laminator", "Laminator",
-    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill"
+    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill", "Range Hood"
 ]
 
 
@@ -273,6 +275,11 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         if w_man:
             data["manual_number"] = w_man.group(1)
 
+    if "Roborock" in data["manufacturer"]:
+        r_model = re.search(r"Roborock\s+([A-Za-z0-9]+(?:\s+(?:Max|Plus|\+))*[+]?)", text[:2000], re.IGNORECASE)
+        if r_model:
+            data["model_number"] = r_model.group(1).strip()
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -376,6 +383,9 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             continue
         # Skip phone numbers, comma numbers, or contaminant data
         if re.search(r"^\d{3}-\d{3}", code) or re.search(r"1-\d{3}", code) or re.search(r"\d+,\d+", code):
+            continue
+        # Skip diagram callouts like A1-1, B2-4, C5-1
+        if re.search(r"^[A-Z]\d+-\d+", code):
             continue
         if any(term in desc.lower() for term in ["u.s.a", "canada", "telephone", "opt out", "ug/l", "μg/l", "mg/l", "ppb", "ppm", "nsf"]):
             continue
@@ -507,6 +517,25 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Weber Connect Smart Grilling Hub Probe",
             ])
 
+    if "Roborock" in data["manufacturer"]:
+        for m in re.finditer(r"\b(Error\s+\d+)[ \t]*[:\-—][ \t]*([^\n]+)", text, re.IGNORECASE):
+            err_code = m.group(1).title()
+            err_desc = m.group(2).strip()
+            if not any(e["code"] == err_code for e in data["error_codes"]):
+                data["error_codes"].append({
+                    "code": err_code,
+                    "meaning": err_desc,
+                    "action": "See manual / clean or service",
+                })
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Main Brush (Rubber Roller)",
+                "Side Brush",
+                "Washable Dustbin HEPA Filter",
+                "Mopping Cloth / Pad",
+                "Disposable Auto-Empty Dust Bag",
+            ])
+
     # Appliance full name
     mfg_part = data["manufacturer"] if data["manufacturer"] != "Unknown" else ""
     app_part = data["appliance_type"]
@@ -613,13 +642,34 @@ def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
         "notes": f"Manual {data.get('manual_number', '')}. Dimensions: {data.get('dimensions', '')}. Capacity: {data.get('capacity', '')}",
     }
 
-    create_resp = requests.post(f"{base_url}/entities", json=payload, headers=headers, timeout=30)
-    create_resp.raise_for_status()
-    entity_id = create_resp.json().get("id")
+    # Check if entity already exists by model number or name
+    entity_id = None
+    try:
+        items_resp = requests.get(f"{base_url}/items", headers=headers, timeout=10)
+        if items_resp.status_code == 200:
+            items_list = items_resp.json()
+            items = items_list.get("items", []) if isinstance(items_list, dict) else items_list
+            model = (data.get("model_number") or "").lower()
+            for it in items:
+                it_model = (it.get("modelNumber") or "").lower()
+                it_name = (it.get("name") or "").lower()
+                if model and it_model and model == it_model:
+                    entity_id = it.get("id")
+                    break
+                if model and len(model) >= 4 and model in it_name:
+                    entity_id = it.get("id")
+                    break
+    except Exception:
+        pass
 
-    # Update entity with top-level attributes (Homebox v0.26+ schema)
-    update_resp = requests.put(f"{base_url}/entities/{entity_id}", json=payload, headers=headers, timeout=30)
-    update_resp.raise_for_status()
+    if not entity_id:
+        create_resp = requests.post(f"{base_url}/entities", json=payload, headers=headers, timeout=30)
+        create_resp.raise_for_status()
+        entity_id = create_resp.json().get("id")
+
+        # Update entity with top-level attributes (Homebox v0.26+ schema)
+        update_resp = requests.put(f"{base_url}/entities/{entity_id}", json=payload, headers=headers, timeout=30)
+        update_resp.raise_for_status()
 
     # Attach manual
     if manual_file.exists():
