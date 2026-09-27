@@ -29,10 +29,10 @@ KNOWN_MANUFACTURERS = [
 APPLIANCE_TYPES = [
     "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
-    "Oven", "Range", "Refrigerator", "Fridge", "Freezer",
+    "Oven", "Range Hood", "Range", "Refrigerator", "Fridge", "Freezer",
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
     "Kitchen Faucet", "Faucet", "Thermal Laminator", "Laminator",
-    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill", "Range Hood"
+    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill"
 ]
 
 
@@ -248,7 +248,7 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = pat.group(1).strip()
 
     # Manual Part Number detection
-    man_match = re.search(r"\b(34-\d{4}-\d{4}-\d|49-\d{4,}(?:-\d+)?|MFL\d+|Part\s*(?:No\.?|#)\s*[A-Z0-9-]+)\b", text, re.IGNORECASE)
+    man_match = re.search(r"\b(34-\d{4}-\d{4}-\d|49-\d{4,}(?:-\d+)?|MFL\d+|Part\s*(?:No\.?|#)\s*[A-Z0-9-]*\d[A-Z0-9-]*)\b", text, re.IGNORECASE)
     if man_match:
         data["manual_number"] = man_match.group(1).strip()
 
@@ -299,6 +299,12 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = "V8"
         data["appliance_type"] = "Cordless Vacuum Cleaner"
 
+    if "Broan" in data["manufacturer"]:
+        b_model = re.search(r"\b(PM\d+[A-Z]*)\b", text[:3000], re.IGNORECASE)
+        if b_model:
+            data["model_number"] = b_model.group(1).upper()
+        data["appliance_type"] = "Range Hood Insert"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -306,7 +312,9 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         re.IGNORECASE,
     )
     if dim_match:
-        data["dimensions"] = dim_match.group(1).strip()
+        dim_str = dim_match.group(1).strip()
+        if any(sep in dim_str for sep in ['x', 'X', '×', '"', '”', "'", 'cm', 'mm', 'in']):
+            data["dimensions"] = dim_str
     else:
         # Check for clearance / dimensions table (e.g. Width 32 4/5” (833 mm), Height, Depth)
         w_match = re.search(r"\bWidth\s+([0-9][0-9\s/.'\"”’]+(?:\([^\)]+\))?)", text, re.IGNORECASE)
@@ -590,6 +598,35 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Washable Vacuum Filter",
             ])
 
+    if "Broan" in data["manufacturer"]:
+        data["error_codes"].extend([
+            {
+                "code": "Blower Does Not Turn On",
+                "meaning": "Power supply disconnected or blower switch faulty",
+                "action": "Check service panel circuit breaker; verify wiring connections in switch box; check blower switch (B03295080).",
+            },
+            {
+                "code": "Lights Do Not Illuminate",
+                "meaning": "Burned out bulb or light switch faulty",
+                "action": "Allow bulbs to cool; replace with Max 40W 120V Candelabra base (E12) bulbs; check light switch (B03295081).",
+            },
+            {
+                "code": "Excessive Noise or Vibration",
+                "meaning": "Loose ducting or blower wheel obstruction",
+                "action": "Inspect ductwork for loose dampers or improper transitions; check blower wheel for grease accumulation or debris.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Aluminum Grease Filter (Dishwasher Safe)",
+                "Non-Ducted Charcoal Recirculation Filter Kit (B08999040 / 357B38)",
+                "Blower Assembly (B06002125)",
+                "Light Switch (B03295081)",
+                "Blower Switch (B03295080)",
+                "Candelabra Base Bulbs (2x 40W Max, 120V, E12)",
+                "Hood Liner (LB30 / LB36)",
+            ])
+
     # Appliance full name
     mfg_part = data["manufacturer"] if data["manufacturer"] != "Unknown" else ""
     app_part = data["appliance_type"]
@@ -699,7 +736,7 @@ def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
     # Check if entity already exists by model number or name
     entity_id = None
     try:
-        items_resp = requests.get(f"{base_url}/items", headers=headers, timeout=10)
+        items_resp = requests.get(f"{base_url}/entities", headers=headers, timeout=10)
         if items_resp.status_code == 200:
             items_list = items_resp.json()
             items = items_list.get("items", []) if isinstance(items_list, dict) else items_list

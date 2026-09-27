@@ -633,6 +633,28 @@ Washing filter
     assert any("Battery Fault" in err["code"] or "Battery" in err["code"] for err in data["error_codes"])
 
 
+def test_extract_broan_pm390():
+    sample = """
+BROAN PM390
+Owner's Manual
+PM390 SERIES
+POWER MODULE
+Range Hood
+Grease Filter
+Non-Ducted Filter Kit B08999040
+Blower Assembly B06002125
+Light Switch B03295081
+40 Watt Max Candelabra Bulbs
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Broan"
+    assert "Range Hood" in data["appliance_type"]
+    assert "PM390" in data["model_number"]
+    assert any("B08999040" in acc or "Grease Filter" in acc for acc in data["accessories"])
+    assert any("Candelabra" in acc or "Blower" in acc for acc in data["accessories"])
+
+
+
 
 
 
