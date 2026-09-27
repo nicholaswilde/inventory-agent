@@ -783,3 +783,28 @@ def test_resolve_download_url_manuals_plus():
     resolved = resolve_download_url(url)
     assert resolved.endswith(".pdf")
     assert "thdstatic" in resolved or "pdf" in resolved
+
+
+def test_extract_chefman_turbofry_air_fryer():
+    sample = """
+User Manual of Product 1:
+CHEFMAN Small Air Fryer Healthy Cooking, 3.6 Qt, Nonstick,
+User Friendly and Dual Control Temperature, w/ 60 Minute
+Timer & Auto Shutoff, Dishwasher Safe Basket, Matte Black,
+Cookbook Included
+
+RJ38-V3-DC35 / TurboFry Air Fryer
+Quick Start Guide
+
+Pull out the basket. Put food in the basket.
+Use a sponge and warm, soapy water to wash the inside and outside of the basket and tray.
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Chefman"
+    assert "Air Fryer" in data["appliance_type"]
+    assert "RJ38-V3-DC35" in data["model_number"]
+    assert "3.6" in data["capacity"]
+    assert any("Basket" in acc or "Tray" in acc for acc in data["accessories"])
+    assert any("Turn On" in err["code"] or "Power" in err["code"] or "Smoke" in err["code"] for err in data["error_codes"])
+    assert not any(err["code"] in ["1/4", "RJ38-V3"] for err in data["error_codes"])
+

@@ -24,12 +24,13 @@ KNOWN_MANUFACTURERS = [
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
     "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny",
-    "Star Patio", "ZACHVO"
+    "Star Patio", "ZACHVO", "Chefman"
 ]
 
 APPLIANCE_TYPES = [
     "Smart Deadbolt Lock", "Smart Deadbolt", "Smart Lock", "Deadbolt",
     "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
+    "Air Fryer",
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
     "Oven", "Range Hood", "Range", "Refrigerator", "Fridge", "Freezer",
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
@@ -241,6 +242,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["manufacturer"] = "Sunny Health & Fitness"
     elif "star patio" in data["manufacturer"].lower() or "zachvo" in data["manufacturer"].lower():
         data["manufacturer"] = "Star Patio"
+    elif "chefman" in data["manufacturer"].lower():
+        data["manufacturer"] = "Chefman"
 
     if data["manufacturer"] == "Unknown":
         if re.search(r"\bd\s*y\s*s\s*o\s*n\b", text[:5000], re.IGNORECASE):
@@ -249,6 +252,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["manufacturer"] = "Sunny Health & Fitness"
         elif re.search(r"star\s*patio|zachvo|\bZHQ1566", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Star Patio"
+        elif re.search(r"\bchefman\b", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Chefman"
 
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
@@ -259,6 +264,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
 
     if re.search(r"\b(electric\s+patio\s+heater|patio\s+heater)\b", text[:3000], re.IGNORECASE):
         data["appliance_type"] = "Electric Patio Heater"
+    elif re.search(r"\bair\s+fryer\b", text[:3000], re.IGNORECASE):
+        data["appliance_type"] = "Air Fryer"
 
     # Model detection
     model_match = re.search(
@@ -364,6 +371,12 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 data["model_number"] = m
         data["appliance_type"] = "Electric Patio Heater"
 
+    if "Chefman" in data["manufacturer"] or "TurboFry" in text or "RJ38" in text:
+        c_model = re.search(r"\b(RJ\d+-[A-Z0-9-]+)\b", text, re.IGNORECASE)
+        if c_model:
+            data["model_number"] = c_model.group(1).upper()
+        data["appliance_type"] = "Air Fryer"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -414,6 +427,10 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 data["capacity"] = f"{pow_match.group(1).strip()} (Approx. 5,100 BTU)"
             elif "1500" in text:
                 data["capacity"] = "1500 W (Approx. 5,100 BTU)"
+        elif "Chefman" in data["manufacturer"] or "Air Fryer" in data["appliance_type"]:
+            qt_match = re.search(r"(\d+(?:\.\d+)?\s*(?:Qt|Quart))\b", text, re.IGNORECASE)
+            if qt_match:
+                data["capacity"] = f"{qt_match.group(1).strip()}"
 
     # Net weight
     weight_match = re.search(
@@ -485,6 +502,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         if re.search(r"^[A-Z]\d+-\d+", code):
             continue
         if any(term in desc.lower() for term in ["u.s.a", "canada", "telephone", "opt out", "ug/l", "μg/l", "mg/l", "ppb", "ppm", "nsf"]):
+            continue
+        if re.search(r"^\d+/\d+$", code) or code.startswith("RJ") or "Air Fryer" in desc:
             continue
         if any(c.isdigit() for c in code) or code in ["PS", "PF", "OE", "IE", "LE", "UE", "CL", "DE", "FE"]:
             if len(code) <= 25 and len(desc) > 5 and not code.lower().startswith("rev"):
@@ -810,10 +829,48 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Pull-Cord Switch String",
             ])
 
+    if "Chefman" in data["manufacturer"] or "Air Fryer" in data["appliance_type"]:
+        data["error_codes"].extend([
+            {
+                "code": "Unit Does Not Turn On / No Heat",
+                "meaning": "Basket not pushed completely into housing, power cord unplugged, or timer set to 0",
+                "action": "Ensure basket is pushed fully closed until seated flush; check 120V outlet connection and turn timer knob past 0.",
+            },
+            {
+                "code": "Unevenly Cooked / Underdone Food",
+                "meaning": "Basket overfilled or food not shaken/flipped halfway through cooking",
+                "action": "Cook food in smaller single-layer batches; shake basket or flip food halfway through cooking time.",
+            },
+            {
+                "code": "White Smoke During Cooking",
+                "meaning": "Excess oil/grease accumulated in bottom of basket from high-fat ingredients",
+                "action": "Allow unit to cool; drain and wipe excess grease from bottom of basket; clean basket and tray between batches.",
+            },
+            {
+                "code": "Plastic Odor During Initial Use",
+                "meaning": "Normal manufacturing protective coating burn-off",
+                "action": "Wash basket and tray thoroughly in warm soapy water before first use; run empty at 400°F for 10 minutes.",
+            },
+            {
+                "code": "Nonstick Coating Peeling / Scratches",
+                "meaning": "Use of metal utensils or abrasive scouring pads",
+                "action": "Never use metal tongs or abrasive scouring pads; use heat-resistant silicone/wooden tongs and wash with soft sponge (top-rack dishwasher safe).",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Nonstick Air Fryer Basket (Top-Rack Dishwasher Safe)",
+                "Removable Nonstick Crisper Tray (Top-Rack Dishwasher Safe)",
+                "Integrated Basket Handle",
+                "TurboFry Recipe Cookbook",
+            ])
+        data["name"] = "Chefman TurboFry Air Fryer"
+
     # Appliance full name
-    mfg_part = data["manufacturer"] if data["manufacturer"] != "Unknown" else ""
-    app_part = data["appliance_type"]
-    data["name"] = f"{mfg_part} {app_part}".strip()
+    if not data.get("name") or data["name"] == "Appliance":
+        mfg_part = data["manufacturer"] if data["manufacturer"] != "Unknown" else ""
+        app_part = data["appliance_type"]
+        data["name"] = f"{mfg_part} {app_part}".strip()
 
     return data
 
