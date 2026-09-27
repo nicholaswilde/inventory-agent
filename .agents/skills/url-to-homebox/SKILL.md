@@ -10,20 +10,24 @@ Imports an item into Homebox from a product URL (Amazon, e-commerce stores, bran
 ## Guidelines
 
 1. **Trigger**:
-   - Use whenever the user asks to import or add an item into Homebox from a web link / URL (e.g. `https://www.amazon.com/dp/...` or retail product pages).
+   - Use whenever the user asks to import or add an item into Homebox from a web link / URL (e.g. `https://www.amazon.com/dp/...` or retail product pages) or directly from an **Amazon item number / ASIN** (e.g. `B0CJR4QZ45`).
 
 2. **Execution**:
-   - **Dry Run (Preview)**:
+   - **From URL or Amazon ASIN (Dry Run Preview)**:
      ```bash
-     task url:import URL="<url>" DRY_RUN=1
+     task url:import URL="<url_or_asin>" DRY_RUN=1
+     # Example with ASIN:
+     task url:import URL="B0CJR4QZ45" DRY_RUN=1
      ```
    - **Import into Homebox**:
      ```bash
-     task url:import URL="<url>"
+     task url:import URL="<url_or_asin>"
+     # Example with ASIN:
+     task url:import URL="B0CJR4QZ45"
      ```
    - **With Overrides**:
      ```bash
-     task url:import URL="<url>" -- --name "<Custom Name>" --model "<Model Number>"
+     task url:import URL="<url_or_asin>" -- --name "<Custom Name>" --model "<Model Number>"
      ```
 
 3. **Artifacts & Data Extracted**:

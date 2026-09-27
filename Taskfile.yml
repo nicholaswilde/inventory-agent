@@ -120,7 +120,7 @@ tasks:
       vars: [ISSUE]
 
   url:import:
-    desc: Import an item into Homebox from a product URL (Amazon, retail, product pages)
+    desc: Import an item into Homebox from a product URL or Amazon item number/ASIN
     cmds:
       - uv run scripts/import_url.py '{{.URL}}' {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{.CLI_ARGS}}
     requires:

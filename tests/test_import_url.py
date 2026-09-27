@@ -319,3 +319,35 @@ def test_truncate_to_bytes_and_clean_text():
     assert _clean_text("") == ""
     assert _clean_text("Hello &amp; world") == "Hello & world"
 
+
+def test_normalize_url():
+    from scripts.import_url import normalize_url
+
+    # Raw 10-char ASIN
+    assert normalize_url("B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
+    assert normalize_url("b0cjr4qz45") == "https://www.amazon.com/dp/B0CJR4QZ45"
+
+    # With ASIN prefix
+    assert normalize_url("ASIN: B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
+    assert normalize_url("asin:B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
+    assert normalize_url("item B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
+
+    # Full URLs remain intact
+    assert normalize_url("https://www.amazon.com/dp/B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
+    assert normalize_url("https://example.com/product/123") == "https://example.com/product/123"
+
+
+def test_import_url_with_asin():
+    from scripts.import_url import import_url
+
+    with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
+         patch("requests.get") as mock_img_get:
+        mock_img_get.return_value.status_code = 200
+        mock_img_get.return_value.content = b"fake-image"
+
+        result = import_url("B0CJR4QZ45", dry_run=True)
+        assert result["dry_run"] is True
+        assert result["entity"]["source_url"] == "https://www.amazon.com/dp/B0CJR4QZ45"
+        assert result["entity"]["purchase_from"] == "Amazon"
+
+

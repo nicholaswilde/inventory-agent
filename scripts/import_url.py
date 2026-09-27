@@ -56,6 +56,20 @@ def get_homebox_config() -> tuple[str, str]:
     return ip, key
 
 
+def normalize_url(source: str) -> str:
+    """Normalize input to a valid URL, converting Amazon ASIN / item numbers to Amazon URLs."""
+    s = source.strip()
+    if s.startswith("http://") or s.startswith("https://"):
+        return s
+
+    # Match ASIN pattern: optional prefix like 'ASIN:', 'item', etc. followed by 10-char alphanumeric ASIN
+    match = re.search(r"\b([A-Z0-9]{10})\b", s, re.IGNORECASE)
+    if match:
+        return f"https://www.amazon.com/dp/{match.group(1).upper()}"
+
+    return s
+
+
 def fetch_url_html(url: str, timeout: int = 30) -> str:
     """Fetch raw HTML for product page."""
     resp = requests.get(url, headers=HTTP_HEADERS, timeout=timeout)
@@ -245,6 +259,11 @@ def extract_product_data(raw_html: str, url: str) -> dict[str, Any]:
             note_parts.append(f"- {b}")
     data["notes"] = "\n".join(note_parts)
 
+    if asin or "amazon.com" in url.lower():
+        data["purchase_from"] = "Amazon"
+    else:
+        data["purchase_from"] = ""
+
     return data
 
 
@@ -313,6 +332,8 @@ def create_homebox_entity(
     }
     if data.get("purchase_price") is not None:
         payload["purchasePrice"] = data["purchase_price"]
+    if data.get("purchase_from"):
+        payload["purchaseFrom"] = data["purchase_from"]
 
     create_resp = requests.post(f"{base_url}/entities", json=payload, headers=headers, timeout=30)
     create_resp.raise_for_status()
@@ -346,6 +367,7 @@ def import_url(
     model_override: str | None = None,
 ) -> dict[str, Any]:
     """Main importer orchestrator."""
+    url = normalize_url(url)
     raw_html = fetch_url_html(url)
     product_data = extract_product_data(raw_html, url)
 
