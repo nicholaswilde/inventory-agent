@@ -222,6 +222,10 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["manufacturer"] = mfg
             break
 
+    if data["manufacturer"] == "Unknown":
+        if re.search(r"\bd\s*y\s*s\s*o\s*n\b", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Dyson"
+
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
         pattern = rf"\b{re.escape(app_type)}\b"
@@ -279,6 +283,21 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         r_model = re.search(r"Roborock\s+([A-Za-z0-9]+(?:\s+(?:Max|Plus|\+))*[+]?)", text[:2000], re.IGNORECASE)
         if r_model:
             data["model_number"] = r_model.group(1).strip()
+
+    if "Dyson" in data["manufacturer"]:
+        if re.search(r"S\s*V\s*1\s*2", text[:4000], re.I):
+            data["model_number"] = "SV12 (Cyclone V10)"
+        elif re.search(r"S\s*V\s*1\s*0", text[:4000], re.I):
+            data["model_number"] = "SV10 (V8)"
+        elif re.search(r"V\s*1\s*5", text[:4000], re.I):
+            data["model_number"] = "V15 Detect"
+        elif re.search(r"V\s*1\s*1", text[:4000], re.I):
+            data["model_number"] = "V11"
+        elif re.search(r"V\s*1\s*0", text[:4000], re.I):
+            data["model_number"] = "V10"
+        elif re.search(r"V\s*8", text[:4000], re.I):
+            data["model_number"] = "V8"
+        data["appliance_type"] = "Cordless Vacuum Cleaner"
 
     # Dimensions
     dim_match = re.search(
@@ -534,6 +553,41 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Washable Dustbin HEPA Filter",
                 "Mopping Cloth / Pad",
                 "Disposable Auto-Empty Dust Bag",
+            ])
+
+    if "Dyson" in data["manufacturer"]:
+        data["error_codes"].extend([
+            {
+                "code": "Battery Fault (Flashing Red LED)",
+                "meaning": "Battery fault detected",
+                "action": "Contact Dyson Helpline / replace battery pack.",
+            },
+            {
+                "code": "Charger Fault (Flashing Alt Red/Blue)",
+                "meaning": "Charger or power connection fault",
+                "action": "Check wall socket and charger cable; replace charger if fault persists.",
+            },
+            {
+                "code": "Airway Blockage (Pulsing Motor)",
+                "meaning": "Airway obstruction or bin full",
+                "action": "Empty bin; inspect wand, inlet, and cleaner head for blockages; remove debris.",
+            },
+            {
+                "code": "Filter Alert (Filter LED / Low Suction)",
+                "meaning": "Filter is dirty, wet, or needs washing",
+                "action": "Wash filter under cold water at least once a month; air dry completely for at least 24 hours before reinstalling.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Motorbar Cleaner Head (De-tangling)",
+                "Fluffy Cleaner Head",
+                "Hair Screw Tool",
+                "Combination Tool",
+                "Crevice Tool",
+                "Mini Motorised Tool",
+                "Wall Dock & Charger",
+                "Washable Vacuum Filter",
             ])
 
     # Appliance full name

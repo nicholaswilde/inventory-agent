@@ -612,6 +612,28 @@ Error 18: Fan error. Reset robot.
     assert any("Error 5" in err["code"] or "5" in err["code"] for err in data["error_codes"])
 
 
+def test_extract_dyson_v10():
+    sample = """
+User manual
+The D y son cordles s vacuum drops into the wall-mounte d charging dock.
+Motorbar™ cleaner head
+Fluffy™ cleaner head brush bar
+Hair screw tool
+S V12 J N.0 0 0 0 0 P N.0 0 0 0 0 0 - 0 0 - 0 0
+B at ter y LEDs
+B at ter y fault. One flashing re d LED.
+Charger fault. One light flashing alter-
+Clearing blockages
+Washing filter
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Dyson"
+    assert "Vacuum" in data["appliance_type"]
+    assert "SV12" in data["model_number"]
+    assert any("Battery Fault" in err["code"] or "Battery" in err["code"] for err in data["error_codes"])
+
+
+
 
 
 
