@@ -24,10 +24,11 @@ KNOWN_MANUFACTURERS = [
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
     "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny",
-    "Star Patio", "ZACHVO", "Chefman"
+    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest"
 ]
 
 APPLIANCE_TYPES = [
+    "Smoke and Carbon Monoxide Alarm", "Smoke and CO Alarm", "Smoke Alarm",
     "Smart Deadbolt Lock", "Smart Deadbolt", "Smart Lock", "Deadbolt",
     "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
     "Air Fryer",
@@ -244,6 +245,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["manufacturer"] = "Star Patio"
     elif "chefman" in data["manufacturer"].lower():
         data["manufacturer"] = "Chefman"
+    elif "nest" in data["manufacturer"].lower():
+        data["manufacturer"] = "Google Nest"
 
     if data["manufacturer"] == "Unknown":
         if re.search(r"\bd\s*y\s*s\s*o\s*n\b", text[:5000], re.IGNORECASE):
@@ -254,6 +257,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["manufacturer"] = "Star Patio"
         elif re.search(r"\bchefman\b", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Chefman"
+        elif re.search(r"\bnest\b", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Google Nest"
 
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
@@ -266,6 +271,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["appliance_type"] = "Electric Patio Heater"
     elif re.search(r"\bair\s+fryer\b", text[:3000], re.IGNORECASE):
         data["appliance_type"] = "Air Fryer"
+    elif re.search(r"smoke\s+(?:and|&)\s+carbon\s+monoxide|smoke\s+(?:and|&)\s+co\s+alarm", text[:3000], re.IGNORECASE):
+        data["appliance_type"] = "Smoke and Carbon Monoxide Alarm"
 
     # Model detection
     model_match = re.search(
@@ -377,6 +384,20 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = c_model.group(1).upper()
         data["appliance_type"] = "Air Fryer"
 
+    if "Nest" in data["manufacturer"] or "Nest Protect" in text:
+        if "wired" in text.lower():
+            n_models = list(dict.fromkeys(re.findall(r"\b(0[56]C|S300[56]PW)\b", text, re.IGNORECASE)))
+            if not n_models:
+                n_models = list(dict.fromkeys(re.findall(r"\b(0[56][AC]|S300[56]P[W|B])\b", text, re.IGNORECASE)))
+        else:
+            n_models = list(dict.fromkeys(re.findall(r"\b(0[56][AC]|S300[56]P[W|B])\b", text, re.IGNORECASE)))
+        if n_models:
+            models_str = " / ".join(m.upper() for m in n_models)
+            data["model_number"] = f"{models_str} (Wired 120V)" if "wired" in text.lower() else models_str
+        else:
+            data["model_number"] = "06C (Wired 120V)"
+        data["appliance_type"] = "Smoke and Carbon Monoxide Alarm"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -401,6 +422,9 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             if h_match:
                 dims.append(f"{h_match.group(1).strip()} H")
             data["dimensions"] = " x ".join(dims)
+
+    if ("Nest" in data["manufacturer"] or "Smoke" in data["appliance_type"]) and not data["dimensions"]:
+        data["dimensions"] = "5.3 in x 5.3 in x 1.5 in (13.4 cm x 13.4 cm x 3.85 cm)"
 
     # Capacity
     cap_match = re.search(r"(?:Capacity[^:\n]*[:\s]+)?(\d+(?:\.\d+)?\s*(?:cu\.?\s*ft\.?|cuft))", text, re.IGNORECASE)
@@ -431,6 +455,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             qt_match = re.search(r"(\d+(?:\.\d+)?\s*(?:Qt|Quart))\b", text, re.IGNORECASE)
             if qt_match:
                 data["capacity"] = f"{qt_match.group(1).strip()}"
+        elif "Nest" in data["manufacturer"] or "Smoke" in data["appliance_type"]:
+            data["capacity"] = "120V AC, 60Hz, 0.1A"
 
     # Net weight
     weight_match = re.search(
@@ -865,6 +891,48 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "TurboFry Recipe Cookbook",
             ])
         data["name"] = "Chefman TurboFry Air Fryer"
+
+    if "Nest" in data["manufacturer"] or "Smoke and Carbon Monoxide" in data["appliance_type"] or "Nest Protect" in text:
+        data["error_codes"].extend([
+            {
+                "code": "Sensors Have Failed (Yellow Light)",
+                "meaning": "Smoke or carbon monoxide sensor has failed automatic self-test",
+                "action": "Clean according to instructions (wipe exterior with damp cloth, clean dust with compressed air or vacuum); if warning persists, replace unit.",
+            },
+            {
+                "code": "Low Battery (Yellow Light)",
+                "meaning": "Backup battery level is low",
+                "action": "Replace with 3 fresh AA Energizer Ultimate Lithium (L91) batteries. Never use standard alkaline or rechargeable batteries.",
+            },
+            {
+                "code": "Nest Protect Has Expired (Yellow Light)",
+                "meaning": "10-year internal smoke and CO sensor lifespan has ended",
+                "action": "Replace entire Nest Protect unit.",
+            },
+            {
+                "code": "Heads-Up Alert (Yellow Light + Voice)",
+                "meaning": "Rising levels of smoke or carbon monoxide detected",
+                "action": "Check for source of smoke or CO; silence alarm via Nest app or physical button press if non-emergency.",
+            },
+            {
+                "code": "Emergency Alarm (Red Light + Siren + Voice)",
+                "meaning": "Critical emergency smoke or carbon monoxide level detected",
+                "action": "Evacuate immediately to fresh air; call emergency services (911).",
+            },
+            {
+                "code": "Nightly Promise (Green Glow)",
+                "meaning": "Automatic self-test passed; sensors and backup batteries are working properly",
+                "action": "Normal reassurance glow when room lights are turned off.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "3x AA Energizer Ultimate Lithium (L91) Backup Batteries",
+                "120V AC Power Connector with 3 Wire Nuts",
+                "Mounting Backplate",
+                "4x Mounting Screws",
+            ])
+        data["name"] = "Google Nest Protect (Wired 120V) Smoke + CO Alarm"
 
     # Appliance full name
     if not data.get("name") or data["name"] == "Appliance":

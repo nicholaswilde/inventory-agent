@@ -808,3 +808,28 @@ Use a sponge and warm, soapy water to wash the inside and outside of the basket 
     assert any("Turn On" in err["code"] or "Power" in err["code"] or "Smoke" in err["code"] for err in data["error_codes"])
     assert not any(err["code"] in ["1/4", "RJ38-V3"] for err in data["error_codes"])
 
+
+def test_extract_nest_protect_wired():
+    sample = """
+Nest Protect (Wired 120V ~ 60Hz)
+Smoke and carbon monoxide alarm
+User’s Guide
+
+Nest Protect - Wired 120V (model numbers 05C and 06C)
+(Wired) - Model number 06C.
+120V AC pure sine wave, 60Hz 0.1A circuit.
+5.3 in (13.4 cm) x 1.5 in (3.85 cm)
+
+“THE SENSORS HAVE FAILED IN THE [ROOM]” - YELLOW pulses. Clean according to instructions.
+“THE BATTERY IS LOW IN THE [ROOM]” - YELLOW pulses. Change the batteries.
+Nest Protect has tested its sensors.
+3 AA Energizer Ultimate Lithium (L91)
+"""
+    data = extract_appliance_data(sample)
+    assert "Nest" in data["manufacturer"]
+    assert "Smoke" in data["appliance_type"] and ("CO" in data["appliance_type"] or "Carbon Monoxide" in data["appliance_type"])
+    assert "06C" in data["model_number"]
+    assert any("Lithium" in acc or "Battery" in acc for acc in data["accessories"])
+    assert any("Sensor" in err["code"] or "Battery" in err["code"] for err in data["error_codes"])
+
+
