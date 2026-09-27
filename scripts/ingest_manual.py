@@ -23,7 +23,7 @@ KNOWN_MANUFACTURERS = [
     "KitchenAid", "Frigidaire", "Miele", "Maytag", "Electrolux",
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
-    "Roborock", "Dyson", "Eufy", "Broan", "Schlage"
+    "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny"
 ]
 
 APPLIANCE_TYPES = [
@@ -33,7 +33,8 @@ APPLIANCE_TYPES = [
     "Oven", "Range Hood", "Range", "Refrigerator", "Fridge", "Freezer",
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
     "Kitchen Faucet", "Faucet", "Thermal Laminator", "Laminator",
-    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill"
+    "Wood Pellet Barbecue", "Pellet Grill", "Barbecue", "Grill",
+    "Magnetic Rowing Machine", "Rowing Machine", "Rower"
 ]
 
 
@@ -223,9 +224,14 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["manufacturer"] = mfg
             break
 
+    if "sunny" in data["manufacturer"].lower():
+        data["manufacturer"] = "Sunny Health & Fitness"
+
     if data["manufacturer"] == "Unknown":
         if re.search(r"\bd\s*y\s*s\s*o\s*n\b", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Dyson"
+        elif re.search(r"sunny\s*health|sunnyhealthfitness", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Sunny Health & Fitness"
 
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
@@ -314,6 +320,20 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = "BE499WB"
         data["appliance_type"] = "Smart Deadbolt Lock"
 
+    if "Sunny" in data["manufacturer"] or "Rowing" in data["appliance_type"]:
+        s_model = re.search(r"\b(SF-[A-Z0-9]+)\b", text, re.IGNORECASE)
+        if s_model:
+            data["model_number"] = s_model.group(1).upper()
+        data["appliance_type"] = "Magnetic Rowing Machine"
+        if not data["manual_number"]:
+            v_match = re.search(r"\bVersion\s*(\d+\.\d+)\b", text, re.IGNORECASE)
+            if v_match:
+                data["manual_number"] = f"Version {v_match.group(1)}"
+            else:
+                v_match2 = re.search(r"\b(V[_\s]*\d+\.\d+(?:[_\s]*\d+)?)\b", text, re.IGNORECASE)
+                if v_match2:
+                    data["manual_number"] = v_match2.group(1).replace("_", " ")
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -376,6 +396,11 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["weight"] = "132.3 lb (60 kg)"
     elif "SD9" in data["model_number"] and "36.8" in text:
         data["weight"] = "Approx. 36.8 lbs (16.7 kg)"
+    elif "Sunny" in data["manufacturer"] or "Rowing" in data["appliance_type"]:
+        cap_m = re.search(r"maximum\s+weight\s+capacity[^\n:]*?is\s*([0-9]+\s*(?:lbs|kg|kgs|pounds)[^\n\.]*)", text, re.IGNORECASE)
+        if cap_m:
+            data["capacity"] = f"Max Weight Capacity: {cap_m.group(1).strip()}"
+            data["weight"] = cap_m.group(1).strip()
 
     # Accessories / parts
     acc_patterns = [
@@ -671,6 +696,49 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
                 "Reinforcement Strike Plate & 3-Inch Screws",
                 "Inside Assembly Mounting Screws",
                 "Touchscreen Assembly & Gasket",
+            ])
+
+    if "Sunny" in data["manufacturer"] or "Rowing" in data["appliance_type"]:
+        data["error_codes"].extend([
+            {
+                "code": "Computer Display Blank or Faint",
+                "meaning": "Batteries depleted, missing, or installed incorrectly",
+                "action": "Replace with 2 fresh AAA alkaline batteries; check positive/negative terminal orientation.",
+            },
+            {
+                "code": "No Stroke Count / Zero Readings",
+                "meaning": "Sensor wire disconnected or flywheel magnet misaligned",
+                "action": "Check sensor wire (#45-1) connection to computer; inspect flywheel magnet (#51) alignment.",
+            },
+            {
+                "code": "Uneven or Jerky Rowing Resistance",
+                "meaning": "Tension cable misaligned or mesh belt jammed",
+                "action": "Inspect mesh belt wheel (#26) and volute spring (#21); verify tension knob (#14) cable connection.",
+            },
+            {
+                "code": "Squeaking or Rough Seat Glide",
+                "meaning": "Debris, dust, or worn rollers on sliding rail",
+                "action": "Wipe sliding rail (#62) with clean dry cloth; inspect seat rollers and 608Z bearings (#55) for wear.",
+            },
+            {
+                "code": "Sliding Rail Wobble / Instability",
+                "meaning": "Loose frame bolts or quick-release knob",
+                "action": "Tighten M12 knob (#47), pull pin (#60), and front/rear stabilizer screws securely.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Exercise Computer (TZ-1128)",
+                "2x AAA 1.5V Alkaline Batteries",
+                "Tension Control Knob (#14)",
+                "Sensor Wire (#45-1)",
+                "Left & Right Foot Pedals (#49L/49R)",
+                "Adjustable Pedal Straps (#50)",
+                "Padded Seat (#71 / DDPU986)",
+                "Sliding Rail (#62)",
+                "Quick-Release Knob & Washer (M12 / #47)",
+                "Locking Pull Pin (Φ8*100*105 / #60)",
+                "Foam Handlebar Grips (#8)",
             ])
 
     # Appliance full name

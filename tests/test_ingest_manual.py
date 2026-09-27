@@ -706,3 +706,51 @@ def test_create_homebox_entity_matches_partial_model(tmp_path):
         assert entity_id == "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d"
         # Should not create new entity
         assert not any(call[0][0].endswith("/entities") and "json" in call[1] for call in mock_post.call_args_list)
+
+
+def test_extract_sunny_rower():
+    sample = """
+MAGNETIC ROWING MACHINE
+       SF-RW5515
+      USER MANUAL
+
+support@sunnyhealthfitness.com or 1-877-90SUNNY (877-907-8669)
+Sunny Health and Fitness
+
+9. The maximum weight capacity of this unit is 250 lbs (110 kgs).
+
+EXERCISE COMPUTER
+BATTERY: This computer uses two AAA batteries.
+SPECIFICATIONS:
+                SCAN          Every 6 seconds
+                TIME          0:00~99:59 (Minute: Second)
+FUNCTIONS       COUNT         0~9999 Count
+                CALORIES      0.0~9999 Kcal
+                TOTAL COUNT   0~9999 Count
+BATTERY TYPE                  (2) Two AAA or UM-4
+
+PARTS LIST:
+13     Computer                      TZ-1128             1
+14     Tension Control Knob                              1
+45-1   Sensor Wire                                       1
+47     Knob                            M12               1
+49L    Left Pedal                                        1
+49R    Right Pedal                                       1
+50     Pedal Strap                                       2
+60     Pull Pin                        Φ8*100*105        1
+62     Sliding Rail                                      1
+71     Seat                            DDPU986           1
+
+Version 7.9
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Sunny Health & Fitness"
+    assert "Rowing Machine" in data["appliance_type"] or "Rower" in data["appliance_type"]
+    assert "SF-RW5515" in data["model_number"]
+    assert data["manual_number"] == "Version 7.9"
+    assert any("250 lbs" in val for val in [data.get("weight", ""), data.get("capacity", "")])
+    assert any("Computer" in acc or "TZ-1128" in acc for acc in data["accessories"])
+    assert any("Seat" in acc or "Pedal" in acc for acc in data["accessories"])
+    assert any("Display" in err["code"] or "Battery" in err["code"] or "Stroke" in err["code"] for err in data["error_codes"])
+
+
