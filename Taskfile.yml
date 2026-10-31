@@ -236,7 +236,7 @@ tasks:
       OUTPUT: '{{if .OUTPUT}}{{.OUTPUT}}{{else if eq .PAPER "card"}}output/tare_weights_card.pdf{{else}}output/tare_weights.pdf{{end}}'
     cmds:
       - mkdir -p output
-      - 'uv run scripts/tare_weight_manager.py sheet | pandoc -o "{{.OUTPUT}}" --pdf-engine=xelatex -V mainfont="DejaVu Sans" -V "geometry:{{.GEOMETRY}}" -V "header-includes=\usepackage{scrextend}\changefontsizes{ {{.FONT_SIZE}} }" {{.CLI_ARGS}}'
+      - 'uv run scripts/tare_weight_manager.py sheet | pandoc -o "{{.OUTPUT}}" --pdf-engine=xelatex -V mainfont="DejaVu Sans" -V "geometry:{{.GEOMETRY}}" -V "header-includes=\usepackage{scrextend}\changefontsizes{ {{.FONT_SIZE}} }\setlength{\LTleft}{0pt}\setlength{\LTright}{\fill}" {{.CLI_ARGS}}'
       - 'echo "PDF generated at {{.OUTPUT}}"'
 
   tare:serve:
