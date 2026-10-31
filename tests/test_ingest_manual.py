@@ -908,4 +908,46 @@ The head assembly water boiling process shaking or water overflow
     assert any("Undistilled Water" in err["code"] or "Amount of Distilled Water" in err["code"] for err in data["error_codes"])
 
 
+def test_extract_force_of_nature():
+    sample = """
+TIPS FOR SPARKLING CLEAN, ODOR-FREE Results.
+One cleaner ENDLESS USES
+Force of Nature
+QUICK START GUIDE
+What's in your box
++ Electrolyzer Appliance
++ Spray Bottle
++ Power Cord
++ Activator Capsules
++ Quick Start Guide
++ User Manual
+
+How to MAKE YOUR CLEANER
+Fill to the line on the back of the appliance with cool water.
+Ensure the rubber cover is covering the power jack on the back of the Electrolyzer.
+Plug the power cord into the Electrolyzer and into the outlet.
+Squeeze in the full contents of one Activator Capsule.
+Wait 10 seconds for the solution to disperse.
+Press the start button on the front of the Electrolyzer once.
+Blue lights will begin pulsing, then will transition to green.
+The cleaner will be ready after the light ring is completely green, in about 6-8 minutes.
+Unplug the Electrolyzer and pour your cleaner into the spray bottle.
+
+Electrolyzer Color Light Codes
+BLUE: Your cleaner is being made.
+GREEN: Your cleaner is ready.
+YELLOW: Your cleaner has two days remaining.
+HALF RED: Make sure you filled the Electrolyzer up to the line with water and one Capsule, waited 10 seconds after adding the Capsule, and that you're using the right power cord.
+RED: Your cleaner has expired or the electrolyzing process did not properly complete.
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "Force of Nature"
+    assert "Electrolyzer" in data["appliance_type"] or "Cleaner" in data["appliance_type"]
+    assert "12 oz" in data["capacity"] or "12" in data["capacity"]
+    assert "EPA" in data["model_number"] or "Starter Kit" in data["model_number"] or "Electrolyzer" in data["model_number"]
+    assert any("Activator Capsule" in acc or "Spray Bottle" in acc for acc in data["accessories"])
+    assert any("Blue" in err["code"] or "Red" in err["code"] or "HALF RED" in err["code"].upper() for err in data["error_codes"])
+
+
+
 

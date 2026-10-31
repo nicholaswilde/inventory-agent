@@ -24,10 +24,12 @@ KNOWN_MANUFACTURERS = [
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
     "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny",
-    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest", "Honda", "VEVOR"
+    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest", "Honda", "VEVOR",
+    "Force of Nature"
 ]
 
 APPLIANCE_TYPES = [
+    "Electrolyzer Appliance", "Cleaner & Disinfectant Electrolyzer", "Electrolyzer",
     "Smoke and Carbon Monoxide Alarm", "Smoke and CO Alarm", "Smoke Alarm",
     "Smart Deadbolt Lock", "Smart Deadbolt", "Smart Lock", "Deadbolt",
     "Sedan", "Car", "Vehicle", "Automobile",
@@ -271,6 +273,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["manufacturer"] = "Google Nest"
         elif re.search(r"\bhonda\b", text[:5000], re.IGNORECASE):
             data["manufacturer"] = "Honda"
+        elif re.search(r"force\s+of\s+nature", text[:5000], re.IGNORECASE):
+            data["manufacturer"] = "Force of Nature"
 
     # Appliance type detection
     for app_type in APPLIANCE_TYPES:
@@ -279,7 +283,9 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["appliance_type"] = app_type
             break
 
-    if re.search(r"\b(electric\s+patio\s+heater|patio\s+heater)\b", text[:3000], re.IGNORECASE):
+    if re.search(r"\belectrolyzer\b", text[:3000], re.IGNORECASE) or "force of nature" in data["manufacturer"].lower():
+        data["appliance_type"] = "Electrolyzer Appliance"
+    elif re.search(r"\b(electric\s+patio\s+heater|patio\s+heater)\b", text[:3000], re.IGNORECASE):
         data["appliance_type"] = "Electric Patio Heater"
     elif re.search(r"\bair\s+fryer\b", text[:3000], re.IGNORECASE):
         data["appliance_type"] = "Air Fryer"
@@ -422,6 +428,11 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["appliance_type"] = "Water Distiller"
         data["model_number"] = "YMK40101"
 
+    if "Force of Nature" in data["manufacturer"] or "Electrolyzer" in data["appliance_type"] or "electrolyzer" in text.lower():
+        data["manufacturer"] = "Force of Nature"
+        data["appliance_type"] = "Electrolyzer Appliance"
+        data["model_number"] = "EPA Reg. No. 93040-1"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -453,6 +464,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["dimensions"] = "Length: 188.8 in (4,795 mm) | Width: 70.3 in (1,785 mm) | Height: 56.9 in (1,445 mm)"
     elif ("VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]) and not data["dimensions"]:
         data["dimensions"] = "9.1 in x 9.1 in x 15.2 in (23 cm x 23 cm x 38.5 cm)"
+    elif ("Force of Nature" in data["manufacturer"] or "Electrolyzer" in data["appliance_type"]) and not data["dimensions"]:
+        data["dimensions"] = "5.5 in x 5.5 in x 11.0 in (14 cm x 14 cm x 28 cm)"
 
     # Capacity
     cap_match = re.search(r"(?:Capacity[^:\n]*[:\s]+)?(\d+(?:\.\d+)?\s*(?:cu\.?\s*ft\.?|cuft))", text, re.IGNORECASE)
@@ -489,6 +502,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["capacity"] = "Fuel: 17.1 US gal (64.7 L) | Oil: 4.5-4.6 US qt"
         elif "VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]:
             data["capacity"] = "4.0 L (1.1 Gal) / 750W"
+        elif "Force of Nature" in data["manufacturer"] or "Electrolyzer" in data["appliance_type"]:
+            data["capacity"] = "12 oz (355 mL)"
 
     # Net weight
     weight_match = re.search(
@@ -514,6 +529,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["weight"] = cap_m.group(1).strip()
     elif "VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]:
         data["weight"] = "9.7 lb (4.4 kg)"
+    elif "Force of Nature" in data["manufacturer"] or "Electrolyzer" in data["appliance_type"]:
+        data["weight"] = "1.8 lb (0.8 kg)"
 
     # Accessories / parts
     acc_patterns = [
@@ -956,6 +973,44 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             ])
         data["name"] = "VEVOR 1.1 Gallon Water Distiller"
 
+    if "Force of Nature" in data["manufacturer"] or "Electrolyzer" in data["appliance_type"]:
+        data["error_codes"].extend([
+            {
+                "code": "Blue Light Ring (Pulsing)",
+                "meaning": "Electrolyzing in progress; cleaner is being made",
+                "action": "Allow conversion cycle to run (~6-8 minutes) until ring turns solid green.",
+            },
+            {
+                "code": "Green Light Ring (Solid)",
+                "meaning": "Cleaner is ready to use; 14-day potency counter active",
+                "action": "Pour solution into spray bottle. Double-click power button to start day counter if keeping plugged in.",
+            },
+            {
+                "code": "Yellow Light (Single Section)",
+                "meaning": "Cleaner has 2 days remaining before expiration",
+                "action": "Use remaining solution or prepare to brew a fresh batch.",
+            },
+            {
+                "code": "Half Red Light Ring",
+                "meaning": "Electrolyzer fill error, improper capsule dilution, or incorrect power supply",
+                "action": "Ensure appliance is filled to line with cool water, full capsule contents added and waited 10 seconds before pressing start; verify official power cord.",
+            },
+            {
+                "code": "Red Light Ring (Solid)",
+                "meaning": "Cleaner has expired (day 14+) or electrolysis cycle failed",
+                "action": "Discard expired solution, rinse electrolyzer, add fresh water and new activator capsule, and restart cycle.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Electrolyzer Appliance Base (with LED Indicator Ring)",
+                "12 oz Spray Bottle",
+                "Power Cord & Adapter (with Rubber Jack Cover)",
+                "Activator Capsules (Salt, Water & Vinegar Solution)",
+                "Quick Start Guide & User Manual",
+            ])
+        data["name"] = "Force of Nature Electrolyzer Appliance"
+
     if "Nest" in data["manufacturer"] or "Smoke and Carbon Monoxide" in data["appliance_type"] or "Nest Protect" in text:
         data["error_codes"].extend([
             {
@@ -1266,7 +1321,13 @@ def ingest_manual(
     # 3. Parse data
     app_data = extract_appliance_data(raw_text)
     if name_override:
-        app_data["name"] = re.sub(r"^\[[^\]]+\]:?\s*", "", name_override).strip()
+        cleaned_override = re.sub(r"^\[[^\]]+\]:?\s*", "", name_override).strip()
+        if cleaned_override:
+            if cleaned_override.islower():
+                if not app_data.get("name") or app_data["name"] == "Appliance":
+                    app_data["name"] = cleaned_override.title()
+            else:
+                app_data["name"] = cleaned_override
     if model_override:
         app_data["model_number"] = model_override
         if "7800" in model_override or "7880" in model_override or "7900" in model_override:
