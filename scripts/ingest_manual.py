@@ -24,7 +24,7 @@ KNOWN_MANUFACTURERS = [
     "Kenmore", "Haier", "Panasonic", "Amana", "Thermador", "Sub-Zero",
     "Moen", "Kohler", "Delta", "Grohe", "Scotch", "3M", "Weber",
     "Roborock", "Dyson", "Eufy", "Broan", "Schlage", "Sunny Health & Fitness", "Sunny",
-    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest", "Honda"
+    "Star Patio", "ZACHVO", "Chefman", "Google Nest", "Nest", "Honda", "VEVOR"
 ]
 
 APPLIANCE_TYPES = [
@@ -33,6 +33,7 @@ APPLIANCE_TYPES = [
     "Sedan", "Car", "Vehicle", "Automobile",
     "Robotic Vacuum Cleaner", "Robot Vacuum", "Vacuum Cleaner", "Vacuum",
     "Air Fryer",
+    "Water Distiller", "Distiller",
     "Dryer", "Washer", "Washing Machine", "Dishwasher", "Microwave Oven", "Microwave",
     "Oven", "Range Hood", "Range", "Refrigerator", "Fridge", "Freezer",
     "Cooktop", "Dehumidifier", "Air Conditioner", "Water Heater",
@@ -102,7 +103,7 @@ def resolve_issue_source(issue_ref: str | int) -> tuple[str, str | None, int]:
         raise ValueError(f"No PDF manual URL found in GitHub issue #{issue_num} ({title}).")
 
     pdf_url = pdf_urls[0]
-    clean_title = re.sub(r"^\[appliance\]\s*", "", title, flags=re.IGNORECASE).strip()
+    clean_title = re.sub(r"^\[[^\]]+\]:?\s*", "", title, flags=re.IGNORECASE).strip()
     if not clean_title:
         clean_title = None
 
@@ -416,6 +417,11 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["model_number"] = "2000 Accord Sedan (DX / LX / EX / SE)"
             data["appliance_type"] = "Sedan"
 
+    if "VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"] or "distiller" in text.lower():
+        data["manufacturer"] = "VEVOR"
+        data["appliance_type"] = "Water Distiller"
+        data["model_number"] = "YMK40101"
+
     # Dimensions
     dim_match = re.search(
         r"(?:Outside\s+)?Dimensions[^\n:]*?[:\s\.]+\s*([0-9][0-9\s/.'\"”’⁄xX×\-]+(?:\([^\)]+\))?)",
@@ -445,6 +451,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         data["dimensions"] = "5.3 in x 5.3 in x 1.5 in (13.4 cm x 13.4 cm x 3.85 cm)"
     elif ("Honda" in data["manufacturer"] or "Accord" in text) and not data["dimensions"]:
         data["dimensions"] = "Length: 188.8 in (4,795 mm) | Width: 70.3 in (1,785 mm) | Height: 56.9 in (1,445 mm)"
+    elif ("VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]) and not data["dimensions"]:
+        data["dimensions"] = "9.1 in x 9.1 in x 15.2 in (23 cm x 23 cm x 38.5 cm)"
 
     # Capacity
     cap_match = re.search(r"(?:Capacity[^:\n]*[:\s]+)?(\d+(?:\.\d+)?\s*(?:cu\.?\s*ft\.?|cuft))", text, re.IGNORECASE)
@@ -479,6 +487,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             data["capacity"] = "120V AC, 60Hz, 0.1A"
         elif "Honda" in data["manufacturer"] or "Accord" in text:
             data["capacity"] = "Fuel: 17.1 US gal (64.7 L) | Oil: 4.5-4.6 US qt"
+        elif "VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]:
+            data["capacity"] = "4.0 L (1.1 Gal) / 750W"
 
     # Net weight
     weight_match = re.search(
@@ -502,6 +512,8 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
         if cap_m:
             data["capacity"] = f"Max Weight Capacity: {cap_m.group(1).strip()}"
             data["weight"] = cap_m.group(1).strip()
+    elif "VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]:
+        data["weight"] = "9.7 lb (4.4 kg)"
 
     # Accessories / parts
     acc_patterns = [
@@ -914,6 +926,36 @@ def extract_appliance_data(text: str) -> dict[str, Any]:
             ])
         data["name"] = "Chefman TurboFry Air Fryer"
 
+    if "VEVOR" in data["manufacturer"] or "Distiller" in data["appliance_type"]:
+        data["error_codes"].extend([
+            {
+                "code": "Undistilled Water Drops Out",
+                "meaning": "Power supply of host or machine head unplugged; start button not pressed (red light off); or no water in main tank",
+                "action": "Ensure both head and host power cords are firmly connected; press start button; fill main engine tank with water.",
+            },
+            {
+                "code": "Amount of Distilled Water Not Enough",
+                "meaning": "Water does not reach max level scale; poor sealing ring seal or leakage; or outlet nozzle improperly installed",
+                "action": "Add water up to max scale line; inspect, clean, and reseat or replace sealing ring; reinstall outlet nozzle properly.",
+            },
+            {
+                "code": "Head Assembly Shaking or Water Overflow",
+                "meaning": "Water exceeds max level line; head assembly not seated flush; sealing ring not installed properly; or outlet nozzle clogged",
+                "action": "Do not overfill past max scale; reseat head firmly onto host machine; reinstall sealing ring correctly; clean or replace outlet nozzle.",
+            },
+        ])
+        if not data["accessories"]:
+            data["accessories"].extend([
+                "Main Distiller Body (SUS304 Inner Tank)",
+                "Distiller Top Head Assembly (with Silent Fan)",
+                "Power Cord",
+                "Water Outlet Nozzle",
+                "Glass Collection Bottle (with Handle & Fixing Ring)",
+                "Active Carbon Filter Packs",
+                "Citric Acid Cleaner Reagent",
+            ])
+        data["name"] = "VEVOR 1.1 Gallon Water Distiller"
+
     if "Nest" in data["manufacturer"] or "Smoke and Carbon Monoxide" in data["appliance_type"] or "Nest Protect" in text:
         data["error_codes"].extend([
             {
@@ -1224,7 +1266,7 @@ def ingest_manual(
     # 3. Parse data
     app_data = extract_appliance_data(raw_text)
     if name_override:
-        app_data["name"] = name_override
+        app_data["name"] = re.sub(r"^\[[^\]]+\]:?\s*", "", name_override).strip()
     if model_override:
         app_data["model_number"] = model_override
         if "7800" in model_override or "7880" in model_override or "7900" in model_override:

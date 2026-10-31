@@ -516,6 +516,17 @@ def test_resolve_issue_source_success():
         assert title == "Weber SmokeFire"
         assert issue_num == 6
 
+    mock_hardware_issue = {
+        "number": 12,
+        "title": "[hardware]: VEVOR 1.1 Gallon Water Distiller",
+        "body": "![vevor.pdf](https://github.com/user-attachments/files/34196130/vevor.pdf)",
+        "comments": [],
+    }
+    with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=json.dumps(mock_hardware_issue))):
+        pdf_url, title, issue_num = resolve_issue_source("#12")
+        assert title == "VEVOR 1.1 Gallon Water Distiller"
+        assert issue_num == 12
+
 
 def test_resolve_issue_source_no_pdf():
     from scripts.ingest_manual import resolve_issue_source
@@ -862,5 +873,39 @@ Capacities: Fuel tank: 17.1 US gal (64.7 l).
     assert "2000" in data["name"] or "2000" in data["model_number"]
     assert any("Check Engine" in err["code"] or "Oil Pressure" in err["code"] for err in data["error_codes"])
     assert any("Oil" in acc or "9006" in acc or "Bulb" in acc for acc in data["accessories"])
+
+
+def test_extract_vevor_water_distiller():
+    sample = """
+INSTRUCTION MANUAL WATER DISTILLER
+VEVOR
+Product Name: Water distiller
+Rated voltage: 110-120V
+Rated frequency: 50-60Hz
+Rated power: 750W
+Max capacity: 4.0L
+Amount of distillation: 1L/h
+
+Packing instructions:
+Water distiller
+Power cord
+Water outlet
+Citric acid cleaner
+Active carbon
+Glass bottle
+
+Common exceptions and handing:
+Undistilled water drops out
+The amount of water distilled each time is not enough
+The head assembly water boiling process shaking or water overflow
+"""
+    data = extract_appliance_data(sample)
+    assert data["manufacturer"] == "VEVOR"
+    assert "Distiller" in data["appliance_type"]
+    assert "YMK40101" in data["model_number"]
+    assert "4.0" in data["capacity"] or "4.0L" in data["capacity"] or "1.1" in data["capacity"]
+    assert any("Citric Acid" in acc or "Carbon" in acc or "Bottle" in acc for acc in data["accessories"])
+    assert any("Undistilled Water" in err["code"] or "Amount of Distilled Water" in err["code"] for err in data["error_codes"])
+
 
 
