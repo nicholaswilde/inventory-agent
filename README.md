@@ -174,11 +174,11 @@ task tare:show
 # Generate a printable Markdown reference sheet sorted alphabetically
 task tare:sheet
 
-# Generate tare weight reference sheet as a PDF in output/ (default 8pt sans-serif)
+# Generate tare weight reference sheet as a PDF in output/ (default 6pt sans-serif)
 task tare:pdf
 
 # Generate 4x6" compact fridge card format with custom font size
-task tare:pdf PAPER=card FONT_SIZE=8pt
+task tare:pdf PAPER=card FONT_SIZE=6pt
 
 # Generate tare weight PDF and serve on LAN for browser viewing
 task tare:serve
@@ -268,7 +268,7 @@ uv run pytest tests/
 - `task parts:repairclinic TARGET='<url_or_id>'` — Download RepairClinic appliance assembly diagrams and bill of materials.
 - `task tare:upsert NAME='<name>' WEIGHT=<grams>` — Upsert kitchen container tare weight into Homebox.
 - `task tare:sheet` — Generate printable tare weight reference sheet Markdown table (`task tare:show`, `task tare:table`).
-- `task tare:pdf` — Generate tare weight reference sheet as a PDF in `output/tare_weights.pdf` (`FONT_SIZE=8pt`, `PAPER=card`).
+- `task tare:pdf` — Generate tare weight reference sheet as a PDF in `output/tare_weights.pdf` (`FONT_SIZE=6pt`, `PAPER=card`).
 - `task tare:serve` — Generate tare weight PDF and serve on LAN for browser viewing (`PORT=8080`).
 - `task print:brother TEXT='<markdown>'` — Convert markdown to PDF and print to BrotherPrinter (`task print:local`).
 
