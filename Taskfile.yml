@@ -228,11 +228,16 @@ tasks:
       - uv run scripts/tare_weight_manager.py sheet {{.CLI_ARGS}}
 
   tare:pdf:
-    desc: Generate tare weight reference sheet as a PDF in output/
+    desc: 'Generate tare weight reference sheet as a PDF in output/ (options: FONT_SIZE=8pt, PAPER=card)'
+    vars:
+      FONT_SIZE: '{{.FONT_SIZE | default "8pt"}}'
+      MARGIN: '{{.MARGIN | default "0.5in"}}'
+      GEOMETRY: '{{if eq .PAPER "card"}}paperwidth=4in,paperheight=6in,margin=0.25in{{else}}margin={{.MARGIN}}{{end}}'
+      OUTPUT: '{{if .OUTPUT}}{{.OUTPUT}}{{else if eq .PAPER "card"}}output/tare_weights_card.pdf{{else}}output/tare_weights.pdf{{end}}'
     cmds:
       - mkdir -p output
-      - uv run scripts/tare_weight_manager.py sheet | pandoc -o {{.OUTPUT | default "output/tare_weights.pdf"}} --pdf-engine=xelatex
-      - echo "PDF generated at {{.OUTPUT | default "output/tare_weights.pdf"}}"
+      - 'uv run scripts/tare_weight_manager.py sheet | pandoc -o "{{.OUTPUT}}" --pdf-engine=xelatex -V documentclass=extarticle -V fontsize="{{.FONT_SIZE}}" -V mainfont="DejaVu Sans" -V "geometry:{{.GEOMETRY}}" {{.CLI_ARGS}}'
+      - 'echo "PDF generated at {{.OUTPUT}}"'
 
   tare:serve:
     desc: Generate tare weight PDF and serve on LAN for browser viewing
