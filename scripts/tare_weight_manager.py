@@ -146,10 +146,18 @@ def upsert_container(
         for f in current_fields:
             if f.get("name") == TARE_FIELD_NAME:
                 f["value"] = weight_int
+                f["numberValue"] = weight_int
+                f["textValue"] = str(weight_int)
                 found_field = True
                 break
         if not found_field:
-            current_fields.append({"name": TARE_FIELD_NAME, "type": "number", "value": weight_int})
+            current_fields.append({
+                "name": TARE_FIELD_NAME,
+                "type": "number",
+                "value": weight_int,
+                "numberValue": weight_int,
+                "textValue": str(weight_int),
+            })
 
         payload = {
             "name": existing.get("name", name.strip()),
@@ -161,15 +169,33 @@ def upsert_container(
         return {"action": "updated", "id": entity_id, "name": payload["name"], "weight": weight_int}
 
     # Create new entity
+    field_entry = {
+        "name": TARE_FIELD_NAME,
+        "type": "number",
+        "value": weight_int,
+        "numberValue": weight_int,
+        "textValue": str(weight_int),
+    }
     payload = {
         "name": name.strip(),
         "tagIds": list(required_tag_ids),
-        "fields": [{"name": TARE_FIELD_NAME, "type": "number", "value": weight_int}],
+        "fields": [field_entry],
     }
     resp = requests.post(f"{base_url}/entities", headers=headers, json=payload, timeout=15)
     resp.raise_for_status()
     created = resp.json()
     new_id = created.get("id", "")
+
+    # Homebox v1 API ignores fields on initial POST creation; persist fields via PUT
+    if new_id:
+        put_payload = {
+            "name": payload["name"],
+            "tagIds": payload["tagIds"],
+            "fields": [field_entry],
+        }
+        resp_put = requests.put(f"{base_url}/entities/{new_id}", headers=headers, json=put_payload, timeout=15)
+        resp_put.raise_for_status()
+
     return {"action": "created", "id": new_id, "name": payload["name"], "weight": weight_int}
 
 
@@ -196,11 +222,24 @@ def fetch_tare_containers(base_url: str, headers: dict[str, str]) -> list[dict[s
         if not is_tare:
             continue
 
+        fields = item.get("fields")
+        if fields is None and item.get("id"):
+            detail_resp = requests.get(f"{base_url}/entities/{item['id']}", headers=headers, timeout=15)
+            if detail_resp.status_code == 200:
+                fields = detail_resp.json().get("fields") or []
+            else:
+                fields = []
+
         weight_val = None
-        for f in item.get("fields") or []:
+        for f in fields or []:
             if f.get("name") == TARE_FIELD_NAME:
                 try:
-                    weight_val = parse_weight_grams(f.get("value"))
+                    val = (
+                        f.get("numberValue")
+                        if f.get("numberValue") is not None and f.get("numberValue") != 0
+                        else (f.get("value") if f.get("value") is not None else f.get("textValue"))
+                    )
+                    weight_val = parse_weight_grams(val)
                 except ValueError:
                     pass
                 break

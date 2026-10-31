@@ -215,7 +215,7 @@ tasks:
   tare:upsert:
     desc: Upsert kitchen container tare weight into Homebox
     cmds:
-      - uv run scripts/tare_weight_manager.py upsert '{{.NAME}}' '{{.WEIGHT}}' {{.CLI_ARGS}}
+      - uv run scripts/tare_weight_manager.py upsert {{.NAME | toJson}} {{.WEIGHT | toJson}} {{.CLI_ARGS}}
     requires:
       vars: [NAME, WEIGHT]
 

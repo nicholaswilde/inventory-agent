@@ -124,11 +124,16 @@ def test_find_container_not_found():
 def test_upsert_container_create():
     with patch("scripts.tare_weight_manager.find_container", return_value=None), \
          patch("scripts.tare_weight_manager.ensure_tag_ids", return_value=["t1", "t2", "t3"]):
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = {"id": "new-id", "name": "Mason Jar 16oz"}
+        mock_post_resp = MagicMock()
+        mock_post_resp.status_code = 200
+        mock_post_resp.json.return_value = {"id": "new-id", "name": "Mason Jar 16oz"}
 
-        with patch("requests.post", return_value=mock_resp) as mock_post:
+        mock_put_resp = MagicMock()
+        mock_put_resp.status_code = 200
+        mock_put_resp.json.return_value = {"id": "new-id", "name": "Mason Jar 16oz"}
+
+        with patch("requests.post", return_value=mock_post_resp) as mock_post, \
+             patch("requests.put", return_value=mock_put_resp) as mock_put:
             result = upsert_container(
                 "Mason Jar 16oz",
                 250,
@@ -143,7 +148,13 @@ def test_upsert_container_create():
             payload = kwargs["json"]
             assert payload["name"] == "Mason Jar 16oz"
             assert set(payload["tagIds"]) == {"t1", "t2", "t3"}
-            assert payload["fields"] == [{"name": "Tare Weight (g)", "type": "number", "value": 250}]
+
+            put_args, put_kwargs = mock_put.call_args
+            put_payload = put_kwargs["json"]
+            field = put_payload["fields"][0]
+            assert field["name"] == "Tare Weight (g)"
+            assert field["numberValue"] == 250
+            assert field["textValue"] == "250"
 
 
 def test_upsert_container_update():
@@ -205,7 +216,7 @@ def test_fetch_tare_containers():
             "id": "c3",
             "name": "Mason Jar 16oz",
             "tags": [{"name": "tare-weight"}],
-            "fields": [{"name": "Tare Weight (g)", "value": 250}],
+            "fields": [{"name": "Tare Weight (g)", "numberValue": 250, "textValue": "250"}],
         },
     ]
 
@@ -217,9 +228,41 @@ def test_fetch_tare_containers():
         with patch("requests.get", return_value=mock_resp):
             containers = fetch_tare_containers("http://homebox:7745/api/v1", {"Authorization": "Bearer x"})
             assert len(containers) == 2
-            names = [c["name"] for c in containers]
-            assert "Pyrex 2-Cup" in names
-            assert "Mason Jar 16oz" in names
+            container_map = {c["name"]: c["weight"] for c in containers}
+            assert container_map["Pyrex 2-Cup"] == 490
+            assert container_map["Mason Jar 16oz"] == 250
+
+
+def test_fetch_tare_containers_fetches_detail_when_fields_missing():
+    tags = [{"id": "t-tare", "name": "tare-weight"}]
+    entities = [
+        {"id": "c1", "name": "Grandpa's Bowl", "tagIds": ["t-tare"]},
+    ]
+    detail = {
+        "id": "c1",
+        "name": "Grandpa's Bowl",
+        "fields": [{"name": "Tare Weight (g)", "numberValue": 661}],
+    }
+
+    with patch("scripts.tare_weight_manager.get_tags", return_value=tags):
+        mock_list_resp = MagicMock()
+        mock_list_resp.status_code = 200
+        mock_list_resp.json.return_value = {"items": entities}
+
+        mock_detail_resp = MagicMock()
+        mock_detail_resp.status_code = 200
+        mock_detail_resp.json.return_value = detail
+
+        def mock_get(url, *args, **kwargs):
+            if url.endswith("/entities/c1"):
+                return mock_detail_resp
+            return mock_list_resp
+
+        with patch("requests.get", side_effect=mock_get):
+            containers = fetch_tare_containers("http://homebox:7745/api/v1", {"Authorization": "Bearer x"})
+            assert len(containers) == 1
+            assert containers[0]["name"] == "Grandpa's Bowl"
+            assert containers[0]["weight"] == 661
 
 
 def test_generate_tare_sheet():
