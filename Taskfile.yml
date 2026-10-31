@@ -70,6 +70,11 @@ tasks:
     cmds:
       - uv run scripts/process_vision.py {{.CLI_ARGS}}
 
+  image:optimize:
+    desc: Optimize and compress images (< 500KB, max 1920x1080) in images/pending or images/processed
+    cmds:
+      - uv run scripts/optimize_image.py {{if .TARGET}}{{.TARGET}}{{else if .DIR}}{{.DIR}}{{else if .FILE}}{{.FILE}}{{end}} {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{.CLI_ARGS}}
+
   homebox:search:
     desc: Search Homebox entities by name
     cmds:

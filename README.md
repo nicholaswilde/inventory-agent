@@ -34,6 +34,22 @@ Intelligent inventory management agent for [Homebox](https://homebox.software), 
    ```
 3. Processed files are automatically organized into `images/processed/`.
 
+### :camera: Image Optimization & Compression
+
+Optimize and compress raw phone photos and high-resolution images in `images/pending/` and `images/processed/` using ImageMagick to ensure assets are web-friendly (< 500KB and max 1920x1080 resolution) before uploading to Homebox:
+
+```bash
+# Preview savings without writing to disk
+task image:optimize DRY_RUN=1
+
+# Compress and resize in-place
+task image:optimize
+
+# Optimize a specific directory or image file
+task image:optimize TARGET="images/pending"
+task image:optimize TARGET="path/to/photo.jpg"
+```
+
 ### :link: Product URL Ingestion
 
 Import an item from an Amazon or product URL into Homebox with extracted metadata, price, and product image attachment:
@@ -260,6 +276,7 @@ uv run pytest tests/
 - `task homebox:entity-types` — List all Homebox entity types (useful for finding Location ID).
 - `task issue:extract ISSUE=<id>` — Extract issue attachments and run quiet OCR.
 - `task process-vision` — Process pending local images and zip archives.
+- `task image:optimize` — Optimize and compress images (< 500KB, max 1920x1080) in images/pending or images/processed (preview with `DRY_RUN=1`).
 - `task manual:ingest FILE='<path_or_url>'` — Ingest appliance manual into Homebox and generate cheat sheet (preview with `DRY_RUN=1`).
 - `task url:import URL='<product_url>'` — Import item from product URL into Homebox with image and price (preview with `DRY_RUN=1`).
 - `task parts:download TARGET='<url_or_model>'` — Download GE appliance assembly diagrams and bill of materials.
