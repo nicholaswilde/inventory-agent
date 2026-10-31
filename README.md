@@ -20,7 +20,7 @@ Intelligent inventory management agent for [Homebox](https://homebox.software), 
 - **Product URL Ingestion**: Scrape product metadata, model numbers, prices, and images from Amazon and retail URLs and create Homebox entities with deduplication.
 - **Appliance Parts & Diagram Cataloging**: Download high-resolution exploded view assembly diagrams and generate complete bills of materials (parts, callout tags, descriptions, pricing, stock status) in Markdown, CSV, and JSON formats for GE, Bosch, LG, and RepairClinic portals.
 - **Appliance Information Retrieval**: Query appliance specifications, troubleshooting error codes, and cataloged BOM replacement parts with diagram cross-references (`task appliance:search`, `task appliance:part`, `task appliance:info`).
-- **Container Tare Weight Tracking**: Upsert container tare weights into Homebox with standardized tags and generate printable reference sheets for baking and meal prep (`task tare:upsert`, `task tare:sheet`).
+- **Container Tare Weight Tracking**: Upsert container tare weights into Homebox with standardized tags and display or print reference sheets for baking and meal prep (`task tare:upsert`, `task tare:show`, `task tare:sheet`).
 - **Local Document Printing**: Convert Markdown reference sheets, tables, and lists to PDF via Pandoc and XeLaTeX and spool directly to a local Brother printer (`task print:brother`).
 
 ## :rocket: Usage
@@ -168,6 +168,9 @@ Upsert individual kitchen container weights (borosilicate glass, stainless steel
 # Upsert a container tare weight (creates if missing, updates weight if exists)
 task tare:upsert NAME="Mason Jar 16oz" WEIGHT=250
 
+# Display tare weight table in console
+task tare:show
+
 # Generate a printable Markdown reference sheet sorted alphabetically
 task tare:sheet
 ```
@@ -255,7 +258,7 @@ uv run pytest tests/
 - `task parts:lg TARGET='<url_or_parentId>'` — Download LG appliance spare parts assembly diagrams and bill of materials.
 - `task parts:repairclinic TARGET='<url_or_id>'` — Download RepairClinic appliance assembly diagrams and bill of materials.
 - `task tare:upsert NAME='<name>' WEIGHT=<grams>` — Upsert kitchen container tare weight into Homebox.
-- `task tare:sheet` — Generate printable tare weight reference sheet Markdown table.
+- `task tare:sheet` — Generate printable tare weight reference sheet Markdown table (`task tare:show`, `task tare:table`).
 - `task print:brother TEXT='<markdown>'` — Convert markdown to PDF and print to BrotherPrinter (`task print:local`).
 
 ## :balance_scale: License

@@ -4,6 +4,7 @@ tare_weight_manager.py — Manage kitchen container tare weights in Homebox and 
 Usage:
   uv run scripts/tare_weight_manager.py upsert "<container_name>" <weight_grams>
   uv run scripts/tare_weight_manager.py sheet
+  uv run scripts/tare_weight_manager.py show
 """
 from __future__ import annotations
 
@@ -236,7 +237,7 @@ def main(argv: list[str] | None = None) -> None:
     upsert_p.add_argument("name", help="Container or item name")
     upsert_p.add_argument("weight", help="Tare weight in grams (e.g. 250, 250g)")
 
-    subparsers.add_parser("sheet", help="Generate printable Markdown tare weight sheet")
+    subparsers.add_parser("sheet", aliases=["show", "table"], help="Generate printable Markdown tare weight sheet or console table")
 
     args = parser.parse_args(argv)
 
@@ -247,7 +248,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.subcommand == "upsert":
         res = upsert_container(args.name, args.weight, base_url, headers)
         print(f"Successfully {res['action']} container '{res['name']}' with tare weight {res['weight']}g (ID: {res['id']})")
-    elif args.subcommand == "sheet":
+    elif args.subcommand in ("sheet", "show", "table"):
         containers = fetch_tare_containers(base_url, headers)
         sheet = generate_tare_sheet(containers)
         print(sheet)

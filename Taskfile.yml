@@ -221,6 +221,9 @@ tasks:
 
   tare:sheet:
     desc: Generate printable tare weight reference sheet Markdown table
+    aliases:
+      - tare:show
+      - tare:table
     cmds:
       - uv run scripts/tare_weight_manager.py sheet {{.CLI_ARGS}}
 

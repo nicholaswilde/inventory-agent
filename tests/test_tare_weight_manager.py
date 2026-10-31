@@ -265,3 +265,14 @@ def test_cli_sheet(capsys):
         captured = capsys.readouterr()
         assert "| Container / Item | Tare Weight (g) |" in captured.out
         assert "| Jar | 200 |" in captured.out
+
+
+def test_cli_show(capsys):
+    containers = [{"name": "Jar", "weight": 200}]
+    with patch("scripts.tare_weight_manager.get_homebox_config", return_value=("localhost", "key")), \
+         patch("scripts.tare_weight_manager.fetch_tare_containers", return_value=containers):
+        main(["show"])
+        captured = capsys.readouterr()
+        assert "| Container / Item | Tare Weight (g) |" in captured.out
+        assert "| Jar | 200 |" in captured.out
+
