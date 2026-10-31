@@ -1,42 +1,43 @@
 <!-- rtk-begin -->
 ## RTK Command Guidelines
 - **Git Operations**: Prefix `git` commands with `rtk` (e.g., `rtk git status`, `rtk git diff`, `rtk git log`, `rtk git commit`, `rtk git push`).
-- **GitHub CLI**: Prefix `gh` commands with `rtk` (e.g., `rtk gh issue list | cat`, `rtk gh pr status | cat`). Always pipe `gh` commands to `cat` to bypass interactive pagers.
-- **File & Directory Inspection**: Use `rtk ls`, `rtk tree`, `rtk find`, or `rtk read` when listing or reading files to get token-optimized output.
+- **GitHub CLI**: Prefix `gh` commands with `rtk` and pipe to `cat` (e.g., `rtk gh issue list | cat`, `rtk gh pr status | cat`). Always pipe to bypass interactive pagers.
+- **File & Directory Inspection**: Use `rtk ls`, `rtk tree`, `rtk find`, or `rtk read` when listing or reading files for token-optimized output.
 - **Searching**: Use `rtk rg` or `rg` (ripgrep) for line search pattern matching to save tokens.
-- **Build & Test Outputs**: Use `rtk err` or `rtk test` when running build/test commands to filter output to errors/failures only (e.g. `rtk test pio test -e native`).
+- **Build & Test Outputs**: Use `rtk err` or `rtk test` when running build/test commands to filter output to errors/failures only (e.g., `rtk test uv run pytest`).
+- **Exceptions**: Inside `ctx_execute` / `ctx_batch_execute` sandbox code, skip `rtk` (only printed output enters context). Drop `rtk` when exact raw bytes or patch required (`git diff` patch).
 <!-- rtk-end -->
 
 <!-- context-mode-begin -->
 ## Context-Mode Routing Guidelines
-- **Derive, Do Not Dump**: Do NOT use `context-mode/ctx_execute_file` or `ctx_execute` to print a whole file or a full method/config. Print only the specific value, matches, count, or known line-range needed.
-- **Tool call surface**: If using generic MCP wrappers, call `call_mcp_tool` with `ServerName: "context-mode"` and `ToolName: "ctx_execute"`, `"ctx_execute_file"`, `"ctx_batch_execute"`, `"ctx_fetch_and_index"`, `"ctx_search"`, or `"ctx_index"`.
+- **Derive, Do Not Dump**: Do NOT use `ctx_execute_file` or `ctx_execute` to dump whole file or full config. Print only specific value, matches, count, or known line range needed.
+- **Tool Call Surface**: When using MCP wrappers, call `call_mcp_tool` with `ServerName: "context-mode_context-mode"` (or `"context-mode"`) and `ToolName: "ctx_execute"`, `"ctx_execute_file"`, `"ctx_batch_execute"`, `"ctx_fetch_and_index"`, `"ctx_search"`, or `"ctx_index"`.
 - **Mandatory Routing**:
-  - For analyze/count/filter/compare/search/parse/transform tasks, write code with `context-mode/ctx_execute` and print only the final answer.
-  - For analyzing/exploring/searching inside a file, use `context-mode/ctx_execute_file`. Use native `Read` / `view_file` only when editing requires exact bytes or a small known range.
-  - Use `context-mode/ctx_batch_execute` for multi-command repository reconnaissance.
-  - Use `context-mode/ctx_execute` for shell commands whose output may exceed a short fixed answer.
-  - Use `context-mode/ctx_fetch_and_index` for web content, then `context-mode/ctx_search` to query it.
-  - Return only derived answers, concise summaries, selected snippets, or file paths to written artifacts.
+  - For analyze/count/filter/compare/search/parse/transform tasks, write code with `ctx_execute` and print only final answer.
+  - For analyzing/exploring inside file, use `ctx_execute_file`. Use native `read_file` only when editing requires exact bytes or small known range.
+  - Use `ctx_batch_execute` for multi-command repository reconnaissance.
+  - Use `ctx_execute` for shell commands whose output may exceed short fixed answer.
+  - Use `ctx_fetch_and_index` for web content, then `ctx_search` to query it.
+  - Return only derived answers, concise summaries, selected snippets, or file paths.
 <!-- context-mode-end -->
 
 <!-- ponytail-begin -->
 ## Ponytail (Lazy Senior Dev Mode) Guidelines
-- **Stop at the first rung that holds**:
-  1. Does this need to be built at all? (YAGNI)
-  2. Does it already exist in this codebase? Reuse existing helpers/utils/patterns.
-  3. Does the standard library already do this?
-  4. Does a native platform feature cover it?
-  5. Does an already-installed dependency solve it?
-  6. Can this be one line?
-  7. Only then: write the minimum code that works.
-- **Bug fix = root cause, not symptom**: Fix the shared function/path rather than individual callers.
+- **Stop at first rung that holds**:
+  1. Need to build at all? (YAGNI)
+  2. Already in codebase? Reuse existing helpers/utils/patterns.
+  3. Stdlib does it? Use it.
+  4. Native platform feature covers it? Use it.
+  5. Installed dependency solves it? Use it.
+  6. Can be one line? One line.
+  7. Only then: write minimum working code.
+- **Bug fix = root cause, not symptom**: Fix shared function/path rather than individual callers.
 - **Rules**:
   - No unrequested abstractions, boilerplate, or avoidable dependencies.
   - Deletion over addition. Boring over clever. Fewest files possible.
-  - Shortest working diff wins, once the problem is understood.
-  - Mark deliberate simplifications cutting a real corner with a `ponytail:` comment naming the ceiling and upgrade path.
-  - Ensure logic leaves behind ONE runnable check (assert-based demo/self-check or small test file; no frameworks/fixtures). Trivial one-liners need no test.
+  - Shortest working diff wins once problem understood.
+  - Mark deliberate simplifications cutting real corner with `ponytail:` comment naming ceiling and upgrade path.
+  - Ensure logic leaves behind ONE runnable check (assert-based demo/self-check or small test file). Trivial one-liners need none.
 <!-- ponytail-end -->
 
 <!-- caveman-begin -->
@@ -44,7 +45,7 @@
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 
 Rules:
-- Drop: articles (a/an/the), filler (just/really/basically), pleasantries, hedging
+- Drop: articles (a/an/the), filler (just/really/basically), pleasantries, hedging.
 - Fragments OK. Short synonyms. Technical terms exact. Code unchanged.
 - Pattern: [thing] [action] [reason]. [next step].
 - Not: "Sure! I'd be happy to help you with that."
@@ -61,62 +62,112 @@ Boundaries: code/commits/PRs written normal.
 <!-- codegraph-begin -->
 ## CodeGraph
 
-In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+In repositories indexed by CodeGraph (`.codegraph/` directory exists at repo root), reach for it BEFORE grep/find or reading files when exploring code:
 
-- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
-- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+- **MCP tool**: `codegraph_explore` answers source + call path + blast radius in one call. Dynamic-dispatch hops included. Name file or symbol in query to read current line-numbered source.
+- **Shell**: `codegraph explore "<symbol names or question>"`.
 
-If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+If no `.codegraph/` directory exists, skip CodeGraph entirely.
 <!-- codegraph-end -->
+
+<!-- serena-begin -->
+## Serena Semantic Navigation & LSP Integration
+Use Serena (`serena`) MCP tools for semantic navigation, AST symbol inspection, LSP diagnostics, and project memories:
+1. **Map first**: Call `get_symbols_overview` on target file instead of reading entire file.
+2. **Read target symbol only**: Call `find_symbol` with `include_body: true` for target function/class/method.
+3. **Check callers**: Call `find_referencing_symbols` or `find_implementations` before signature or behavior changes.
+4. **Edit by symbol**: Use `replace_symbol_body`, `insert_after_symbol`, `insert_before_symbol`, or `rename_symbol`. Use standard edit for small tweaks or non-code files.
+5. **Verify diagnostics**: Call `get_diagnostics_for_file` after edits to catch LSP errors before full test run.
+<!-- serena-end -->
+
+<!-- headroom-begin -->
+## Headroom MCP (Context Window Compression)
+Use Headroom (`headroom`) MCP tools to manage context window consumption on large payloads:
+- `headroom_compress`: Shrink large tool outputs or raw data.
+- `headroom_retrieve`: Retrieve original content by hash if specific details needed.
+- `headroom_stats`: Monitor headroom cache usage.
+<!-- headroom-end -->
 
 <!-- ripgrep-guidelines-begin -->
 ## Ripgrep Guidelines
 - **Pattern Searching**: Always use `rg` (ripgrep) or `rtk rg` instead of standard `grep` to search text inside files quickly and save token output.
+- **Scope**: Use `-t py` for Python files, `-l` for file listing, keep context small (`-C 1`).
 <!-- ripgrep-guidelines-end -->
+
+<!-- taplo-rules-begin -->
+## Taplo TOML Rules
+- **Format**: Run `taplo fmt` to format TOML files in-place (`pyproject.toml`).
+- **Validation**: Run `taplo lint` to validate TOML syntax and schema.
+<!-- taplo-rules-end -->
 
 <!-- homebox-connection-begin -->
 ## Homebox Connection Rules
-When connecting to the Homebox API, strictly follow these connection parameters:
-1. **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from the local `.env` file. NEVER commit this file or output the raw keys in logs.
-2. **Port**: The Homebox service runs on port `7745` (e.g., `http://$HOMEBOX_IP:7745`).
-3. **Authentication**: Pass the API key using the standard Bearer token header: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
+When connecting to Homebox API, strictly follow connection parameters:
+1. **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` file. NEVER commit this file or output raw keys in logs.
+2. **Port**: Homebox service runs on port `7745` (e.g., `http://$HOMEBOX_IP:7745`).
+3. **Authentication**: Pass API key using standard Bearer token header: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
 <!-- homebox-connection-end -->
 
 <!-- uv-python-begin -->
 ## Python Script Execution
-When creating or modifying Python scripts, always ensure you create or update the `pyproject.toml` and `uv.lock` files.
-When running Python scripts, always use the `uv` command (e.g., `uv run script.py`) instead of the standard `python` command.
+When creating or modifying Python scripts:
+1. Always update `pyproject.toml` and `uv.lock`.
+2. Always execute Python scripts with `uv run` (e.g., `uv run script.py`) instead of bare `python` command.
+3. Run tests with `uv run pytest`.
 <!-- uv-python-end -->
 
 <!-- taskfile-update-begin -->
 ## Taskfile Maintenance
-When creating or modifying scripts and skills, always ensure you update the `Taskfile.yml` to include or update the relevant tasks so they can be easily executed.
+When creating or modifying scripts and skills, always update `Taskfile.yml` to include or update relevant tasks for easy execution.
 <!-- taskfile-update-end -->
+
+<!-- image-optimization-begin -->
+## Image Optimization & Compression
+Ensure images uploaded to Homebox are web-friendly (< 500KB and max 1920x1080 resolution) to prevent database and storage bloat:
+1. Run `task image:optimize` (or `uv run scripts/optimize_image.py`) to compress images in `images/pending/` or `images/processed/`.
+2. Preview optimization savings with `task image:optimize DRY_RUN=1`.
+3. Support target single file or custom directory via `task image:optimize TARGET="path/to/img"`.
+<!-- image-optimization-end -->
 
 <!-- document-parsing-begin -->
 ## Document Parsing Workflow
 When parsing documents (PDF, DOCX, XLSX, invoices, manuals) to extract information:
 1. Extract text with `lit parse -q --no-ocr <file>` first for rapid digital text extraction.
-2. If no text is extracted (e.g., scanned document or image-only PDF), fall back to `lit`'s built-in OCR with `lit parse -q <file>`.
+2. If no text extracted (e.g., scanned document or image-only PDF), fall back to `lit` built-in OCR with `lit parse -q <file>`.
+3. If pdftotext available, use as secondary fallback for digital PDFs.
 <!-- document-parsing-end -->
 
 <!-- image-parsing-begin -->
 ## Image Parsing Workflow
 When parsing images to extract text:
-1. Process the image with `lit`.
-2. Run `tesseract` on the output to extract text.
+1. Process image with `lit`.
+2. Run `tesseract` on output to extract text.
+3. Fallback: use multimodal visual inspection when OCR returns insufficient text.
 <!-- image-parsing-end -->
+
+<!-- appliance-manual-begin -->
+## Appliance Manual Ingestion Workflow
+When processing appliance manuals or appliance-related GitHub issues:
+1. Trigger via `task manual:ingest-issue ISSUE=<number>` or `task manual:ingest FILE="<url_or_path>"`.
+2. Preview extraction with `DRY_RUN=1`.
+3. Artifacts:
+   - Generated cheat sheet: `appliances/<slug>.md`.
+   - Processed manual: `images/processed/<Slug>_Manual.pdf`.
+   - Homebox entity created with specs, error codes, and manual attachment.
+4. Lookup: Query `appliances/<slug>.md` first before reading full PDF manual.
+<!-- appliance-manual-end -->
 
 <!-- script-tdd-begin -->
 ## Script Test-Driven Development (TDD)
-When adding a new script, you must ALWAYS create a test for it first, and then run the script against that test to verify functionality. When updating or modifying an existing script, you must modify its corresponding test first before making changes to the script itself.
+When adding new script, ALWAYS create test for it first, then run script against test to verify functionality. When updating or modifying existing script, modify corresponding test first before making changes to script.
 <!-- script-tdd-end -->
 
 <!-- issue-management-begin -->
 ## GitHub Issue Management
-When creating or updating GitHub issues, always adhere to the following naming and labeling scheme:
-- **Features**: Prefix the title with `[feat]: ` and apply the `enhancement` label.
-- **Bugs**: Prefix the title with `[bug]: ` and apply the `bug` label.
+When creating or updating GitHub issues, adhere to naming and labeling scheme:
+- **Features**: Prefix title with `[feat]: ` and apply `enhancement` label.
+- **Bugs**: Prefix title with `[bug]: ` and apply `bug` label.
+- **Commit Closing**: GitHub issues only close automatically when commits containing `Fixes #<number>` are pushed to remote repository.
 <!-- issue-management-end -->
 
 <!-- readme-formatting-begin -->
@@ -127,14 +178,15 @@ When adding or updating section and subsection headings in `README.md`, always i
 <!-- api-response-handling-begin -->
 ## API Response Handling Guidelines
 - **JSON Filtering**: Always use `jq` to filter API responses (like Homebox entities) to specific required fields (e.g., `jq '{name: .name, fields: .fields}'`). Do NOT dump full uncompressed JSON into context.
-- **Context-Mode for Data**: For heavy JSON analysis, use `context-mode/ctx_execute` to keep the payload in the sandbox and return only the derived answer.
+- **Context-Mode for Data**: For heavy JSON analysis, use `ctx_execute` to keep payload in sandbox and return only derived answer.
 <!-- api-response-handling-end -->
 
 <!-- sensitive-information-protection-begin -->
 ## Sensitive Information & PII Protection
-NEVER commit or stage sensitive personal, financial, or security data to the repository:
+NEVER commit or stage sensitive personal, financial, or security data to repository:
 1. **Financial & Payment Data**: Never commit full or partial credit card numbers, CVVs, expiration dates, or cardholder payment records (e.g., `Visa •••• 1234`).
 2. **Personal Identifiable Information (PII)**: Never commit real residential street addresses, personal phone numbers, or private personal emails. Anonymize invoice test fixtures, mock data, and examples with generic dummy placeholders (e.g., `Jane Doe`, `123 Test St`, `Visa •••• 0000`).
-3. **Secrets & Credentials**: Never commit `.env` files, API keys, bearer tokens, passwords, or private encryption keys.
-4. **Permitted Identifiers**: Invoice numbers, order IDs, appliance model numbers, part numbers, and public product metadata are permitted.
+3. **Secrets & Credentials**: Never commit `.env` files, API keys, bearer tokens, passwords, or private encryption keys. Use `sops` (`task encrypt` / `task decrypt`) for encrypted secret storage.
+4. **Explicit Staging**: Never use `git add .` when untracked secret files exist; stage explicitly by name.
+5. **Permitted Identifiers**: Invoice numbers, order IDs, appliance model numbers, part numbers, and public product metadata permitted.
 <!-- sensitive-information-protection-end -->
