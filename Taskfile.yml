@@ -212,6 +212,18 @@ tasks:
     requires:
       vars: [QUERY]
 
+  tare:upsert:
+    desc: Upsert kitchen container tare weight into Homebox
+    cmds:
+      - uv run scripts/tare_weight_manager.py upsert '{{.NAME}}' '{{.WEIGHT}}' {{.CLI_ARGS}}
+    requires:
+      vars: [NAME, WEIGHT]
+
+  tare:sheet:
+    desc: Generate printable tare weight reference sheet Markdown table
+    cmds:
+      - uv run scripts/tare_weight_manager.py sheet {{.CLI_ARGS}}
+
   test:
     desc: Run all tests (API, bash scripts, vision pipeline)
     cmds:
