@@ -173,6 +173,12 @@ task tare:show
 
 # Generate a printable Markdown reference sheet sorted alphabetically
 task tare:sheet
+
+# Generate tare weight reference sheet as a PDF in output/
+task tare:pdf
+
+# Generate tare weight PDF and serve on LAN for browser viewing
+task tare:serve
 ```
 
 ### :printer: Local Document Printing
@@ -259,6 +265,8 @@ uv run pytest tests/
 - `task parts:repairclinic TARGET='<url_or_id>'` — Download RepairClinic appliance assembly diagrams and bill of materials.
 - `task tare:upsert NAME='<name>' WEIGHT=<grams>` — Upsert kitchen container tare weight into Homebox.
 - `task tare:sheet` — Generate printable tare weight reference sheet Markdown table (`task tare:show`, `task tare:table`).
+- `task tare:pdf` — Generate tare weight reference sheet as a PDF in `output/tare_weights.pdf`.
+- `task tare:serve` — Generate tare weight PDF and serve on LAN for browser viewing (`PORT=8080`).
 - `task print:brother TEXT='<markdown>'` — Convert markdown to PDF and print to BrotherPrinter (`task print:local`).
 
 ## :balance_scale: License

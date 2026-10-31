@@ -233,6 +233,8 @@ images/processed/*
 !images/processed/.gitkeep
 manuals/*
 !manuals/.gitkeep
+output/*
+!output/.gitkeep
 # Ignore subagent workspaces and outputs
 .agents/*
 !.agents/skills/

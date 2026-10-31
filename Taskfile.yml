@@ -227,6 +227,20 @@ tasks:
     cmds:
       - uv run scripts/tare_weight_manager.py sheet {{.CLI_ARGS}}
 
+  tare:pdf:
+    desc: Generate tare weight reference sheet as a PDF in output/
+    cmds:
+      - mkdir -p output
+      - uv run scripts/tare_weight_manager.py sheet | pandoc -o {{.OUTPUT | default "output/tare_weights.pdf"}} --pdf-engine=xelatex
+      - echo "PDF generated at {{.OUTPUT | default "output/tare_weights.pdf"}}"
+
+  tare:serve:
+    desc: Generate tare weight PDF and serve on LAN for browser viewing
+    deps: [tare:pdf]
+    cmds:
+      - echo "View/download PDF at http://$(hostname -I | awk '{print $1}'):{{.PORT | default "8080"}}/tare_weights.pdf"
+      - python3 -m http.server {{.PORT | default "8080"}} --directory output
+
   print:brother:
     desc: Convert markdown text to PDF and print to BrotherPrinter
     aliases:
