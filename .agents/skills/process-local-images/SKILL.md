@@ -10,8 +10,9 @@ description: Processes local images and zip files from images/pending and moves 
 2. Any `.zip` files found will be extracted automatically. The images inside will be moved to `images/pending/` for processing, and the original zip file will be moved to `images/processed/`.
 3. For documents (PDF, DOCX, XLSX, invoices), extract text using `lit parse -q --no-ocr <file>` first, and fall back to built-in OCR `lit parse -q <file>` if scanned or empty. For images, process using `lit` (built-in OCR) or `tesseract`.
    - **Vision Fallback**: If the text extraction yields no meaningful results, use your native multimodal vision capabilities (e.g. by using `view_file` on the image path) to visually inspect the image and identify the component or board directly.
-4. Once an image is successfully processed and identified, move it to `images/processed/`.
-5. Run `task process-images` to execute the automated processing script.
+4. Run `task image:optimize TARGET="images/pending"` to compress and resize raw photos (< 500KB, max 1920x1080) prior to entity attachment.
+5. Once an image is successfully processed and identified, move it to `images/processed/`.
+6. Run `task process-images` (or `task process-vision`) to execute the automated processing script.
 
 ## Execution
 Use `scripts/process_images.sh` to automate this workflow.

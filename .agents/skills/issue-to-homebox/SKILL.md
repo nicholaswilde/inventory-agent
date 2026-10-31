@@ -11,11 +11,12 @@ This skill guides the agent to process a GitHub issue, extract item details, map
 
 1. **Read Issue**: 
    - Run `gh issue view <issue_number> --json title,body -q '{title,body}'` (or simply pipe to `cat`) to read the issue title, body, and extract any file URLs (images or zip files).
-   - **Appliance Manual Check**: If the issue title starts with `[appliance]` or contains a `.pdf` manual attachment, use the `ingest-manual` skill instead (`task manual:ingest-issue ISSUE=<issue_number>`).
+   - **Appliance Manual Check**: If the issue title starts with `[appliance]` or `[hardware]` (with manual), or contains a `.pdf` manual attachment, use the `ingest-manual` skill instead (`task manual:ingest-issue ISSUE=<issue_number>`).
 
 2. **Download & Process Files**: 
    - Download the attached file(s) from the issue. **Crucial**: Because GitHub attachment links often redirect, you must use `curl -L` or `curl -sL -o <filename>` to follow redirects and download the actual file, not an HTML page.
    - **If the file is a zip archive**: Extract the `.zip` file into a temporary directory first, then process all images inside.
+   - **Image Optimization**: Compress and resize raw images using `task image:optimize TARGET="<image_path>"` (or ensure files are < 500KB and max 1920x1080 resolution) before attaching to Homebox.
    - **Documents (PDFs, invoices, spec sheets)**: Extract text using `lit parse -q --no-ocr <file>` first for instant direct text extraction, falling back to built-in OCR `lit parse -q <file>` if the document is scanned or empty.
    - **Images**: Follow the primary image parsing workflow: Process the image with `lit` (or `lit parse -q <image>`), with built-in OCR / `tesseract` fallback.
    - **Vision Fallback**: If the OCR pipeline fails to extract meaningful text, or if the component's type/model is unclear from the text alone, use your native multimodal capabilities (e.g. via `view_file` tool on the image) to visually inspect the component or board to identify its type, manufacturer, and model.
@@ -41,10 +42,10 @@ This skill guides the agent to process a GitHub issue, extract item details, map
 
 6. **Create Git Commit**:
    - Create an empty git commit (or commit related changes if any) to close the issue.
-   - **Crucial**: The commit message MUST contain `fixes #<issue_number>` to ensure the issue is automatically closed when pushed to the repository.
+   - **Crucial**: The commit message MUST contain `Fixes #<issue_number>` to ensure the issue is automatically closed when pushed to the repository.
    - Example: `git commit --allow-empty -m "chore: add components from issue to homebox
 
-fixes #<issue_number>"`
+Fixes #<issue_number>"`
 
 ## Requirements
 - `gh` CLI for reading issues.
