@@ -29,7 +29,7 @@ Ingests appliance user and service manuals from local PDF files, URLs (Google Dr
 3. **GitHub Issue Workflow**:
    - If issue contains a PDF manual attachment (e.g. `https://github.com/user-attachments/files/.../*.pdf`), `task manual:ingest-issue ISSUE=<number>` automatically parses, downloads, extracts, and uploads the manual.
    - If issue contains only an appliance name without an attachment, search online for the official manual PDF, then run `task manual:ingest FILE="<url>"`.
-   - After completing ingestion and verification, commit changes with `fixes #<issue_number>` to close the issue automatically upon push.
+   - After completing ingestion and verification, commit changes with `Fixes #<issue_number>` to close the issue automatically upon push (e.g., `git commit -m "feat(manual): ingest <appliance> manual (Fixes #<issue_number>)"`).
 4. **Artifacts Produced**:
    - **Processed Manual**: Saved to `images/processed/<Slug>_Manual.pdf` (gitignored to prevent repository bloat).
    - **Homebox Entity**: Created with model, manufacturer, capacity, specs, and uploaded PDF attachment.
