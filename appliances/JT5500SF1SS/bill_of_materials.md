@@ -23,7 +23,7 @@
 | 133 | [`WB03T10341`](https://www.geapplianceparts.com/store/parts/spec/WB03T10341) | Wall oven Grommet- screw mounted to frame | $6.09 | Available |
 | 255 | [`WB17K10001`](https://www.geapplianceparts.com/store/parts/spec/WB17K10001) | BLOCK TERMINAL | $7.98 | Available |
 | 266 | [`WB07T10805`](https://www.geapplianceparts.com/store/parts/spec/WB07T10805) | Wall oven Upper trim BLACK | $35.28 | Available |
-| 270 | [`WB27T11326`](https://www.geapplianceparts.com/store/parts/spec/WB27T11326) | BOARD DAUGHTER RELAY 6 | N/A | No longer available |
+| 270 | [`WB27T11326`](https://www.geapplianceparts.com/store/parts/spec/WB27T11326) | BOARD DAUGHTER RELAY 6 (Superseded by WB27X25594) | N/A | No longer available |
 | 400 | [`WB34T10164`](https://www.geapplianceparts.com/store/parts/spec/WB34T10164) | Wall oven- control cover/right side/ all models | $30.55 | Available |
 | 402 | [`WB44T10126`](https://www.geapplianceparts.com/store/parts/spec/WB44T10126) | Wall oven- control cover/left side/ all models | $20.79 | Available |
 | 404 | [`WB34T10150`](https://www.geapplianceparts.com/store/parts/spec/WB34T10150) | Wall oven Upper oven vent cover | $6.73 | Available |

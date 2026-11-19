@@ -28,6 +28,7 @@
 - **CitruShine Stainless Steel Wipes**: `WX10X10007`
 - **CeramaBryte Stainless Cleaner**: `PM10X311`
 - **Oven Light Bulb**: 40W appliance bulb (check socket type)
+- **Relay Daughter Board (`BOARD DAUGHTER RELAY 6`)**: `WB27X25594` (supersedes `WB27T11326`, callout 270 in `01_CONTROL_PANEL.jpg`)
 - **Full Parts List & Assembly Diagrams**: [JT5500SF1SS Bill of Materials](JT5500SF1SS/bill_of_materials.md)
 
 ---
@@ -36,7 +37,7 @@
 
 | Code | Meaning | Action |
 |---|---|---|
-| `F20` / `F2` | Overheat or runaway temperature (>650°F bake, >915°F clean) | Turn off breaker immediately if overheating. Reset power 5 min. Test sensor WB21X10165 (~1100 Ω). If sensor OK, replace control board WB27X20240 / relay board WB27T11326. |
+| `F20` / `F2` | Overheat or runaway temperature (>650°F bake, >915°F clean) | Turn off breaker immediately if overheating. Reset power 5 min. Test sensor WB21X10165 (~1100 Ω). If sensor OK, replace control board WB27X20240 / relay board WB27X25594 (supersedes WB27T11326). |
 | `F— (Number/Letter)` | Function error code | Press **Cancel/Off**. Allow oven to cool for 1 hour. If repeating, disconnect power at circuit breaker for 30 seconds, then reconnect. If persists, service required. |
 | `LOCK DOOR` (flashing) | Self-clean selected but door open | Close oven door securely. |
 | `LOCKED` (solid) | Door locked due to high internal heat | Normal during self-clean or cool down; wait until temperature drops. |
@@ -54,7 +55,7 @@
      - Access and unscrew the temperature sensor probe inside the oven cavity (upper or lower cavity callout 253, part [`WB21X10165`](JT5500SF1SS/bill_of_materials.md); see schematics [`02_UPPER_OVEN.jpg`](JT5500SF1SS/diagrams/02_UPPER_OVEN.jpg) / [`04_LOWER_OVEN.jpg`](JT5500SF1SS/diagrams/04_LOWER_OVEN.jpg)).
      - Measure resistance across probe terminals with a multimeter at room temperature (~70°F / 21°C). Healthy sensor reads **~1,080 to 1,100 Ω**. Replace probe if reading is open (infinite resistance) or 0 Ω.
   3. **Wiring Harness Check**: Inspect harness wires between sensor probe and control board for crimps, shorts, or burns.
-  4. **Control Board / Relay Replacement**: If sensor resistance is normal (~1,100 Ω) and harness intact, the heating element relay on the control board has fused/welded closed. Replace control board [`WB27X20240`](JT5500SF1SS/bill_of_materials.md) or relay daughter board [`WB27T11326`](JT5500SF1SS/bill_of_materials.md) (callouts 16 & 270 in [`01_CONTROL_PANEL.jpg`](JT5500SF1SS/diagrams/01_CONTROL_PANEL.jpg)).
+  4. **Control Board / Relay Replacement**: If sensor resistance is normal (~1,100 Ω) and harness intact, the heating element relay on the control board has fused/welded closed. Replace control board [`WB27X20240`](JT5500SF1SS/bill_of_materials.md) or relay daughter board `WB27X25594` (supersedes [`WB27T11326`](JT5500SF1SS/bill_of_materials.md); callouts 16 & 270 in [`01_CONTROL_PANEL.jpg`](JT5500SF1SS/diagrams/01_CONTROL_PANEL.jpg)).
 
 ---
 
