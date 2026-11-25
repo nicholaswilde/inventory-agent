@@ -57,6 +57,12 @@
   3. **Wiring Harness Check**: Inspect harness wires between sensor probe and control board for crimps, shorts, or burns.
   4. **Control Board / Relay Replacement**: If sensor resistance is normal (~1,100 Ω) and harness intact, the heating element relay on the control board has fused/welded closed. Replace control board [`WB27X20240`](JT5500SF1SS/bill_of_materials.md) or relay daughter board `WB27X25594` (supersedes [`WB27T11326`](JT5500SF1SS/bill_of_materials.md); callouts 16 & 270 in [`01_CONTROL_PANEL.jpg`](JT5500SF1SS/diagrams/01_CONTROL_PANEL.jpg)).
 
+### Door Reinstallation
+
+- **Video Guides**:
+  - [Reinstall Whirlpool Oven Door](https://www.youtube.com/watch?v=xrLCuvkNjQY) (Michael Staton) — reference for reinstalling the oven door back onto the oven hinges.
+  - [Thor Kitchen Range Oven Door Installation - 2](https://www.youtube.com/watch?v=9ZYasQNjABY) (K D) — additional reference for reinstalling the oven door.
+
 ---
 
 ## Maintenance & Care
