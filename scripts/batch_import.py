@@ -22,14 +22,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import requests
 
-from scripts.import_url import (
-    HTTP_HEADERS,
-    create_homebox_entity,
-    extract_product_data,
-    fetch_url_html,
-    get_homebox_config,
-    normalize_url,
-)
+try:
+    from scripts import hbctl_client
+    from scripts.import_url import (
+        HTTP_HEADERS,
+        create_homebox_entity,
+        extract_product_data,
+        fetch_url_html,
+        normalize_url,
+    )
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
+    from import_url import (  # type: ignore[no-redef]
+        HTTP_HEADERS,
+        create_homebox_entity,
+        extract_product_data,
+        fetch_url_html,
+        normalize_url,
+    )
 
 EXCLUDE_PATTERNS = [
     r"\bvitamin\b", r"\bsupplement\b", r"\bshampoo\b", r"\bsoap\b", r"\blotion\b", r"\btoothpaste\b",
@@ -186,16 +196,12 @@ def filter_csv_candidates(
     return candidates
 
 
-def fetch_existing_homebox_items(base_url: str, headers: dict[str, str]) -> list[dict[str, Any]]:
-    """Retrieve existing items from Homebox API."""
+def fetch_existing_homebox_items() -> list[dict[str, Any]]:
+    """Retrieve existing items from Homebox via `hbctl item list --all`."""
     try:
-        resp = requests.get(f"{base_url}/items", headers=headers, timeout=15)
-        if resp.status_code == 200:
-            data = resp.json()
-            return data.get("items", []) if isinstance(data, dict) else data
+        return hbctl_client.list_items()
     except Exception:
-        pass
-    return []
+        return []
 
 
 def find_existing_item(
@@ -206,9 +212,9 @@ def find_existing_item(
 ) -> dict[str, Any] | None:
     """Find matching item in Homebox cache by ASIN, model number, or title."""
     for it in existing_items:
-        notes = it.get("notes") or ""
+        notes = hbctl_client.get_field_value(it, "Notes", "notes")
         it_name = (it.get("name") or "").lower()
-        it_model = (it.get("modelNumber") or "").lower()
+        it_model = hbctl_client.get_field_value(it, "Model Number", "modelNumber").lower()
 
         if asin and asin in notes:
             return it
@@ -269,13 +275,8 @@ def batch_import(
             })
         return results
 
-    # 4. Live execution: setup Homebox API connection
-    ip, key = get_homebox_config()
-    base_url = f"http://{ip}:7745/api/v1"
-    auth_header = {"Authorization": f"Bearer {key}"}
-    json_headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-
-    existing_items = fetch_existing_homebox_items(base_url, auth_header)
+    # 4. Live execution: fetch existing Homebox items via hbctl
+    existing_items = fetch_existing_homebox_items()
     results = []
 
     for i, it in enumerate(targets):
@@ -337,6 +338,8 @@ def batch_import(
 
                 if csv_info.get("unit_price"):
                     product_data["purchase_price"] = csv_info["unit_price"]
+                if csv_info.get("latest_date"):
+                    product_data["purchase_date"] = csv_info["latest_date"]
                 product_data["purchase_from"] = "Amazon"
                 if csv_info.get("count"):
                     product_data["quantity"] = csv_info["count"]
@@ -361,23 +364,21 @@ def batch_import(
                     "notes": "\n".join(notes_lines).strip(),
                     "quantity": csv_info.get("count", 1)
                 }
+                if csv_info.get("latest_date"):
+                    product_data["purchase_date"] = csv_info["latest_date"]
                 entity_id = create_homebox_entity(product_data)
 
-        # Update entity fields to ensure purchaseDate, purchasePrice, and quantity are synchronized
-        if entity_id:
+        # Update existing entity fields to ensure purchaseDate, purchasePrice, and quantity are synchronized
+        if existing and update_existing and entity_id:
             try:
-                curr_resp = requests.get(f"{base_url}/entities/{entity_id}", headers=auth_header, timeout=10)
-                if curr_resp.status_code == 200:
-                    ent_data = curr_resp.json()
-                    if csv_info.get("unit_price"):
-                        ent_data["purchasePrice"] = csv_info["unit_price"]
-                    if csv_info.get("latest_date"):
-                        ent_data["purchaseDate"] = csv_info["latest_date"]
-                    if csv_info.get("count"):
-                        ent_data["quantity"] = csv_info["count"]
-                    ent_data["purchaseFrom"] = "Amazon"
-
-                    requests.put(f"{base_url}/entities/{entity_id}", json=ent_data, headers=json_headers, timeout=10)
+                patch: dict[str, Any] = {"purchaseFrom": "Amazon"}
+                if csv_info.get("unit_price"):
+                    patch["purchasePrice"] = csv_info["unit_price"]
+                if csv_info.get("latest_date"):
+                    patch["purchaseDate"] = csv_info["latest_date"]
+                if csv_info.get("count"):
+                    patch["quantity"] = csv_info["count"]
+                hbctl_client.update_item(entity_id, patch)
             except Exception:
                 pass
 

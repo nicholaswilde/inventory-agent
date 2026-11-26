@@ -160,22 +160,12 @@ def test_ingest_manual_homebox_integration(tmp_path):
     pdf_path = tmp_path / "test_manual.pdf"
     pdf_path.write_bytes(b"%PDF-1.6 dummy")
 
-    mock_resp_create = MagicMock()
-    mock_resp_create.json.return_value = {"id": "hb-entity-999", "name": "LG Dryer"}
-    mock_resp_create.raise_for_status.return_value = None
-
-    mock_resp_update = MagicMock()
-    mock_resp_update.raise_for_status.return_value = None
-
-    mock_resp_attach = MagicMock()
-    mock_resp_attach.json.return_value = {"id": "attach-111"}
-    mock_resp_attach.raise_for_status.return_value = None
-
     with patch("scripts.ingest_manual.run_pdf_extraction", return_value=SAMPLE_MANUAL_TEXT), \
-         patch("requests.post", side_effect=[mock_resp_create, mock_resp_attach]) as mock_post, \
-         patch("requests.put", return_value=mock_resp_update) as mock_put, \
-         patch.dict(os.environ, {"HOMEBOX_IP": "127.0.0.1", "HOMEBOX_API_KEY": "fake-key"}):
-        
+         patch("scripts.ingest_manual.hbctl_client.search_items", return_value=[]) as mock_search, \
+         patch("scripts.ingest_manual.hbctl_client.list_items", return_value=[]), \
+         patch("scripts.ingest_manual.hbctl_client.create_item", return_value={"id": "hb-entity-999", "name": "LG Dryer"}) as mock_create, \
+         patch("scripts.ingest_manual.hbctl_client.upload_attachments", return_value=[{"id": "attach-111"}]) as mock_upload:
+
         result = ingest_manual(
             source=str(pdf_path),
             output_dir=tmp_path / "appliances",
@@ -184,12 +174,10 @@ def test_ingest_manual_homebox_integration(tmp_path):
         )
 
     assert result["homebox_id"] == "hb-entity-999"
-    assert mock_post.call_count == 2
-    assert mock_put.call_count == 1
-    # Verify first call was create entity
-    assert "/api/v1/entities" in mock_post.call_args_list[0][0][0]
-    # Verify second call was attach
-    assert "/attachments" in mock_post.call_args_list[1][0][0]
+    mock_search.assert_called_once_with(model=result["entity"]["model_number"])
+    mock_create.assert_called_once()
+    assert mock_create.call_args[1]["attach"] == [Path(result["entity"]["manual_path"])]
+    mock_upload.assert_not_called()
 
 
 SAMPLE_REFRIGERATOR_TEXT = """
@@ -713,21 +701,20 @@ def test_create_homebox_entity_matches_partial_model(tmp_path):
         {
             "id": "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d",
             "name": "Schlage Encode Plus Smart WiFi Deadbolt Lock, Tap to Unlock, Aged Bronze",
-            "modelNumber": "BE499WB CAM 716",
+            "fields": [{"name": "Model Number", "textValue": "BE499WB CAM 716"}],
         }
     ]
 
-    with patch("scripts.ingest_manual.get_homebox_config", return_value=("127.0.0.1", "test-key")), \
-         patch("requests.get") as mock_get, \
-         patch("requests.post") as mock_post:
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = mock_entities
-        mock_post.return_value.status_code = 200
-
+    with patch("scripts.ingest_manual.hbctl_client.search_items", return_value=mock_entities), \
+         patch("scripts.ingest_manual.hbctl_client.list_items", return_value=mock_entities), \
+         patch("scripts.ingest_manual.hbctl_client.create_item") as mock_create, \
+         patch("scripts.ingest_manual.hbctl_client.upload_attachments") as mock_upload:
         entity_id = create_homebox_entity(data, dummy_pdf)
         assert entity_id == "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d"
-        # Should not create new entity
-        assert not any(call[0][0].endswith("/entities") and "json" in call[1] for call in mock_post.call_args_list)
+        mock_create.assert_not_called()
+        mock_upload.assert_called_once()
+        assert mock_upload.call_args[0][0] == "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d"
+        assert mock_upload.call_args[1]["remote_name"] == "manual.pdf"
 
 
 def test_extract_sunny_rower():

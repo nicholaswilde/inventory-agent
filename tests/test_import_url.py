@@ -1,5 +1,3 @@
-import json
-import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -10,11 +8,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pytest
 
 from scripts.import_url import (
+    _clean_text,
     check_duplicate,
     create_homebox_entity,
     extract_product_data,
     fetch_url_html,
     import_url,
+    main,
+    normalize_url,
+    truncate_to_bytes,
 )
 
 SAMPLE_AMAZON_HTML = """
@@ -120,57 +122,45 @@ def test_extract_opengraph_product():
 
 
 def test_check_duplicate_found():
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {
-        "items": [
-            {"id": "existing-uuid-123", "name": "Moen T4111BN-3330", "modelNumber": "T4111BN-3330"}
-        ]
-    }
-    with patch("requests.get", return_value=mock_resp):
-        dup = check_duplicate(
-            model_number="T4111BN-3330",
-            name="Moen T4111BN-3330",
-            base_url="http://127.0.0.1:7745/api/v1",
-            headers={"Authorization": "Bearer fake"},
-        )
+    items = [
+        {
+            "id": "existing-uuid-123",
+            "name": "Moen T4111BN-3330",
+            "fields": [{"name": "Model Number", "type": "text", "textValue": "T4111BN-3330"}],
+        }
+    ]
+    with patch("scripts.import_url.hbctl_client.search_items", return_value=items) as mock_search:
+        dup = check_duplicate(model_number="T4111BN-3330", name="Moen T4111BN-3330")
         assert dup is not None
         assert dup["id"] == "existing-uuid-123"
+        assert mock_search.call_args_list[0].kwargs == {"model": "T4111BN-3330"}
 
 
 def test_check_duplicate_asin():
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {
-        "items": [
-            {"id": "asin-uuid-456", "name": "Moen Valve Kit"}
-        ]
-    }
-    with patch("requests.get", return_value=mock_resp):
+    items = [{"id": "asin-uuid-456", "name": "Moen Valve Kit"}]
+    with patch("scripts.import_url.hbctl_client.search_items", return_value=items) as mock_search:
         dup = check_duplicate(
             model_number="DIFFERENT-MODEL",
             name="Different Name",
-            base_url="http://127.0.0.1:7745/api/v1",
-            headers={"Authorization": "Bearer fake"},
             asin="B0042RV0CY",
         )
         assert dup is not None
         assert dup["id"] == "asin-uuid-456"
-
+        mock_search.assert_called_once_with(fields=["Notes=B0042RV0CY"])
 
 
 def test_check_duplicate_none():
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {"items": []}
-    with patch("requests.get", return_value=mock_resp):
-        dup = check_duplicate(
-            model_number="NONEXISTENT",
-            name="Brand New Item",
-            base_url="http://127.0.0.1:7745/api/v1",
-            headers={"Authorization": "Bearer fake"},
-        )
+    with patch("scripts.import_url.hbctl_client.search_items", return_value=[]):
+        dup = check_duplicate(model_number="NONEXISTENT", name="Brand New Item")
         assert dup is None
+
+
+def test_check_duplicate_matches_name():
+    items = [{"name": "Matching Name", "id": "hb-name-123"}]
+    with patch("scripts.import_url.hbctl_client.search_items", return_value=items):
+        dup = check_duplicate(model_number=None, name="Matching Name")
+        assert dup is not None
+        assert dup["id"] == "hb-name-123"
 
 
 def test_import_url_dry_run():
@@ -182,17 +172,7 @@ def test_import_url_dry_run():
     assert result["homebox_id"] == "dry-run-id"
 
 
-def test_import_url_integration(tmp_path):
-    mock_resp_create = MagicMock()
-    mock_resp_create.json.return_value = {"id": "hb-imported-777", "name": "Moen T4111BN-3330"}
-    mock_resp_create.raise_for_status.return_value = None
-
-    mock_resp_update = MagicMock()
-    mock_resp_update.raise_for_status.return_value = None
-
-    mock_resp_attach = MagicMock()
-    mock_resp_attach.raise_for_status.return_value = None
-
+def test_import_url_integration():
     mock_img_resp = MagicMock()
     mock_img_resp.status_code = 200
     mock_img_resp.content = b"fake-jpg-bytes"
@@ -200,56 +180,44 @@ def test_import_url_integration(tmp_path):
 
     with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
          patch("scripts.import_url.check_duplicate", return_value=None), \
-         patch("requests.post", side_effect=[mock_resp_create, mock_resp_attach]) as mock_post, \
-         patch("requests.put", return_value=mock_resp_update) as mock_put, \
          patch("requests.get", return_value=mock_img_resp), \
-         patch.dict(os.environ, {"HOMEBOX_IP": "127.0.0.1", "HOMEBOX_API_KEY": "fake-key"}):
+         patch("scripts.import_url.hbctl_client.create_item", return_value={"id": "hb-imported-777"}) as mock_create, \
+         patch("scripts.import_url.hbctl_client.upload_attachment_bytes", return_value=[{"id": "att-1"}]) as mock_upload:
 
         res = import_url("https://www.amazon.com/dp/B0042RV0CY", dry_run=False)
 
     assert res["homebox_id"] == "hb-imported-777"
-    assert mock_post.call_count == 2
-    assert mock_put.call_count == 1
+    mock_create.assert_called_once()
+    mock_upload.assert_called_once()
+    assert mock_upload.call_args[0][0] == "hb-imported-777"
+    assert mock_upload.call_args[0][1] == b"fake-jpg-bytes"
 
 
 def test_create_homebox_entity_truncates_notes():
-    mock_resp_create = MagicMock()
-    mock_resp_create.json.return_value = {"id": "hb-notes-123"}
-    mock_resp_create.raise_for_status.return_value = None
-
-    mock_resp_update = MagicMock()
-    mock_resp_update.raise_for_status.return_value = None
-
-    # Multi-byte characters (each 3 bytes in UTF-8)
     long_notes = "【Feature】" * 150
     data = {
         "name": "Test Item",
         "notes": long_notes,
+        "purchase_date": "2024-01-15",
     }
 
-    with patch("requests.post", return_value=mock_resp_create) as mock_post, \
-         patch("requests.put", return_value=mock_resp_update) as mock_put, \
-         patch.dict(os.environ, {"HOMEBOX_IP": "127.0.0.1", "HOMEBOX_API_KEY": "fake-key"}):
+    with patch("scripts.import_url.hbctl_client.create_item", return_value={"id": "hb-notes-123"}) as mock_create:
         eid = create_homebox_entity(data)
         assert eid == "hb-notes-123"
-        post_payload = mock_post.call_args[1]["json"]
-        put_payload = mock_put.call_args[1]["json"]
-        assert len(post_payload["notes"].encode("utf-8")) <= 1000
-        assert len(put_payload["notes"].encode("utf-8")) <= 1000
+        payload = mock_create.call_args[0][0]
+        assert len(payload["notes"].encode("utf-8")) <= 1000
+        assert payload["purchaseDate"] == "2024-01-15"
 
 
 def test_import_url_duplicate_found():
     with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
-         patch("scripts.import_url.check_duplicate", return_value={"id": "hb-existing-999"}), \
-         patch.dict(os.environ, {"HOMEBOX_IP": "127.0.0.1", "HOMEBOX_API_KEY": "fake-key"}):
+         patch("scripts.import_url.check_duplicate", return_value={"id": "hb-existing-999"}):
         res = import_url("https://www.amazon.com/dp/B0042RV0CY", dry_run=False)
         assert res["existing"] is True
         assert res["homebox_id"] == "hb-existing-999"
 
 
 def test_import_url_main_cli(capsys):
-    from scripts.import_url import main
-
     # 1. Existing
     with patch("sys.argv", ["import_url.py", "http://example.com/item"]), \
          patch("scripts.import_url.import_url", return_value={"existing": True, "entity": {"name": "Existing Item"}, "homebox_id": "hb-123"}):
@@ -275,27 +243,7 @@ def test_import_url_main_cli(capsys):
     assert exc_info.value.code == 1
 
 
-def test_get_homebox_config(tmp_path, monkeypatch):
-    from scripts.import_url import get_homebox_config
-    monkeypatch.delenv("HOMEBOX_IP", raising=False)
-    monkeypatch.delenv("HOMEBOX_API_KEY", raising=False)
-
-    fake_env = tmp_path / ".env"
-    fake_env.write_text("HOMEBOX_IP=192.168.1.50\nHOMEBOX_API_KEY=secret-token\n# comment\n")
-    with patch("scripts.import_url.Path.exists", return_value=True), \
-         patch("scripts.import_url.Path.read_text", return_value=fake_env.read_text()):
-        ip, key = get_homebox_config()
-        assert ip == "192.168.1.50"
-        assert key == "secret-token"
-
-    with patch("scripts.import_url.Path.exists", return_value=False), \
-         pytest.raises(ValueError) as exc:
-        get_homebox_config()
-    assert "HOMEBOX_IP or HOMEBOX_API_KEY not set" in str(exc.value)
-
-
 def test_fetch_url_html():
-    from scripts.import_url import fetch_url_html
     mock_resp = MagicMock()
     mock_resp.text = "<html>ok</html>"
     mock_resp.raise_for_status.return_value = None
@@ -303,43 +251,23 @@ def test_fetch_url_html():
         assert fetch_url_html("http://example.com") == "<html>ok</html>"
 
 
-def test_check_duplicate_matches_name():
-    from scripts.import_url import check_duplicate
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {"items": [{"name": "Matching Name", "id": "hb-name-123"}]}
-    with patch("requests.get", return_value=mock_resp):
-        dup = check_duplicate(base_url="http://127.0.0.1:7745", headers={}, name="Matching Name", model_number=None)
-        assert dup["id"] == "hb-name-123"
-
-
 def test_truncate_to_bytes_and_clean_text():
-    from scripts.import_url import truncate_to_bytes, _clean_text
     assert truncate_to_bytes("short string", 100) == "short string"
     assert _clean_text("") == ""
     assert _clean_text("Hello &amp; world") == "Hello & world"
 
 
 def test_normalize_url():
-    from scripts.import_url import normalize_url
-
-    # Raw 10-char ASIN
     assert normalize_url("B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
     assert normalize_url("b0cjr4qz45") == "https://www.amazon.com/dp/B0CJR4QZ45"
-
-    # With ASIN prefix
     assert normalize_url("ASIN: B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
     assert normalize_url("asin:B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
     assert normalize_url("item B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
-
-    # Full URLs remain intact
     assert normalize_url("https://www.amazon.com/dp/B0CJR4QZ45") == "https://www.amazon.com/dp/B0CJR4QZ45"
     assert normalize_url("https://example.com/product/123") == "https://example.com/product/123"
 
 
 def test_import_url_with_asin():
-    from scripts.import_url import import_url
-
     with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
          patch("requests.get") as mock_img_get:
         mock_img_get.return_value.status_code = 200
@@ -349,5 +277,3 @@ def test_import_url_with_asin():
         assert result["dry_run"] is True
         assert result["entity"]["source_url"] == "https://www.amazon.com/dp/B0CJR4QZ45"
         assert result["entity"]["purchase_from"] == "Amazon"
-
-

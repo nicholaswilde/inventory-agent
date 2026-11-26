@@ -21,6 +21,11 @@ import urllib.parse
 
 import requests
 
+try:
+    from scripts import hbctl_client
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
+
 KNOWN_BRANDS = [
     "Moen", "Kohler", "Delta", "Grohe", "Pfister", "American Standard",
     "Apple", "Samsung", "Google", "Sony", "Logitech", "Anker", "Belkin",
@@ -28,32 +33,6 @@ KNOWN_BRANDS = [
     "Philips", "TP-Link", "Netgear", "Ubiquiti", "Raspberry Pi", "Arduino",
     "Adafruit", "SparkFun", "DSD TECH", "Poyiccot", "CableCreation", "UGREEN"
 ]
-
-
-def get_homebox_config() -> tuple[str, str]:
-    """Extract HOMEBOX_IP and HOMEBOX_API_KEY from environment or local .env file."""
-    ip = os.getenv("HOMEBOX_IP")
-    key = os.getenv("HOMEBOX_API_KEY")
-
-    if not ip or not key:
-        env_path = Path(".env")
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                line = line.strip()
-                if line.startswith("#") or not line:
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    k, v = k.strip(), v.strip().strip("'\"")
-                    if k == "HOMEBOX_IP" and not ip:
-                        ip = v
-                    elif k == "HOMEBOX_API_KEY" and not key:
-                        key = v
-
-    if not ip or not key:
-        raise ValueError("HOMEBOX_IP or HOMEBOX_API_KEY not set in environment or .env")
-
-    return ip, key
 
 
 def download_invoice_if_url(source: str, target_dir: Path | str = "images/pending") -> Path:
@@ -283,22 +262,17 @@ def _build_item_object(title: str, price: float, quantity: int, sold_by: str | N
     }
 
 
-def search_homebox_entities(query: str, base_url: str, headers: dict[str, str]) -> list[dict[str, Any]]:
-    """Query Homebox /entities with q parameter."""
+def search_homebox_entities(query: str) -> list[dict[str, Any]]:
+    """Query Homebox items via `hbctl search`."""
     try:
-        resp = requests.get(f"{base_url}/entities", params={"q": query}, headers=headers, timeout=15)
-        if resp.status_code == 200:
-            return resp.json().get("items", [])
+        return hbctl_client.search_items(query)
     except Exception:
-        pass
-    return []
+        return []
 
 
 def find_existing_item(
     model_number: str | None,
     title: str,
-    base_url: str,
-    headers: dict[str, str],
 ) -> dict[str, Any] | None:
     """Check Homebox for existing item with matching model number or title keywords."""
     queries = []
@@ -311,9 +285,9 @@ def find_existing_item(
         queries.append(" ".join(title_words[:3]))
 
     for q in queries:
-        items = search_homebox_entities(q, base_url, headers)
+        items = search_homebox_entities(q)
         for item in items:
-            item_model = item.get("modelNumber", "").strip().lower()
+            item_model = hbctl_client.get_field_value(item, "Model Number", "modelNumber").lower()
             if model_number and item_model and (model_number.lower() in item_model or item_model in model_number.lower()):
                 return item
 
@@ -328,38 +302,23 @@ def find_existing_item(
 
 
 def fill_missing_details(
-    existing_item: dict[str, Any],
     item_data: dict[str, Any],
     order_id: str | None,
     order_date: str | None,
 ) -> dict[str, Any]:
-    """Compute patch payload to fill in missing details on an existing Homebox entity."""
-    patch: dict[str, Any] = {}
+    """Build patch payload of candidate values for `hbctl item update --fill-missing`."""
+    patch: dict[str, Any] = {"purchaseFrom": "Amazon"}
 
-    if not existing_item.get("purchaseDate") and order_date:
+    if order_date:
         patch["purchaseDate"] = order_date
-
-    if not existing_item.get("purchaseFrom"):
-        patch["purchaseFrom"] = "Amazon"
-
-    if (not existing_item.get("purchasePrice") or existing_item.get("purchasePrice") == 0) and item_data.get("price"):
+    if item_data.get("price"):
         patch["purchasePrice"] = item_data["price"]
-
-    if not existing_item.get("manufacturer") and item_data.get("manufacturer"):
+    if item_data.get("manufacturer"):
         patch["manufacturer"] = item_data["manufacturer"]
-
-    if not existing_item.get("modelNumber") and item_data.get("model_number"):
+    if item_data.get("model_number"):
         patch["modelNumber"] = item_data["model_number"]
-
-    # Order Number custom field
-    existing_fields = existing_item.get("fields", [])
-    has_order_field = any(f.get("name") == "Order Number" and f.get("textValue") for f in existing_fields)
-    
-    if not has_order_field and order_id:
-        fields = list(existing_fields)
-        fields = [f for f in fields if f.get("name") != "Order Number"]
-        fields.append({"name": "Order Number", "type": "text", "textValue": order_id})
-        patch["fields"] = fields
+    if order_id:
+        patch["fields"] = [{"name": "Order Number", "type": "text", "textValue": order_id}]
 
     return patch
 
@@ -391,42 +350,25 @@ def create_new_item_payload(
     }
 
 
-def update_homebox_entity(entity_id: str, patch_data: dict[str, Any], base_url: str, headers: dict[str, str]) -> None:
-    """Fetch entity, merge patch, and PUT back to Homebox."""
-    resp = requests.get(f"{base_url}/entities/{entity_id}", headers=headers, timeout=15)
-    resp.raise_for_status()
-    current = resp.json()
-    merged = {**current, **patch_data}
-    put_resp = requests.put(
-        f"{base_url}/entities/{entity_id}",
-        headers={**headers, "Content-Type": "application/json"},
-        data=json.dumps(merged),
-        timeout=15,
-    )
-    put_resp.raise_for_status()
+def update_homebox_entity(
+    entity_id: str,
+    patch_data: dict[str, Any],
+    *,
+    fill_missing: bool = False,
+) -> None:
+    """Merge patch onto an existing Homebox entity via `hbctl item update`."""
+    hbctl_client.update_item(entity_id, patch_data, fill_missing=fill_missing)
 
 
-def create_homebox_entity(data: dict[str, Any], base_url: str, headers: dict[str, str]) -> str:
-    """Create entity via POST /entities."""
-    resp = requests.post(
-        f"{base_url}/entities",
-        headers={**headers, "Content-Type": "application/json"},
-        data=json.dumps(data),
-        timeout=15,
-    )
-    resp.raise_for_status()
-    created = resp.json()
-    return created.get("id", "")
+def create_homebox_entity(data: dict[str, Any]) -> str:
+    """Create entity via `hbctl item create`."""
+    created = hbctl_client.create_item(data)
+    return str(created.get("id", ""))
 
 
-def attach_file_to_entity(entity_id: str, file_path: Path | str, base_url: str, headers: dict[str, str]) -> None:
-    """Upload attachment to Homebox entity."""
-    path = Path(file_path)
-    with open(path, "rb") as f:
-        files = {"file": (path.name, f, "application/pdf")}
-        data = {"name": path.name}
-        resp = requests.post(f"{base_url}/entities/{entity_id}/attachments", headers=headers, files=files, data=data, timeout=30)
-        resp.raise_for_status()
+def attach_file_to_entity(entity_id: str, file_path: Path | str) -> None:
+    """Upload attachment to Homebox entity via `hbctl attachment upload`."""
+    hbctl_client.upload_attachments(entity_id, [Path(file_path)])
 
 
 def import_amazon_invoice(
@@ -462,15 +404,6 @@ def import_amazon_invoice(
     if str(pdf_path.resolve()) != str(final_pdf_path.resolve()):
         shutil.copyfile(pdf_path, final_pdf_path)
 
-    # 5. Connect to Homebox
-    if not dry_run:
-        ip, key = get_homebox_config()
-        base_url = f"http://{ip}:7745/api/v1"
-        headers = {"Authorization": f"Bearer {key}"}
-    else:
-        base_url = ""
-        headers = {}
-
     processed_items = []
     for item in invoice_data["items"]:
         item_summary = {
@@ -487,24 +420,24 @@ def import_amazon_invoice(
             continue
 
         # Check existing item
-        existing = find_existing_item(item["model_number"], item["title"], base_url, headers)
+        existing = find_existing_item(item["model_number"], item["title"])
         if existing:
             entity_id = existing["id"]
-            patch = fill_missing_details(existing, item, order_id, order_date)
+            patch = fill_missing_details(item, order_id, order_date)
             if patch:
-                update_homebox_entity(entity_id, patch, base_url, headers)
+                update_homebox_entity(entity_id, patch, fill_missing=True)
             item_summary["action"] = "updated"
             item_summary["entity_id"] = entity_id
         else:
             payload = create_new_item_payload(item, order_id, order_date)
-            entity_id = create_homebox_entity(payload, base_url, headers)
+            entity_id = create_homebox_entity(payload)
             item_summary["action"] = "created"
             item_summary["entity_id"] = entity_id
 
         # Attach invoice
         if attach and entity_id and final_pdf_path.exists():
             try:
-                attach_file_to_entity(entity_id, final_pdf_path, base_url, headers)
+                attach_file_to_entity(entity_id, final_pdf_path)
             except Exception as e:
                 print(f"Warning: Failed to attach invoice to entity {entity_id}: {e}", file=sys.stderr)
 

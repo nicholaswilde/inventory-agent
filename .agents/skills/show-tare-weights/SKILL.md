@@ -12,7 +12,7 @@ Displays an alphabetically sorted table of all tracked kitchen containers and th
 When the user asks to view, show, list, or display kitchen containers, tare weights, or the container weight table in the console:
 
 1. **Query and Generate Table:**
-  - Execute `task tare:show` (or `task tare:sheet` / `uv run scripts/tare_weight_manager.py show`), or query Homebox items tagged with `tare-weight`.
+  - Execute `task tare:show` (or `task tare:sheet` / `hbctl export --tag tare-weight --format markdown --columns "name=Container / Item,Tare Weight (g)" --align left --empty "-" --sort name`).
   - Format the table with columns `Container / Item` and `Tare Weight (g)`.
   - Ensure items are sorted alphabetically by container name.
 

@@ -575,28 +575,34 @@ class TestGeminiVisionFallback:
 # ============================================================================
 
 class TestHomeboxSubprocess:
-    """Tests for `hbx` CLI subprocess execution (search, create, attach)."""
+    """Tests for `hbctl` CLI subprocess execution (search, create, attach)."""
 
-    def test_call_homebox_invokes_hbx_cli(self):
-        """Verify call_homebox translates search/create/attach into hbx CLI commands."""
+    def test_call_homebox_invokes_hbctl_cli(self):
+        """Verify call_homebox translates search/create/attach into hbctl CLI commands."""
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
 
             call_homebox("search", "DHT11")
-            assert mock_run.call_args[0][0] == ["hbx", "-q", "search", "DHT11"]
+            assert mock_run.call_args[0][0] == ["hbctl", "-q", "search", "DHT11"]
 
             call_homebox("create", '{"name":"ESP32"}')
-            assert mock_run.call_args[0][0] == ["hbx", "--json", "item", "create", "--from-json", "-"]
+            assert mock_run.call_args[0][0] == ["hbctl", "--json", "item", "create", "--from-json", "-"]
+            assert mock_run.call_args[1]["input"] == '{"name":"ESP32"}'
+
+            call_homebox("create", '{"name":"ESP32"}', "image.jpg")
+            assert mock_run.call_args[0][0] == [
+                "hbctl", "--json", "item", "create", "--from-json", "-", "--attach", "image.jpg"
+            ]
             assert mock_run.call_args[1]["input"] == '{"name":"ESP32"}'
 
             call_homebox("attach", "uuid-123", "image.jpg")
-            assert mock_run.call_args[0][0] == ["hbx", "attachment", "upload", "uuid-123", "image.jpg"]
+            assert mock_run.call_args[0][0] == ["hbctl", "attachment", "upload", "uuid-123", "image.jpg"]
 
     def test_search_entity_match_found_quiet_id(self):
-        """Verify search returns bare UUID line emitted by `hbx -q search`."""
+        """Verify search returns bare UUID line emitted by `hbctl -q search`."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "-q", "search", "DHT11"],
+                args=["hbctl", "-q", "search", "DHT11"],
                 returncode=0,
                 stdout="12edefc5-6bf3-492d-b340-1c73a85be0b8\n",
                 stderr="",
@@ -607,7 +613,7 @@ class TestHomeboxSubprocess:
         """Verify search returns UUID when matching item is found."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "-q", "search", "DHT11"],
+                args=["hbctl", "-q", "search", "DHT11"],
                 returncode=0,
                 stdout="ID: 12edefc5-6bf3-492d-b340-1c73a85be0b8 | Name: DHT11 Sensor Module\n",
                 stderr="",
@@ -620,7 +626,7 @@ class TestHomeboxSubprocess:
         """Verify search returns None when 0 items match."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "-q", "search", "NonExistent"],
+                args=["hbctl", "-q", "search", "NonExistent"],
                 returncode=0,
                 stdout="",
                 stderr="",
@@ -631,7 +637,7 @@ class TestHomeboxSubprocess:
         """Verify search returns None on non-zero exit code."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "-q", "search", "ErrorItem"],
+                args=["hbctl", "-q", "search", "ErrorItem"],
                 returncode=1,
                 stdout="",
                 stderr="Connection refused",
@@ -670,7 +676,7 @@ class TestHomeboxSubprocess:
 
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "--json", "item", "create", "--from-json", "-"],
+                args=["hbctl", "--json", "item", "create", "--from-json", "-"],
                 returncode=0,
                 stdout=created_json,
                 stderr="",
@@ -684,7 +690,7 @@ class TestHomeboxSubprocess:
         comp = {"name": "Bad Item"}
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "--json", "item", "create", "--from-json", "-"],
+                args=["hbctl", "--json", "item", "create", "--from-json", "-"],
                 returncode=1,
                 stdout="",
                 stderr="Server 500 Error",
@@ -697,7 +703,7 @@ class TestHomeboxSubprocess:
         comp = {"name": "Bad Response Item"}
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "--json", "item", "create", "--from-json", "-"],
+                args=["hbctl", "--json", "item", "create", "--from-json", "-"],
                 returncode=0,
                 stdout="<html>502 Bad Gateway</html>",
                 stderr="",
@@ -709,7 +715,7 @@ class TestHomeboxSubprocess:
         """Verify attach passes entity ID and image path returning True."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "attachment", "upload", "uuid-123", "image.jpg"],
+                args=["hbctl", "attachment", "upload", "uuid-123", "image.jpg"],
                 returncode=0,
                 stdout='{"id": "att-1", "name": "image.jpg"}',
                 stderr="",
@@ -722,7 +728,7 @@ class TestHomeboxSubprocess:
         """Verify attach returns False on non-zero exit code."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbx", "attachment", "upload", "uuid-123", "image.jpg"],
+                args=["hbctl", "attachment", "upload", "uuid-123", "image.jpg"],
                 returncode=1,
                 stdout="",
                 stderr="File upload failed",
@@ -842,8 +848,7 @@ class TestCLIAndDryRun:
 
             mock_hb.side_effect = [
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # search
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "new-1"}'),  # create
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "ok"}'),  # attach
+                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "new-1"}'),  # create + attach
             ]
 
             exit_code = main(["--pending-dir", str(pending), "--processed-dir", str(processed)])
@@ -900,8 +905,7 @@ class TestFullPipelineE2EMock:
 
             mock_hb.side_effect = [
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # search -> not found
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "bme280-uuid"}'),  # create
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "attached"}'),  # attach
+                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "bme280-uuid"}'),  # create + attach
             ]
 
             success = process_single_image(img, processed_dir=processed, api_key="test-key")
@@ -911,11 +915,10 @@ class TestFullPipelineE2EMock:
 
             # Verify call sequence
             hb_calls = mock_hb.call_args_list
-            assert len(hb_calls) == 3
+            assert len(hb_calls) == 2
             assert hb_calls[0][0][0] == "search"
             assert hb_calls[1][0][0] == "create"
-            assert hb_calls[2][0][0] == "attach"
-            assert hb_calls[2][0][1] == "bme280-uuid"
+            assert hb_calls[1][0][2] == str(img)
 
     def test_e2e_duplicate_item_attach_flow(self, tmp_path):
         """Verify duplicate item workflow: Gemini succeeds -> duplicate found -> attach to existing -> move."""
@@ -974,8 +977,7 @@ class TestFullPipelineE2EMock:
 
             mock_hb.side_effect = [
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # search -> not found
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "esp32-uuid"}'),  # create
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "attached"}'),  # attach
+                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "esp32-uuid"}'),  # create + attach
             ]
 
             success = process_single_image(img, processed_dir=processed)
@@ -1023,10 +1025,9 @@ class TestFullPipelineE2EMock:
                 # img1_dup: search match -> attach
                 subprocess.CompletedProcess(args=[], returncode=0, stdout="ID: dup-uuid | Name: DHT11\n"),
                 subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "ok"}'),
-                # img2_new: search none -> create -> attach
+                # img2_new: search none -> create + attach
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),
                 subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "new-uuid"}'),
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "ok"}'),
                 # img3_fail: search none -> create fails (returncode 1)
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),
                 subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="500 Internal Error"),
@@ -1068,9 +1069,8 @@ class TestFullPipelineE2EMock:
              patch("scripts.process_vision.attach_image", return_value=False):
             assert process_single_image(img, tmp_path / "processed") is False
 
-        # 2. New created but attach fails
+        # 2. New create/attach fails
         with patch("scripts.process_vision.identify_component", return_value={"name": "Chip", "modelNumber": "CHIP"}), \
              patch("scripts.process_vision.search_entity", return_value=None), \
-             patch("scripts.process_vision.create_entity", return_value="hb-new"), \
-             patch("scripts.process_vision.attach_image", return_value=False):
+             patch("scripts.process_vision.create_entity", side_effect=RuntimeError("attach failed")):
             assert process_single_image(img, tmp_path / "processed") is False

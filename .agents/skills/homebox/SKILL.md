@@ -1,79 +1,94 @@
 ---
 name: homebox
-description: Interacts with the Homebox API using the `hbx` CLI to list, get, create, update, upsert, search, export, and attach files to items/entities.
+description: Interacts with the Homebox API using the `hbctl` CLI to list, get, create, update, upsert, search, export, and attach files to items/entities.
 ---
 
 # Homebox Skill
 
-Use the `hbx` CLI (`nicholaswilde/hbx`) for all direct Homebox v0.26+ REST API interactions.
+Use the `hbctl` CLI (`nicholaswilde/hbctl`) for all direct Homebox v0.26+ REST API interactions.
 
 ## Requirements
 
-1. **Binary**: `hbx` installed on `PATH` (Homebrew `nicholaswilde/homebrew-tap/hbx`, APT `nicholaswilde/apt`, Scoop, or `cargo install --git https://github.com/nicholaswilde/hbx`).
-2. **Credentials**: Auto-loaded from local `.env` (`HOMEBOX_IP` / `HOMEBOX_URL` + `HOMEBOX_API_KEY`) or stored via `hbx auth login`.
+1. **Binary**: `hbctl` installed on `PATH` (Homebrew `nicholaswilde/homebrew-tap/hbctl`, APT `nicholaswilde/apt`, Scoop, or `cargo install --git https://github.com/nicholaswilde/hbctl`).
+2. **Credentials**: Auto-loaded from local `.env` (`HOMEBOX_IP` / `HOMEBOX_URL` + `HOMEBOX_API_KEY`) or stored via `hbctl auth login`.
 
 ## CLI Usage
 
-### List & Search Entities
+### List, Tree & Search Entities
 
 ```bash
-hbx item list --all --json --select id,name,quantity
-hbx search "<query>" --json --select id,name
-hbx search --manufacturer "Espressif" --json --select id,name,fields
+hbctl status
+hbctl item list --all --json --select id,name,quantity
+hbctl item tree [--root "<location>"] [--max-depth 2]
+hbctl search "<query>" --json --select id,name
+hbctl search --manufacturer "Espressif" --field Voltage=3.3 --json --select id,name,fields
 ```
 
-### Get Entity
+### Get & Move Entity
 
 ```bash
-hbx item get <entity_id> --json --select id,name,quantity,fields
+hbctl item get <entity_id> --json --select id,name,quantity,fields
+hbctl item move <entity_id> "<parent_name_or_id>"   # or 'none' to unparent
 ```
 
 ### Create & Upsert Entity
 
 ```bash
-hbx item create --name "ESP32 DevKit" --manufacturer "Espressif" --field Voltage=3.3 --json
-printf '%s' '{"name":"New Entity","manufacturer":"Acme"}' | hbx item create --from-json - --json
-hbx item upsert --name "ESP32 DevKit" --tag electronics --field Pins=38 --field-type number
+hbctl item create --name "ESP32 DevKit" --manufacturer "Espressif" --parent "Lab Bin" --field Voltage=3.3 --attach photo.jpg --json
+printf '%s' '{"name":"New Entity","manufacturer":"Acme"}' | hbctl item create --from-json - --attach photo.jpg --json
+hbctl item upsert --name "ESP32 DevKit" --tag electronics --field Pins=38 --field-type number --match-by model --match-by name --fill-missing
+printf '%s' '{"name":"ESP32 DevKit","modelNumber":"ESP32"}' | hbctl item upsert --from-json - --match-by model --fill-missing --attach photo.jpg --json
 ```
 
 ### Update Entity & Custom Fields
 
 ```bash
-hbx item update <entity_id> --quantity 5 --notes "Shelf A"
-printf '%s' '{"quantity":5}' | hbx item update <entity_id> --from-json -
-hbx field get <entity_id> "Model Number" -q
-hbx field set <entity_id> "Model Number" "12345"
+hbctl item update <entity_id> --quantity 5 --notes "Shelf A" --add-tag verified
+hbctl item update <entity_id> --remove-tag pending --fill-missing
+printf '%s' '{"quantity":5}' | hbctl item update <entity_id> --from-json - --fill-missing
+hbctl field list <entity_id> --json
+hbctl field get <entity_id> "Model Number" -q
+hbctl field set <entity_id> "Model Number" "12345"
+hbctl field delete <entity_id> "Obsolete Field"
 ```
 
 ### Delete Entity
 
 ```bash
-hbx item delete <entity_id> --force
+hbctl item delete <entity_id> --force
 ```
 
 ### Attachments
 
 ```bash
-hbx attachment upload <entity_id> <file_path...>
-hbx attachment list <entity_id> --json
-hbx attachment download <entity_id> --all --ext pdf --out ./manuals
-hbx attachment delete <entity_id> <attachment_id>
+hbctl attachment upload <entity_id> <file_path...> [--name <remote_name>]
+printf '%s' "<bytes>" | hbctl attachment upload --name <remote_name> <entity_id> -
+hbctl attachment list <entity_id> --json
+hbctl attachment download <entity_id> --all --ext pdf --out ./manuals
+hbctl attachment download --all-items --ext pdf --out ./manuals
+hbctl attachment download --tag appliance --ext pdf --out ./manuals
+hbctl attachment download --items-from ids.txt --ext pdf --out ./manuals
+hbctl attachment delete <entity_id> <attachment_id>
 ```
 
-### Entity Types, Tags & Export
+### Entity Types, Tags, Profiles & Export
 
 ```bash
-hbx entity-types
-hbx tag list
-hbx export --tag electronics --field Manufacturer --format markdown
+hbctl entity-types [list|create|delete]
+hbctl tag [list|create|update|delete]
+hbctl --profile <name> item list --all
+hbctl export --tag electronics --columns "name=Item,Manufacturer,Tare Weight (g)" --align left --empty "-" --format markdown
 ```
 
 ### Taskfile Equivalents
 
+- `task homebox:status`
 - `task homebox:list`
+- `task homebox:tree`
+- `task homebox:move ID=<id> PARENT='<parent>'`
 - `task homebox:get ID=<id>`
-- `task homebox:create DATA='<json>'`
-- `task homebox:update ID=<id> DATA='<json>'`
+- `task homebox:create DATA='<json>' [ATTACH='<path>']`
+- `task homebox:update ID=<id> DATA='<json>' [FILL_MISSING=1]`
 - `task homebox:delete ID=<id>`
 - `task homebox:attach ID=<id> FILE='<path>'`
 - `task homebox:search QUERY='<query>'`
@@ -83,5 +98,5 @@ hbx export --tag electronics --field Manufacturer --format markdown
 
 - Always pass `--json --select id,name,...` or `-q` to keep output compact in agent context.
 - Preview mutating calls with `--dry-run` (always redacts `Authorization: Bearer ***`).
-- `hbx item create` / `upsert` automatically handles Homebox's follow-up `PUT` for custom fields and `GET -> Merge -> PUT` updates.
-- Optimize local photos with `task image:optimize TARGET="<path>"` (< 500KB, max 1920x1080) before `hbx attachment upload`.
+- `hbctl item create` / `upsert` automatically handles Homebox's follow-up `PUT` for custom fields and `GET -> Merge -> PUT` updates.
+- Optimize local photos with `task image:optimize TARGET="<path>"` (< 500KB, max 1920x1080) before `hbctl attachment upload`.

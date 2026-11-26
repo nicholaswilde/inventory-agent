@@ -319,19 +319,21 @@ def call_homebox(
     *args: str,
     homebox_script: Path | str | None = None,
 ) -> subprocess.CompletedProcess:
-    """Invoke the `hbx` CLI for Homebox interactions (search, create, attach)."""
-    hbx_bin = str(homebox_script) if homebox_script is not None else "hbx"
+    """Invoke the `hbctl` CLI for Homebox interactions (search, create, attach)."""
+    hbctl_bin = str(homebox_script) if homebox_script is not None else "hbctl"
     stdin_data: str | None = None
 
     if subcommand == "search" and args:
-        cmd = [hbx_bin, "-q", "search", args[0]]
+        cmd = [hbctl_bin, "-q", "search", args[0]]
     elif subcommand == "create" and args:
-        cmd = [hbx_bin, "--json", "item", "create", "--from-json", "-"]
+        cmd = [hbctl_bin, "--json", "item", "create", "--from-json", "-"]
         stdin_data = args[0]
+        if len(args) >= 2 and args[1]:
+            cmd.extend(["--attach", args[1]])
     elif subcommand == "attach" and len(args) >= 2:
-        cmd = [hbx_bin, "attachment", "upload", args[0], args[1]]
+        cmd = [hbctl_bin, "attachment", "upload", args[0], args[1]]
     else:
-        cmd = [hbx_bin, subcommand, *args]
+        cmd = [hbctl_bin, subcommand, *args]
 
     return subprocess.run(cmd, input=stdin_data, capture_output=True, text=True, check=False)
 
@@ -355,7 +357,7 @@ def search_entity(query: str, homebox_script: Path | str | None = None) -> str |
         match = re.search(r"ID:\s*([^\s|]+)", stripped, re.IGNORECASE)
         if match:
             return match.group(1).strip()
-        # `hbx -q search` emits bare entity IDs, one per line
+        # `hbctl -q search` emits bare entity IDs, one per line
         if " " not in stripped and "|" not in stripped:
             return stripped
     return None
@@ -364,6 +366,7 @@ def search_entity(query: str, homebox_script: Path | str | None = None) -> str |
 def create_entity(
     component_data: dict[str, Any],
     homebox_script: Path | str | None = None,
+    attach: Path | str | None = None,
 ) -> str:
     """Create new entity in HomeBox. Returns entity UUID on success, raises RuntimeError on failure."""
     sanitized = dict(component_data)
@@ -372,7 +375,8 @@ def create_entity(
     if "name" in sanitized and isinstance(sanitized["name"], str):
         sanitized["name"] = sanitized["name"][:100].strip()
     json_payload = json.dumps(sanitized)
-    proc = call_homebox("create", json_payload, homebox_script=homebox_script)
+    extra_args = (str(attach),) if attach is not None else ()
+    proc = call_homebox("create", json_payload, *extra_args, homebox_script=homebox_script)
     if proc.returncode != 0:
         raise RuntimeError(f"Failed to create HomeBox entity: {proc.stderr or proc.stdout}")
 
@@ -526,13 +530,10 @@ def process_single_image(
         # New entity
         if not dry_run:
             try:
-                entity_id = create_entity(comp, homebox_script=homebox_script)
+                entity_id = create_entity(comp, homebox_script=homebox_script, attach=img_path)
                 print(f"  [+] Created entity with ID: {entity_id}")
             except Exception as e:
-                print(f"  [-] Failed to create entity: {e}")
-                return False
-            if not attach_image(entity_id, img_path, homebox_script=homebox_script):
-                print(f"  [-] Failed to attach image to new entity {entity_id}")
+                print(f"  [-] Failed to create/attach entity: {e}")
                 return False
             move_to_processed(img_path, processed_dir)
             print(f"  [+] Attached {img_path.name} and moved to {processed_dir}")

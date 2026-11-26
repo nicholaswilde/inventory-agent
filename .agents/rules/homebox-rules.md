@@ -1,11 +1,11 @@
 # Homebox & Ingestion Pipeline Rules
 
 ## Homebox API Connection
-- **CLI**: Prefer `hbx` CLI (`--json --select ...`, `-q`, `--dry-run`) over raw `curl | jq` calls.
-- **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` (auto-loaded by `hbx`) or `hbx auth login`. Never commit `.env` or log keys.
+- **CLI**: Prefer `hbctl` CLI (`--json --select ...`, `-q`, `--dry-run`) over raw `curl | jq` calls.
+- **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` (auto-loaded by `hbctl`) or `hbctl auth login`. Never commit `.env` or log keys.
 - **Port**: 7745 (`http://$HOMEBOX_IP:7745`).
 - **Auth Header**: Bearer token: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
-- **JSON Filtering**: Use `hbx --json --select <fields>` (or `jq` on raw endpoints) to keep raw uncompressed payloads out of model context.
+- **JSON Filtering**: Use `hbctl --json --select <fields>` (or `jq` on raw endpoints) to keep raw uncompressed payloads out of model context.
 
 ## Image Optimization & Compression
 - **Limit**: Web-friendly images (< 500KB, max 1920x1080 resolution) before uploading/attaching to Homebox entities.

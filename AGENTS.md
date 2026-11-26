@@ -119,7 +119,7 @@ Use `ripwire` CLI (prefixed with `rtk ripwire`) for AST codebase mapping, call g
 <!-- homebox-connection-begin -->
 ## Homebox Connection Rules
 When connecting to Homebox API, strictly follow connection parameters:
-1. **CLI**: Prefer `hbx` CLI (`--json --select ...`, `-q`, `--dry-run`; auto-loads `.env` or `hbx auth login`) over raw `curl` calls.
+1. **CLI**: Prefer `hbctl` CLI (`--json --select ...`, `-q`, `--dry-run`; auto-loads `.env` or `hbctl auth login`) over raw `curl` calls.
 2. **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` file. NEVER commit this file or output raw keys in logs.
 3. **Port**: Homebox service runs on port `7745` (e.g., `http://$HOMEBOX_IP:7745`).
 4. **Authentication**: Pass API key using standard Bearer token header: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
@@ -194,7 +194,7 @@ When adding or updating section and subsection headings in `README.md`, always i
 
 <!-- api-response-handling-begin -->
 ## API Response Handling Guidelines
-- **JSON Filtering**: Prefer `hbx --json --select <fields>` (or `jq` on raw endpoints, e.g., `jq '{name: .name, fields: .fields}'`) to keep uncompressed JSON out of context.
+- **JSON Filtering**: Prefer `hbctl --json --select <fields>` (or `jq` on raw endpoints, e.g., `jq '{name: .name, fields: .fields}'`) to keep uncompressed JSON out of context.
 - **Context-Mode for Data**: For heavy JSON analysis, use `ctx_execute` to keep payload in sandbox and return only derived answer.
 <!-- api-response-handling-end -->
 

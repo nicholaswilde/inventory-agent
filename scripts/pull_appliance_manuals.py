@@ -15,39 +15,14 @@ Options:
 """
 
 import argparse
-import os
-import re
 import sys
 from pathlib import Path
 from typing import Any
 
-import requests
-
-
-def get_homebox_config() -> tuple[str, str]:
-    """Retrieve HOMEBOX_IP and HOMEBOX_API_KEY from environment or .env file."""
-    ip = os.getenv("HOMEBOX_IP")
-    key = os.getenv("HOMEBOX_API_KEY")
-
-    if not ip or not key:
-        env_path = Path(".env")
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                line = line.strip()
-                if line.startswith("#") or not line:
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    k, v = k.strip(), v.strip().strip("'\"")
-                    if k == "HOMEBOX_IP" and not ip:
-                        ip = v
-                    elif k == "HOMEBOX_API_KEY" and not key:
-                        key = v
-
-    if not ip or not key:
-        raise ValueError("HOMEBOX_IP or HOMEBOX_API_KEY not set in environment or .env")
-
-    return ip, key
+try:
+    from scripts import hbctl_client
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
 
 
 def get_appliance_entities_from_markdown(appliances_dir: Path | str = "appliances") -> list[dict[str, Any]]:
@@ -91,41 +66,6 @@ def get_appliance_entities_from_markdown(appliances_dir: Path | str = "appliance
     return entities
 
 
-def fetch_entity(entity_id: str, base_url: str, headers: dict[str, str]) -> dict[str, Any] | None:
-    """Fetch entity details including attachment list from Homebox."""
-    url = f"{base_url}/entities/{entity_id}"
-    try:
-        resp = requests.get(url, headers=headers, timeout=30)
-        if resp.status_code == 200:
-            return resp.json()
-    except requests.RequestException:
-        pass
-    return None
-
-
-def download_attachment(
-    entity_id: str,
-    attachment_id: str,
-    dest_path: Path | str,
-    base_url: str,
-    headers: dict[str, str],
-    chunk_size: int = 65536,
-) -> Path:
-    """Stream download an attachment from Homebox to local disk."""
-    url = f"{base_url}/entities/{entity_id}/attachments/{attachment_id}"
-    dest = Path(dest_path)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-
-    resp = requests.get(url, headers=headers, stream=True, timeout=120)
-    resp.raise_for_status()
-
-    with open(dest, "wb") as f:
-        for chunk in resp.iter_content(chunk_size=chunk_size):
-            f.write(chunk)
-
-    return dest
-
-
 def pull_appliance_manuals(
     output_dir: Path | str = "manuals",
     appliances_dir: Path | str = "appliances",
@@ -134,79 +74,71 @@ def pull_appliance_manuals(
     overwrite: bool = False,
     dry_run: bool = False,
 ) -> list[dict[str, Any]]:
-    """Pull appliance manual PDFs from Homebox and save them locally."""
-    ip, key = get_homebox_config()
-    base_url = f"http://{ip}:7745/api/v1"
-    headers = {"Authorization": f"Bearer {key}"}
-
+    """Pull appliance manual PDFs from Homebox via `hbctl attachment download`."""
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    targets: list[dict[str, Any]] = []
-
+    name_by_id: dict[str, str] = {}
     if entity_id:
-        targets = [{"name": f"Entity_{entity_id}", "entity_id": entity_id, "manual_filename": None}]
+        dl_results = hbctl_client.download_attachments(
+            entity_id,
+            out_path,
+            ext="pdf",
+            overwrite=overwrite,
+            dry_run=dry_run,
+        )
     elif scan_all:
-        resp = requests.get(f"{base_url}/entities", headers=headers, timeout=30)
-        resp.raise_for_status()
-        items = resp.json().get("items", [])
-        for item in items:
-            targets.append({
-                "name": item.get("name", "Unknown"),
-                "entity_id": item["id"],
-                "manual_filename": None,
-            })
+        dl_results = hbctl_client.download_attachments(
+            out_dir=out_path,
+            all_items=True,
+            ext="pdf",
+            overwrite=overwrite,
+            dry_run=dry_run,
+        )
     else:
         targets = get_appliance_entities_from_markdown(appliances_dir)
+        if not targets:
+            return []
+        name_by_id = {t["entity_id"]: t["name"] for t in targets}
+        dl_results = hbctl_client.download_attachments(
+            out_dir=out_path,
+            items_from=[t["entity_id"] for t in targets],
+            ext="pdf",
+            overwrite=overwrite,
+            dry_run=dry_run,
+        )
 
     results: list[dict[str, Any]] = []
+    for entry in dl_results:
+        if dry_run:
+            body = entry.get("body") or {}
+            dest_str = body.get("out", "")
+            eid = body.get("entityId") or entity_id or ""
+            entity_name = body.get("entityName") or name_by_id.get(eid) or (f"Entity_{eid}" if eid else "Unknown")
+            att_id = str(entry.get("url", "")).rstrip("/").rsplit("/", 1)[-1]
+            dest_file = Path(dest_str) if dest_str else out_path
+            already_exists = dest_file.exists() if dest_str else False
+            downloaded = not already_exists or overwrite
+        else:
+            dest_str = entry.get("path", "")
+            eid = entry.get("entityId") or entity_id or ""
+            entity_name = entry.get("entityName") or name_by_id.get(eid) or (f"Entity_{eid}" if eid else "Unknown")
+            att_id = entry.get("id", "")
+            dest_file = Path(dest_str) if dest_str else out_path
+            status = entry.get("status", "")
+            downloaded = status == "downloaded"
+            already_exists = status == "skipped"
 
-    for target in targets:
-        eid = target["entity_id"]
-        entity_name = target["name"]
-        entity_data = fetch_entity(eid, base_url, headers)
-        if not entity_data:
-            continue
-
-        real_name = entity_data.get("name") or entity_name
-        attachments = entity_data.get("attachments", [])
-
-        # Filter for PDF attachments
-        pdf_attachments = [
-            a for a in attachments
-            if a.get("mimeType") == "application/pdf"
-            or (a.get("title") and a["title"].lower().endswith(".pdf"))
-            or (a.get("name") and a["name"].lower().endswith(".pdf"))
-        ]
-
-        for att in pdf_attachments:
-            aid = att["id"]
-            title = att.get("title") or att.get("name")
-            if not title:
-                title = target.get("manual_filename")
-            if not title:
-                slug = re.sub(r"[^a-zA-Z0-9]+", "_", real_name).strip("_")
-                title = f"{slug}_Manual.pdf"
-
-            dest_file = out_path / title
-            already_exists = dest_file.exists()
-
-            downloaded = False
-            if not already_exists or overwrite:
-                if not dry_run:
-                    download_attachment(eid, aid, dest_file, base_url, headers)
-                downloaded = True
-
-            results.append({
-                "entity_name": real_name,
-                "entity_id": eid,
-                "attachment_id": aid,
-                "filename": title,
-                "path": str(dest_file),
-                "downloaded": downloaded,
-                "already_existed": already_exists,
-                "dry_run": dry_run,
-            })
+        results.append({
+            "entity_name": entity_name,
+            "entity_id": eid,
+            "attachment_id": att_id,
+            "filename": dest_file.name if dest_str else "",
+            "path": dest_str,
+            "downloaded": downloaded,
+            "already_existed": already_exists,
+            "dry_run": dry_run,
+        })
 
     return results
 

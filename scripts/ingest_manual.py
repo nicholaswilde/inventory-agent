@@ -18,6 +18,11 @@ import urllib.parse
 
 import requests
 
+try:
+    from scripts import hbctl_client
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
+
 KNOWN_MANUFACTURERS = [
     "LG", "Samsung", "Whirlpool", "Bosch", "GE", "GE Appliances",
     "KitchenAid", "Frigidaire", "Miele", "Maytag", "Electrolux",
@@ -1184,38 +1189,8 @@ def format_cheat_sheet(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def get_homebox_config() -> tuple[str, str]:
-    """Extract HOMEBOX_IP and HOMEBOX_API_KEY from environment or .env file."""
-    ip = os.getenv("HOMEBOX_IP")
-    key = os.getenv("HOMEBOX_API_KEY")
-
-    if not ip or not key:
-        env_path = Path(".env")
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                line = line.strip()
-                if line.startswith("#") or not line:
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    k, v = k.strip(), v.strip().strip("'\"")
-                    if k == "HOMEBOX_IP" and not ip:
-                        ip = v
-                    elif k == "HOMEBOX_API_KEY" and not key:
-                        key = v
-
-    if not ip or not key:
-        raise ValueError("HOMEBOX_IP or HOMEBOX_API_KEY not set in environment or .env")
-
-    return ip, key
-
-
 def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
-    """Create item in Homebox and upload manual attachment."""
-    ip, key = get_homebox_config()
-    base_url = f"http://{ip}:7745/api/v1"
-    headers = {"Authorization": f"Bearer {key}"}
-
+    """Create item in Homebox via `hbctl` and upload manual attachment."""
     payload = {
         "name": data["name"],
         "description": f"{data.get('capacity', '')} {data.get('appliance_type', '')}".strip(),
@@ -1230,64 +1205,43 @@ def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
     try:
         model = (data.get("model_number") or "").strip()
         if model:
-            search_resp = requests.get(
-                f"{base_url}/entities?q={urllib.parse.quote(model)}",
-                headers=headers,
-                timeout=10,
-            )
-            if search_resp.status_code == 200:
-                results = search_resp.json()
-                items = results.get("items", []) if isinstance(results, dict) else results
-                if items:
-                    entity_id = items[0].get("id")
+            items = hbctl_client.search_items(model=model)
+            if items:
+                entity_id = items[0].get("id")
 
         if not entity_id:
-            items_resp = requests.get(f"{base_url}/entities", headers=headers, timeout=10)
-            if items_resp.status_code == 200:
-                items_list = items_resp.json()
-                items = items_list.get("items", []) if isinstance(items_list, dict) else items_list
-                model_lower = model.lower()
-                for it in items:
-                    it_model = (it.get("modelNumber") or "").lower()
-                    it_name = (it.get("name") or "").lower()
-                    if model_lower and it_model and (model_lower == it_model or model_lower in it_model or it_model in model_lower):
-                        entity_id = it.get("id")
-                        break
-                    if model_lower and len(model_lower) >= 4 and model_lower in it_name:
-                        entity_id = it.get("id")
-                        break
+            items = hbctl_client.list_items()
+            model_lower = model.lower()
+            for it in items:
+                it_model = hbctl_client.get_field_value(it, "Model Number", "modelNumber").lower()
+                it_name = (it.get("name") or "").lower()
+                if model_lower and it_model and (model_lower == it_model or model_lower in it_model or it_model in model_lower):
+                    entity_id = it.get("id")
+                    break
+                if model_lower and len(model_lower) >= 4 and model_lower in it_name:
+                    entity_id = it.get("id")
+                    break
     except Exception:
         pass
 
-    if not entity_id:
-        create_resp = requests.post(f"{base_url}/entities", json=payload, headers=headers, timeout=30)
-        create_resp.raise_for_status()
-        entity_id = create_resp.json().get("id")
+    upload_file = compress_pdf_if_large(manual_file) if manual_file.exists() else None
+    attached = False
+    try:
+        if not entity_id:
+            if upload_file and upload_file == manual_file:
+                created = hbctl_client.create_item(payload, attach=[upload_file])
+                attached = True
+            else:
+                created = hbctl_client.create_item(payload)
+            entity_id = created.get("id")
 
-        # Update entity with top-level attributes (Homebox v0.26+ schema)
-        update_resp = requests.put(f"{base_url}/entities/{entity_id}", json=payload, headers=headers, timeout=30)
-        update_resp.raise_for_status()
+        if entity_id and upload_file and not attached:
+            hbctl_client.upload_attachments(entity_id, [upload_file], remote_name=manual_file.name)
+    finally:
+        if upload_file and upload_file != manual_file and upload_file.exists():
+            upload_file.unlink(missing_ok=True)
 
-    # Attach manual
-    if manual_file.exists():
-        upload_file = compress_pdf_if_large(manual_file)
-        try:
-            with open(upload_file, "rb") as f:
-                files = {"file": (manual_file.name, f, "application/pdf")}
-                data_fields = {"name": manual_file.name}
-                attach_resp = requests.post(
-                    f"{base_url}/entities/{entity_id}/attachments",
-                    headers=headers,
-                    files=files,
-                    data=data_fields,
-                    timeout=120,
-                )
-                attach_resp.raise_for_status()
-        finally:
-            if upload_file != manual_file and upload_file.exists():
-                upload_file.unlink(missing_ok=True)
-
-    return entity_id
+    return str(entity_id or "")
 
 
 def ingest_manual(

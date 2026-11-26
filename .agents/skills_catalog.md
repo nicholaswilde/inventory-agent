@@ -6,7 +6,7 @@ Catalog of custom Antigravity agent skills available in `inventory-agent`.
 |---|---|---|
 | [`appliance-lookup`](skills/appliance-lookup/SKILL.md) | Query appliance specs, error codes, schematics, and BOM parts | `task appliance:info TARGET="<model>"` |
 | [`batch-import`](skills/batch-import/SKILL.md) | Batch import items from URLs, ASINs, text files, or Amazon CSVs | `task batch:import ITEMS="..."` |
-| [`homebox`](skills/homebox/SKILL.md) | Direct Homebox API client interactions via `hbx` CLI | `hbx <subcommand>` |
+| [`homebox`](skills/homebox/SKILL.md) | Direct Homebox API client interactions via `hbctl` CLI | `hbctl <subcommand>` |
 | [`homebox-dedup`](skills/homebox-dedup/SKILL.md) | Detect, delete, or merge duplicate Homebox entities | `task homebox:dedup` |
 | [`import-amazon-invoice`](skills/import-amazon-invoice/SKILL.md) | Import products and order dates from Amazon PDF invoices | `task invoice:import FILE="<path>"` |
 | [`ingest-manual`](skills/ingest-manual/SKILL.md) | Ingest appliance manuals (PDF/URL/Issue) and generate cheat sheets | `task manual:ingest FILE="<path>"` |

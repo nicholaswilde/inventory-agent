@@ -18,6 +18,11 @@ from typing import Any
 
 import requests
 
+try:
+    from scripts import hbctl_client
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
+
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/120.0.0.0 Safari/537.36"
@@ -28,32 +33,6 @@ HTTP_HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.5",
 }
-
-
-def get_homebox_config() -> tuple[str, str]:
-    """Extract HOMEBOX_IP and HOMEBOX_API_KEY from environment or local .env file."""
-    ip = os.getenv("HOMEBOX_IP")
-    key = os.getenv("HOMEBOX_API_KEY")
-
-    if not ip or not key:
-        env_path = Path(".env")
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                line = line.strip()
-                if line.startswith("#") or not line:
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    k, v = k.strip(), v.strip().strip("'\"")
-                    if k == "HOMEBOX_IP" and not ip:
-                        ip = v
-                    elif k == "HOMEBOX_API_KEY" and not key:
-                        key = v
-
-    if not ip or not key:
-        raise ValueError("HOMEBOX_IP or HOMEBOX_API_KEY not set in environment or .env")
-
-    return ip, key
 
 
 def normalize_url(source: str) -> str:
@@ -270,31 +249,28 @@ def extract_product_data(raw_html: str, url: str) -> dict[str, Any]:
 def check_duplicate(
     model_number: str | None,
     name: str,
-    base_url: str,
-    headers: dict[str, str],
     asin: str | None = None,
 ) -> dict[str, Any] | None:
     """Check Homebox for existing item with matching model number, name, or ASIN."""
-    queries = []
-    if asin:
-        queries.append(asin.strip())
-    if model_number:
-        queries.append(model_number.strip())
-    if name:
-        queries.append(name.strip())
+    searches: list[tuple[str, dict[str, Any]]] = []
+    if asin and asin.strip():
+        searches.append(("asin", {"fields": [f"Notes={asin.strip()}"]}))
+    if model_number and model_number.strip():
+        searches.append(("model", {"model": model_number.strip()}))
+    if name and name.strip():
+        searches.append(("name", {"query": name.strip()}))
 
-    for q in queries:
+    for kind, kwargs in searches:
         try:
-            resp = requests.get(f"{base_url}/entities", params={"q": q}, headers=headers, timeout=15)
-            if resp.status_code == 200:
-                items = resp.json().get("items", [])
-                if asin and q == asin.strip() and items:
-                    return items[0]
-                for item in items:
-                    if model_number and item.get("modelNumber", "").strip().lower() == model_number.strip().lower():
-                        return item
-                    if item.get("name", "").strip().lower() == name.strip().lower():
-                        return item
+            items = hbctl_client.search_items(**kwargs)
+            if kind == "asin" and items:
+                return items[0]
+            for item in items:
+                item_model = hbctl_client.get_field_value(item, "Model Number", "modelNumber")
+                if model_number and item_model.lower() == model_number.strip().lower():
+                    return item
+                if item.get("name", "").strip().lower() == name.strip().lower():
+                    return item
         except Exception:
             pass
 
@@ -315,11 +291,7 @@ def create_homebox_entity(
     image_bytes: bytes | None = None,
     image_filename: str = "product.jpg",
 ) -> str:
-    """Create item in Homebox and upload product image."""
-    ip, key = get_homebox_config()
-    base_url = f"http://{ip}:7745/api/v1"
-    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-
+    """Create item in Homebox via `hbctl` and upload product image."""
     notes = truncate_to_bytes(data.get("notes", ""), max_bytes=1000)
 
     payload: dict[str, Any] = {
@@ -327,35 +299,21 @@ def create_homebox_entity(
         "description": data.get("description", ""),
         "manufacturer": data.get("manufacturer", ""),
         "modelNumber": data.get("model_number", ""),
-        "quantity": 1,
+        "quantity": data.get("quantity", 1),
         "notes": notes,
     }
     if data.get("purchase_price") is not None:
         payload["purchasePrice"] = data["purchase_price"]
+    if data.get("purchase_date"):
+        payload["purchaseDate"] = data["purchase_date"]
     if data.get("purchase_from"):
         payload["purchaseFrom"] = data["purchase_from"]
 
-    create_resp = requests.post(f"{base_url}/entities", json=payload, headers=headers, timeout=30)
-    create_resp.raise_for_status()
-    entity_id = create_resp.json().get("id")
+    created = hbctl_client.create_item(payload)
+    entity_id = str(created.get("id", ""))
 
-    # Update top-level fields (Homebox v0.26+ schema)
-    update_resp = requests.put(f"{base_url}/entities/{entity_id}", json=payload, headers=headers, timeout=30)
-    update_resp.raise_for_status()
-
-    # Upload attachment image if available
-    if image_bytes:
-        files = {"file": (image_filename, image_bytes, "image/jpeg")}
-        data_fields = {"name": image_filename}
-        att_headers = {"Authorization": f"Bearer {key}"}
-        att_resp = requests.post(
-            f"{base_url}/entities/{entity_id}/attachments",
-            headers=att_headers,
-            files=files,
-            data=data_fields,
-            timeout=30,
-        )
-        att_resp.raise_for_status()
+    if image_bytes and entity_id:
+        hbctl_client.upload_attachment_bytes(entity_id, image_bytes, image_filename, force=True)
 
     return entity_id
 
@@ -400,16 +358,10 @@ def import_url(
             "has_image": image_bytes is not None,
         }
 
-    ip, key = get_homebox_config()
-    base_url = f"http://{ip}:7745/api/v1"
-    headers = {"Authorization": f"Bearer {key}"}
-
     # Duplicate check
     dup = check_duplicate(
         model_number=product_data.get("model_number"),
         name=product_data["name"],
-        base_url=base_url,
-        headers=headers,
         asin=product_data.get("asin"),
     )
     if dup:

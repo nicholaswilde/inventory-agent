@@ -1,50 +1,16 @@
 """Tests for scripts/pull_appliance_manuals.py."""
-import json
-import os
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 # Ensure project root in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pytest
-
 from scripts.pull_appliance_manuals import (
-    get_homebox_config,
     get_appliance_entities_from_markdown,
-    fetch_entity,
-    download_attachment,
-    pull_appliance_manuals,
     main,
+    pull_appliance_manuals,
 )
-
-
-def test_get_homebox_config_from_env(monkeypatch):
-    monkeypatch.setenv("HOMEBOX_IP", "10.0.0.5")
-    monkeypatch.setenv("HOMEBOX_API_KEY", "secret-test-key")
-    ip, key = get_homebox_config()
-    assert ip == "10.0.0.5"
-    assert key == "secret-test-key"
-
-
-def test_get_homebox_config_from_file(tmp_path, monkeypatch):
-    monkeypatch.delenv("HOMEBOX_IP", raising=False)
-    monkeypatch.delenv("HOMEBOX_API_KEY", raising=False)
-
-    fake_env = tmp_path / ".env"
-    fake_env.write_text("HOMEBOX_IP=192.168.1.115\nHOMEBOX_API_KEY=hb_token123\n# comment\n")
-
-    with patch("scripts.pull_appliance_manuals.Path.exists", return_value=True), \
-         patch("scripts.pull_appliance_manuals.Path.read_text", return_value=fake_env.read_text()):
-        ip, key = get_homebox_config()
-        assert ip == "192.168.1.115"
-        assert key == "hb_token123"
-
-    with patch("scripts.pull_appliance_manuals.Path.exists", return_value=False), \
-         pytest.raises(ValueError) as exc:
-        get_homebox_config()
-    assert "HOMEBOX_IP or HOMEBOX_API_KEY not set" in str(exc.value)
 
 
 def test_get_appliance_entities_from_markdown(tmp_path):
@@ -80,35 +46,6 @@ def test_get_appliance_entities_from_markdown(tmp_path):
     assert e1["manual_filename"] is None
 
 
-def test_fetch_entity():
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {"id": "hb-123", "name": "Dishwasher"}
-
-    with patch("requests.get", return_value=mock_resp):
-        entity = fetch_entity("hb-123", "http://127.0.0.1:7745/api/v1", {})
-        assert entity["id"] == "hb-123"
-
-    mock_resp_404 = MagicMock()
-    mock_resp_404.status_code = 404
-    with patch("requests.get", return_value=mock_resp_404):
-        assert fetch_entity("hb-missing", "http://127.0.0.1:7745/api/v1", {}) is None
-
-
-def test_download_attachment(tmp_path):
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.iter_content.return_value = [b"%PDF-1.6\n", b"content_bytes\n"]
-    mock_resp.raise_for_status.return_value = None
-
-    dest = tmp_path / "manuals" / "test_manual.pdf"
-    with patch("requests.get", return_value=mock_resp):
-        res = download_attachment("eid-1", "aid-1", dest, "http://127.0.0.1:7745/api/v1", {})
-        assert res == dest
-        assert dest.exists()
-        assert dest.read_bytes() == b"%PDF-1.6\ncontent_bytes\n"
-
-
 def test_pull_appliance_manuals_orchestration(tmp_path):
     appliances_dir = tmp_path / "appliances"
     appliances_dir.mkdir()
@@ -119,50 +56,49 @@ def test_pull_appliance_manuals_orchestration(tmp_path):
         "- **Homebox Entity ID**: `eid-bosch`\n"
     )
 
-    mock_entity_data = {
-        "id": "eid-bosch",
-        "name": "Bosch Dishwasher",
-        "attachments": [
-            {
-                "id": "aid-bosch-1",
-                "title": "Bosch_Dishwasher_Manual.pdf",
-                "mimeType": "application/pdf",
-            }
-        ],
-    }
+    dest_file = out_dir / "Bosch_Dishwasher_Manual.pdf"
+    dl_payload = [
+        {
+            "entityId": "eid-bosch",
+            "entityName": "Bosch Dishwasher",
+            "id": "aid-bosch-1",
+            "path": str(dest_file),
+            "status": "downloaded",
+            "bytes": 128,
+        }
+    ]
+    skip_payload = [
+        {
+            "entityId": "eid-bosch",
+            "entityName": "Bosch Dishwasher",
+            "id": "aid-bosch-1",
+            "path": str(dest_file),
+            "status": "skipped",
+            "bytes": 0,
+        }
+    ]
 
-    mock_resp_get = MagicMock()
-    mock_resp_get.status_code = 200
-    mock_resp_get.json.return_value = mock_entity_data
-
-    mock_resp_att = MagicMock()
-    mock_resp_att.status_code = 200
-    mock_resp_att.iter_content.return_value = [b"%PDF-1.6 fake-manual"]
-    mock_resp_att.raise_for_status.return_value = None
-
-    def mock_requests(url, **kwargs):
-        if "attachments/aid-bosch-1" in url:
-            return mock_resp_att
-        return mock_resp_get
-
-    with patch("scripts.pull_appliance_manuals.get_homebox_config", return_value=("127.0.0.1", "test-key")), \
-         patch("requests.get", side_effect=mock_requests):
+    with patch("scripts.pull_appliance_manuals.hbctl_client.download_attachments", return_value=dl_payload) as mock_dl:
         res = pull_appliance_manuals(
             output_dir=out_dir,
             appliances_dir=appliances_dir,
             overwrite=False,
         )
+        mock_dl.assert_called_once_with(
+            out_dir=out_dir,
+            items_from=["eid-bosch"],
+            ext="pdf",
+            overwrite=False,
+            dry_run=False,
+        )
 
     assert len(res) == 1
     assert res[0]["entity_name"] == "Bosch Dishwasher"
+    assert res[0]["filename"] == "Bosch_Dishwasher_Manual.pdf"
     assert res[0]["downloaded"] is True
-    saved_file = out_dir / "Bosch_Dishwasher_Manual.pdf"
-    assert saved_file.exists()
-    assert saved_file.read_bytes() == b"%PDF-1.6 fake-manual"
+    assert res[0]["already_existed"] is False
 
-    # Running again without overwrite should skip re-download
-    with patch("scripts.pull_appliance_manuals.get_homebox_config", return_value=("127.0.0.1", "test-key")), \
-         patch("requests.get", side_effect=mock_requests):
+    with patch("scripts.pull_appliance_manuals.hbctl_client.download_attachments", return_value=skip_payload):
         res_skip = pull_appliance_manuals(
             output_dir=out_dir,
             appliances_dir=appliances_dir,
@@ -170,54 +106,65 @@ def test_pull_appliance_manuals_orchestration(tmp_path):
         )
     assert len(res_skip) == 1
     assert res_skip[0]["downloaded"] is False
+    assert res_skip[0]["already_existed"] is True
 
 
-def test_pull_appliance_manuals_scan_all(tmp_path):
+def test_pull_appliance_manuals_single_entity(tmp_path):
     out_dir = tmp_path / "manuals"
+    dest_file = out_dir / "Manual.pdf"
+    dl_payload = [
+        {
+            "entityId": "eid-1",
+            "entityName": "Test Appliance",
+            "id": "aid-1",
+            "path": str(dest_file),
+            "status": "downloaded",
+            "bytes": 64,
+        }
+    ]
+    with patch("scripts.pull_appliance_manuals.hbctl_client.download_attachments", return_value=dl_payload) as mock_dl:
+        res = pull_appliance_manuals(output_dir=out_dir, entity_id="eid-1")
+        mock_dl.assert_called_once_with("eid-1", out_dir, ext="pdf", overwrite=False, dry_run=False)
+    assert len(res) == 1
+    assert res[0]["entity_id"] == "eid-1"
+    assert res[0]["entity_name"] == "Test Appliance"
 
-    mock_list_resp = MagicMock()
-    mock_list_resp.status_code = 200
-    mock_list_resp.json.return_value = {
-        "items": [
-            {"id": "eid-dryer", "name": "LG Dryer"},
-            {"id": "eid-faucet", "name": "Moen Kitchen Faucet"},
-        ]
-    }
 
-    def mock_requests(url, **kwargs):
-        if url.endswith("/entities"):
-            return mock_list_resp
-        if "eid-dryer" in url and "attachments/" not in url:
-            m = MagicMock(status_code=200)
-            m.json.return_value = {
-                "id": "eid-dryer",
-                "name": "LG Dryer",
-                "attachments": [
-                    {"id": "aid-dryer", "title": "LG_Dryer_Manual.pdf", "mimeType": "application/pdf"}
-                ],
-            }
-            return m
-        if "eid-faucet" in url and "attachments/" not in url:
-            m = MagicMock(status_code=200)
-            m.json.return_value = {"id": "eid-faucet", "name": "Moen Kitchen Faucet", "attachments": []}
-            return m
-        if "attachments/aid-dryer" in url:
-            m = MagicMock(status_code=200)
-            m.iter_content.return_value = [b"%PDF dryer-manual"]
-            m.raise_for_status.return_value = None
-            return m
-        return MagicMock(status_code=404)
+def test_pull_appliance_manuals_dry_run_and_scan_all(tmp_path):
+    out_dir = tmp_path / "manuals"
+    dry_payload = [
+        {
+            "method": "GET",
+            "url": "http://127.0.0.1:7745/api/v1/entities/eid-dryer/attachments/aid-dryer",
+            "body": {
+                "entityId": "eid-dryer",
+                "entityName": "LG Dryer",
+                "out": str(out_dir / "LG_Dryer_Manual.pdf"),
+            },
+        }
+    ]
 
-    with patch("scripts.pull_appliance_manuals.get_homebox_config", return_value=("127.0.0.1", "test-key")), \
-         patch("requests.get", side_effect=mock_requests):
+    with patch("scripts.pull_appliance_manuals.hbctl_client.download_attachments", return_value=dry_payload) as mock_dl:
         res = pull_appliance_manuals(
             output_dir=out_dir,
             scan_all=True,
+            dry_run=True,
         )
 
+    mock_dl.assert_called_once_with(
+        out_dir=out_dir,
+        all_items=True,
+        ext="pdf",
+        overwrite=False,
+        dry_run=True,
+    )
     assert len(res) == 1
     assert res[0]["entity_name"] == "LG Dryer"
-    assert (out_dir / "LG_Dryer_Manual.pdf").exists()
+    assert res[0]["entity_id"] == "eid-dryer"
+    assert res[0]["attachment_id"] == "aid-dryer"
+    assert res[0]["filename"] == "LG_Dryer_Manual.pdf"
+    assert res[0]["downloaded"] is True
+    assert res[0]["dry_run"] is True
 
 
 def test_main_cli(tmp_path, capsys):

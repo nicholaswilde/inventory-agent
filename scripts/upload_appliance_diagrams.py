@@ -2,41 +2,17 @@
 """Upload appliance assembly and schematic diagrams to Homebox entities."""
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
 from typing import Any
 
-import requests
+try:
+    from scripts import hbctl_client
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
 
 DIAGRAM_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
-
-
-def get_homebox_config() -> tuple[str, str]:
-    """Retrieve Homebox IP and API Key from environment or .env file."""
-    ip = os.getenv("HOMEBOX_IP")
-    api_key = os.getenv("HOMEBOX_API_KEY")
-
-    if not ip or not api_key:
-        env_path = Path(".env")
-        if env_path.exists():
-            for line in env_path.read_text(encoding="utf-8").splitlines():
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    k, v = k.strip(), v.strip().strip("'\"")
-                    if k == "HOMEBOX_IP" and not ip:
-                        ip = v
-                    elif k == "HOMEBOX_API_KEY" and not api_key:
-                        api_key = v
-
-    if not ip or not api_key:
-        raise ValueError("HOMEBOX_IP or HOMEBOX_API_KEY not set in environment or .env")
-
-    return ip, api_key
 
 
 def find_appliance_diagram_mappings(appliances_dir: Path | str = "appliances") -> list[dict[str, Any]]:
@@ -105,65 +81,13 @@ def find_appliance_diagram_mappings(appliances_dir: Path | str = "appliances") -
     return mappings
 
 
-def get_entity_attachments(entity_id: str, base_url: str, headers: dict[str, str]) -> set[str]:
-    """Retrieve existing attachment titles / filenames for a given entity."""
-    url = f"{base_url}/entities/{entity_id}"
-    try:
-        resp = requests.get(url, headers=headers, timeout=30)
-        if resp.status_code == 200:
-            data = resp.json()
-            existing: set[str] = set()
-            for a in data.get("attachments", []):
-                t = a.get("title") or a.get("name")
-                if t:
-                    existing.add(t)
-            return existing
-    except requests.RequestException:
-        pass
-    return set()
-
-
-def upload_diagram(
-    entity_id: str,
-    file_path: Path,
-    base_url: str,
-    headers: dict[str, str],
-) -> bool:
-    """Upload a diagram file to a Homebox entity as an attachment."""
-    url = f"{base_url}/entities/{entity_id}/attachments"
-    filename = file_path.name
-    suffix = file_path.suffix.lower()
-
-    mime_types = {
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".gif": "image/gif",
-        ".webp": "image/webp",
-        ".svg": "image/svg+xml",
-    }
-    mime_type = mime_types.get(suffix, "application/octet-stream")
-
-    with open(file_path, "rb") as f:
-        files = {"file": (filename, f, mime_type)}
-        data = {"name": filename}
-        resp = requests.post(url, headers=headers, files=files, data=data, timeout=60)
-        resp.raise_for_status()
-
-    return True
-
-
 def upload_appliance_diagrams(
     appliances_dir: Path | str = "appliances",
     entity_id: str | None = None,
     overwrite: bool = False,
     dry_run: bool = False,
 ) -> list[dict[str, Any]]:
-    """Upload diagrams for cataloged appliances to Homebox."""
-    ip, key = get_homebox_config()
-    base_url = f"http://{ip}:7745/api/v1"
-    headers = {"Authorization": f"Bearer {key}"}
-
+    """Upload diagrams for cataloged appliances to Homebox via `hbctl attachment upload`."""
     all_mappings = find_appliance_diagram_mappings(appliances_dir)
 
     if entity_id:
@@ -174,26 +98,44 @@ def upload_appliance_diagrams(
     for mapping in all_mappings:
         eid = mapping["entity_id"]
         ename = mapping["name"]
-        existing_attachments = get_entity_attachments(eid, base_url, headers)
+        diagrams: list[Path] = mapping["diagrams"]
+        diag_by_name = {d.name: d for d in diagrams}
 
-        for diag in mapping["diagrams"]:
-            fname = diag.name
-            already_exists = fname in existing_attachments
-            uploaded = False
+        hb_results = hbctl_client.upload_attachments(
+            eid,
+            diagrams,
+            overwrite=overwrite,
+            force=True,
+            dry_run=dry_run,
+        )
 
-            if not already_exists or overwrite:
-                if not dry_run:
-                    upload_diagram(eid, diag, base_url, headers)
-                    uploaded = True
+        if dry_run:
+            for idx, entry in enumerate(hb_results):
+                body = entry.get("body") or {}
+                fname = body.get("name") or (diagrams[idx].name if idx < len(diagrams) else "unknown")
+                fpath = body.get("file") or str(diag_by_name.get(fname, ""))
+                results.append({
+                    "entity_name": ename,
+                    "entity_id": eid,
+                    "filename": fname,
+                    "path": fpath,
+                    "uploaded": False,
+                    "already_existed": False,
+                    "dry_run": True,
+                })
+            continue
 
+        for entry in hb_results:
+            fname = entry.get("file", "")
+            status = entry.get("status", "")
             results.append({
                 "entity_name": ename,
                 "entity_id": eid,
                 "filename": fname,
-                "path": str(diag),
-                "uploaded": uploaded,
-                "already_existed": already_exists,
-                "dry_run": dry_run,
+                "path": str(diag_by_name.get(fname, "")),
+                "uploaded": status == "uploaded",
+                "already_existed": status == "skipped",
+                "dry_run": False,
             })
 
     return results

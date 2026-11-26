@@ -21,47 +21,64 @@ tasks:
   homebox:list:
     desc: List all Homebox entities
     cmds:
-      - hbx item list --all
+      - hbctl item list --all
 
   homebox:get:
     desc: Get Homebox entity by ID
     cmds:
-      - hbx item get {{.ID}} --json
+      - hbctl item get {{.ID}} --json
     requires:
       vars: [ID]
 
   homebox:update:
-    desc: Update Homebox entity by ID with JSON payload
+    desc: Update Homebox entity by ID with JSON payload (set FILL_MISSING=1 to preserve existing values)
     cmds:
-      - printf '%s' '{{.DATA}}' | hbx item update {{.ID}} --from-json -
+      - printf '%s' '{{.DATA}}' | hbctl item update {{.ID}} --from-json - {{if eq .FILL_MISSING "1"}}--fill-missing{{end}}
     requires:
       vars: [ID, DATA]
 
   homebox:create:
-    desc: Create Homebox entity with JSON payload
+    desc: Create Homebox entity with JSON payload (optional ATTACH='<path>')
     cmds:
-      - printf '%s' '{{.DATA}}' | hbx item create --from-json - --json
+      - printf '%s' '{{.DATA}}' | hbctl item create --from-json - {{if .ATTACH}}--attach '{{.ATTACH}}'{{end}} --json
     requires:
       vars: [DATA]
 
   homebox:delete:
     desc: Delete Homebox entity by ID
     cmds:
-      - hbx item delete {{.ID}} --force
+      - hbctl item delete {{.ID}} --force
     requires:
       vars: [ID]
 
   homebox:attach:
     desc: Attach a file to a Homebox entity
     cmds:
-      - hbx attachment upload {{.ID}} '{{.FILE}}'
+      - hbctl attachment upload {{.ID}} '{{.FILE}}'
     requires:
       vars: [ID, FILE]
 
   homebox:entity-types:
     desc: List all Homebox entity types
     cmds:
-      - hbx entity-types
+      - hbctl entity-types
+
+  homebox:status:
+    desc: Check remote Homebox server connectivity and version
+    cmds:
+      - hbctl status {{.CLI_ARGS}}
+
+  homebox:tree:
+    desc: Render Homebox item parent/location hierarchy as a tree
+    cmds:
+      - hbctl item tree {{.CLI_ARGS}}
+
+  homebox:move:
+    desc: Move Homebox item under a parent item/location (or 'none' to unparent)
+    cmds:
+      - hbctl item move {{.ID}} '{{.PARENT}}'
+    requires:
+      vars: [ID, PARENT]
 
   process-vision:
     desc: Process electronic component images using vision pipeline
@@ -78,24 +95,24 @@ tasks:
   homebox:search:
     desc: Search Homebox entities by name
     cmds:
-      - hbx search '{{.QUERY}}'
+      - hbctl search '{{.QUERY}}'
     requires:
       vars: [QUERY]
 
   homebox:dedup:
     desc: Detect duplicate HomeBox entities and report them
     cmds:
-      - hbx item dedup --threshold {{.THRESHOLD | default "0.8"}} {{.CLI_ARGS}}
+      - hbctl item dedup --threshold {{.THRESHOLD | default "0.8"}} {{.CLI_ARGS}}
 
   homebox:dedup-delete:
     desc: Delete duplicate HomeBox entities (keeps most descriptive). Use DRY_RUN=1 to preview.
     cmds:
-      - hbx item dedup --threshold {{.THRESHOLD | default "0.8"}} --delete {{if eq .DRY_RUN "1"}}--dry-run{{end}}
+      - hbctl item dedup --threshold {{.THRESHOLD | default "0.8"}} --delete {{if eq .DRY_RUN "1"}}--dry-run{{end}}
 
   homebox:dedup-merge:
     desc: Merge quantities then delete duplicates. Use DRY_RUN=1 to preview.
     cmds:
-      - hbx item dedup --threshold {{.THRESHOLD | default "0.8"}} --merge {{if eq .DRY_RUN "1"}}--dry-run{{end}}
+      - hbctl item dedup --threshold {{.THRESHOLD | default "0.8"}} --merge {{if eq .DRY_RUN "1"}}--dry-run{{end}}
 
   issue:extract:
     desc: Extract an issue and run OCR quietly
@@ -230,7 +247,7 @@ tasks:
       - tare:show
       - tare:table
     cmds:
-      - uv run scripts/tare_weight_manager.py sheet {{.CLI_ARGS}}
+      - hbctl export --tag tare-weight --format markdown --columns "name=Container / Item,Tare Weight (g)" --align left --empty "-" --sort name {{.CLI_ARGS}}
 
   tare:pdf:
     desc: 'Generate tare weight reference sheet as a PDF in output/ (options: FONT_SIZE=6pt, PAPER=card)'
@@ -241,7 +258,7 @@ tasks:
       OUTPUT: '{{if .OUTPUT}}{{.OUTPUT}}{{else if eq .PAPER "card"}}output/tare_weights_card.pdf{{else}}output/tare_weights.pdf{{end}}'
     cmds:
       - mkdir -p output
-      - 'uv run scripts/tare_weight_manager.py sheet | pandoc -o "{{.OUTPUT}}" --pdf-engine=xelatex -V mainfont="DejaVu Sans" -V "geometry:{{.GEOMETRY}}" -V "header-includes=\usepackage{scrextend}\changefontsizes{ {{.FONT_SIZE}} }\setlength{\LTleft}{0pt}\setlength{\LTright}{\fill}" {{.CLI_ARGS}}'
+      - 'hbctl export --tag tare-weight --format markdown --columns "name=Container / Item,Tare Weight (g)" --align left --empty "-" --sort name | pandoc -o "{{.OUTPUT}}" --pdf-engine=xelatex -V mainfont="DejaVu Sans" -V "geometry:{{.GEOMETRY}}" -V "header-includes=\usepackage{scrextend}\changefontsizes{ {{.FONT_SIZE}} }\setlength{\LTleft}{0pt}\setlength{\LTright}{\fill}" {{.CLI_ARGS}}'
       - 'echo "PDF generated at {{.OUTPUT}}"'
 
   tare:serve:

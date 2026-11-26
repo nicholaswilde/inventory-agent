@@ -101,30 +101,15 @@ def test_batch_import_dry_run(tmp_path):
     assert results[1]["purchase_price"] == 607.00
 
 
-@patch("scripts.batch_import.get_homebox_config", return_value=("127.0.0.1", "test-key"))
 @patch("scripts.batch_import.fetch_url_html")
 @patch("scripts.batch_import.create_homebox_entity")
-@patch("requests.get")
-@patch("requests.put")
+@patch("scripts.batch_import.hbctl_client.list_items", return_value=[])
+@patch("scripts.batch_import.hbctl_client.update_item")
 def test_batch_import_execution(
-    mock_put, mock_get, mock_create_entity, mock_fetch_html, mock_config, tmp_path
+    mock_update, mock_list, mock_create_entity, mock_fetch_html, tmp_path
 ):
     csv_file = tmp_path / "orders.csv"
     csv_file.write_text(SAMPLE_CSV)
-
-    # Mock Homebox items list (no existing items)
-    mock_list_resp = MagicMock()
-    mock_list_resp.status_code = 200
-    mock_list_resp.json.return_value = {"items": []}
-
-    # Mock entity GET for field updating
-    mock_entity_resp = MagicMock()
-    mock_entity_resp.status_code = 200
-    mock_entity_resp.json.return_value = {"id": "new-id", "name": "Test Item"}
-
-    mock_get.side_effect = lambda url, **kwargs: (
-        mock_list_resp if "/items" in url else mock_entity_resp
-    )
 
     mock_fetch_html.return_value = """
     <html>
@@ -132,10 +117,7 @@ def test_batch_import_execution(
     </html>
     """
     mock_create_entity.return_value = "entity-12345"
-
-    mock_put_resp = MagicMock()
-    mock_put_resp.status_code = 200
-    mock_put.return_value = mock_put_resp
+    mock_update.return_value = {"id": "entity-12345"}
 
     results = batch_import(
         items=["B086383HC7"],
@@ -149,34 +131,24 @@ def test_batch_import_execution(
     assert results[0]["quantity"] == 1
     assert results[0]["purchase_price"] == 433.70
 
+    mock_list.assert_called_once()
     mock_create_entity.assert_called_once()
-    mock_put.assert_called_once()
+    assert mock_create_entity.call_args[0][0]["purchase_date"] == "2020-12-08"
+    mock_update.assert_not_called()
 
 
-@patch("scripts.batch_import.get_homebox_config", return_value=("127.0.0.1", "test-key"))
 @patch("scripts.batch_import.fetch_url_html", side_effect=Exception("404 Not Found"))
 @patch("scripts.batch_import.create_homebox_entity")
-@patch("requests.get")
-@patch("requests.put")
+@patch("scripts.batch_import.hbctl_client.list_items", return_value=[])
+@patch("scripts.batch_import.hbctl_client.update_item")
 def test_batch_import_fallback_on_404(
-    mock_put, mock_get, mock_create_entity, mock_fetch_html, mock_config, tmp_path
+    mock_update, mock_list, mock_create_entity, mock_fetch_html, tmp_path
 ):
     csv_file = tmp_path / "orders.csv"
     csv_file.write_text(SAMPLE_CSV)
 
-    mock_list_resp = MagicMock()
-    mock_list_resp.status_code = 200
-    mock_list_resp.json.return_value = {"items": []}
-
-    mock_entity_resp = MagicMock()
-    mock_entity_resp.status_code = 200
-    mock_entity_resp.json.return_value = {"id": "nuc-id", "name": "Intel NUC Mini PC"}
-
-    mock_get.side_effect = lambda url, **kwargs: (
-        mock_list_resp if "/items" in url else mock_entity_resp
-    )
     mock_create_entity.return_value = "nuc-id"
-    mock_put.return_value = MagicMock(status_code=200)
+    mock_update.return_value = {"id": "nuc-id"}
 
     results = batch_import(
         items=["B087D5T3QT"],
@@ -189,6 +161,39 @@ def test_batch_import_fallback_on_404(
     assert results[0]["entity_id"] == "nuc-id"
     assert results[0]["quantity"] == 2
     assert results[0]["fallback"] is True
+    assert mock_create_entity.call_args[0][0]["purchase_date"] == "2021-08-12"
+    mock_update.assert_not_called()
+
+
+@patch("scripts.batch_import.hbctl_client.list_items")
+@patch("scripts.batch_import.hbctl_client.update_item")
+def test_batch_import_update_existing(mock_update, mock_list, tmp_path):
+    csv_file = tmp_path / "orders.csv"
+    csv_file.write_text(SAMPLE_CSV)
+
+    mock_list.return_value = [
+        {"id": "nuc-existing", "name": "Intel NUC Mini PC", "notes": "ASIN: B087D5T3QT"}
+    ]
+    mock_update.return_value = {"id": "nuc-existing"}
+
+    results = batch_import(
+        items=["B087D5T3QT"],
+        csv_path=str(csv_file),
+        dry_run=False,
+        update_existing=True,
+    )
+
+    assert len(results) == 1
+    assert results[0]["status"] == "updated"
+    mock_update.assert_called_once_with(
+        "nuc-existing",
+        {
+            "purchaseFrom": "Amazon",
+            "purchasePrice": 607.00,
+            "purchaseDate": "2021-08-12",
+            "quantity": 2,
+        },
+    )
 
 
 def test_find_existing_item():
@@ -196,10 +201,17 @@ def test_find_existing_item():
 
     cached = [
         {"id": "item-1", "name": "Moen Kitchen Faucet", "modelNumber": "7594EWSRS", "notes": ""},
-        {"id": "item-2", "name": "Moen Valve Trim", "modelNumber": "T4111BN-3330", "notes": "ASIN: B0042RV0CY"},
+        {
+            "id": "item-2",
+            "name": "Moen Valve Trim",
+            "fields": [
+                {"name": "Model Number", "type": "text", "textValue": "T4111BN-3330"},
+                {"name": "Notes", "type": "text", "textValue": "ASIN: B0042RV0CY"},
+            ],
+        },
     ]
 
-    # Match by ASIN in notes
+    # Match by ASIN in custom Notes field
     match = find_existing_item("B0042RV0CY", "", "", cached)
     assert match is not None
     assert match["id"] == "item-2"

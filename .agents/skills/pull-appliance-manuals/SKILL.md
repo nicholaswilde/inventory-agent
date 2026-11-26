@@ -33,6 +33,8 @@ Pulls appliance user manuals, installation guides, and service documents from Ho
    - Scan all entities in Homebox for PDF attachments (not just appliances cataloged in `appliances/`):
      ```bash
      uv run scripts/pull_appliance_manuals.py --scan-all
+     # or directly via hbctl:
+     hbctl attachment download --all-items --ext pdf --out manuals
      ```
    - Force re-download / overwrite existing local files:
      ```bash

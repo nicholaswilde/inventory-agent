@@ -128,23 +128,15 @@ def test_extract_text_from_pdf(tmp_path):
 
 def test_find_existing_item():
     mock_entities = [
-        {"id": "id-1", "name": "Moen AC Power Adapter Kit", "modelNumber": "169031"},
+        {"id": "id-1", "name": "Moen AC Power Adapter Kit", "fields": [{"name": "Model Number", "textValue": "169031"}]},
         {"id": "id-2", "name": "Moen Kitchen Faucet", "modelNumber": "7594EWSRS"},
     ]
 
-    base_url = "http://localhost:7745/api/v1"
-    headers = {"Authorization": "Bearer test"}
-
-    with patch("requests.get") as mock_get:
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"items": mock_entities}
-
-        # Match by exact model number
+    with patch("scripts.import_amazon_invoice.hbctl_client.search_items", return_value=mock_entities):
+        # Match by exact model number in custom fields
         found = find_existing_item(
             model_number="169031",
             title="Moen 169031 AC Adapter Service Kit",
-            base_url=base_url,
-            headers=headers,
         )
         assert found is not None
         assert found["id"] == "id-1"
@@ -153,8 +145,6 @@ def test_find_existing_item():
         found2 = find_existing_item(
             model_number="7594ESRS",
             title="Moen Kitchen Faucet Arbor Motionsense",
-            base_url=base_url,
-            headers=headers,
         )
         assert found2 is not None
         assert found2["id"] == "id-2"
@@ -163,24 +153,11 @@ def test_find_existing_item():
         found_none = find_existing_item(
             model_number="NONEXISTENT-999",
             title="Completely Unknown Item",
-            base_url=base_url,
-            headers=headers,
         )
         assert found_none is None
 
 
 def test_fill_missing_details():
-    existing_item = {
-        "id": "item-abc",
-        "name": "Moen Kitchen Faucet",
-        "modelNumber": "7594EWSRS",
-        "manufacturer": "",
-        "purchaseDate": "",
-        "purchaseFrom": "",
-        "purchasePrice": 0,
-        "fields": [],
-    }
-
     item_data = {
         "title": "Moen Arbor Motionsense Faucet",
         "model_number": "7594ESRS",
@@ -190,7 +167,6 @@ def test_fill_missing_details():
     }
 
     patch_payload = fill_missing_details(
-        existing_item=existing_item,
         item_data=item_data,
         order_id="113-3740671-2345851",
         order_date="2018-08-07",
@@ -200,8 +176,7 @@ def test_fill_missing_details():
     assert patch_payload["purchaseFrom"] == "Amazon"
     assert patch_payload["purchasePrice"] == 372.27
     assert patch_payload["manufacturer"] == "Moen"
-    # Existing non-empty modelNumber should be preserved
-    assert "modelNumber" not in patch_payload
+    assert patch_payload["modelNumber"] == "7594ESRS"
 
     # Order Number field should be included
     order_fields = [f for f in patch_payload.get("fields", []) if f.get("name") == "Order Number"]
@@ -265,8 +240,7 @@ def test_import_amazon_invoice_pipeline(tmp_path):
         "fields": [],
     }
 
-    with patch("scripts.import_amazon_invoice.get_homebox_config", return_value=("127.0.0.1", "secret")), \
-         patch("scripts.import_amazon_invoice.extract_text_from_pdf", return_value=SAMPLE_AMAZON_INVOICE_TEXT), \
+    with patch("scripts.import_amazon_invoice.extract_text_from_pdf", return_value=SAMPLE_AMAZON_INVOICE_TEXT), \
          patch("scripts.import_amazon_invoice.search_homebox_entities") as mock_search, \
          patch("scripts.import_amazon_invoice.update_homebox_entity") as mock_update, \
          patch("scripts.import_amazon_invoice.create_homebox_entity") as mock_create, \
@@ -287,8 +261,9 @@ def test_import_amazon_invoice_pipeline(tmp_path):
 
         assert results["order_id"] == "113-3740671-2345851"
         assert len(results["items"]) == 3
-        # Adapter updated
+        # Adapter updated with fill_missing=True
         assert any(item["action"] == "updated" for item in results["items"])
+        assert mock_update.call_args[1]["fill_missing"] is True
         # Dispenser created
         assert any(item["action"] == "created" for item in results["items"])
 

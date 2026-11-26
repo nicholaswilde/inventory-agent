@@ -1,8 +1,6 @@
-import json
-import os
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 # Ensure project root is in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -10,15 +8,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pytest
 
 from scripts.tare_weight_manager import (
-    parse_weight_grams,
-    get_homebox_config,
-    get_tags,
-    ensure_tag_ids,
-    find_container,
-    upsert_container,
-    fetch_tare_containers,
-    generate_tare_sheet,
+    REQUIRED_TAGS,
+    TARE_FIELD_NAME,
     main,
+    parse_weight_grams,
+    render_tare_sheet,
+    upsert_container,
 )
 
 
@@ -36,264 +31,58 @@ def test_parse_weight_grams():
         parse_weight_grams(-10)
 
 
-def test_get_homebox_config_env():
-    with patch.dict(os.environ, {"HOMEBOX_IP": "192.168.1.100", "HOMEBOX_API_KEY": "secret"}):
-        ip, key = get_homebox_config()
-        assert ip == "192.168.1.100"
-        assert key == "secret"
-
-
-def test_get_homebox_config_file(tmp_path):
-    env_file = tmp_path / ".env"
-    env_file.write_text("HOMEBOX_IP=10.0.0.5\nHOMEBOX_API_KEY=testkey\n")
-    with patch.dict(os.environ, {}, clear=True), patch("scripts.tare_weight_manager.Path") as mock_path:
-        mock_path.return_value = env_file
-        # Also handle Path(".env")
-        mock_path.side_effect = lambda *args: env_file if args == (".env",) else Path(*args)
-        ip, key = get_homebox_config()
-        assert ip == "10.0.0.5"
-        assert key == "testkey"
-
-
-def test_get_tags():
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = [{"id": "t1", "name": "kitchen"}]
-
-    with patch("requests.get", return_value=mock_resp) as mock_get:
-        tags = get_tags("http://homebox:7745/api/v1", {"Authorization": "Bearer x"})
-        assert len(tags) == 1
-        assert tags[0]["name"] == "kitchen"
-        mock_get.assert_called_once()
-
-
-def test_ensure_tag_ids_existing_and_created():
-    existing_tags = [
-        {"id": "tag-1", "name": "kitchen"},
-        {"id": "tag-2", "name": "container"},
-    ]
-    with patch("scripts.tare_weight_manager.get_tags", return_value=existing_tags):
-        mock_post = MagicMock()
-        mock_post.status_code = 201
-        mock_post.json.return_value = {"id": "tag-3", "name": "tare-weight"}
-        with patch("requests.post", return_value=mock_post) as post_call:
-            tag_ids = ensure_tag_ids(
-                "http://homebox:7745/api/v1",
-                {"Authorization": "Bearer x"},
-                ["kitchen", "container", "tare-weight"],
-            )
-            assert "tag-1" in tag_ids
-            assert "tag-2" in tag_ids
-            assert "tag-3" in tag_ids
-            post_call.assert_called_once()
-
-
-def test_find_container_found():
-    items = [
-        {"id": "item-1", "name": "Pyrex 2-Cup Glass Measuring Cup"},
-        {"id": "item-2", "name": "Stainless Steel Mixing Bowl"},
-    ]
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {"items": items}
-
-    with patch("requests.get", return_value=mock_resp):
-        found = find_container(
-            "stainless steel mixing bowl",
-            "http://homebox:7745/api/v1",
-            {"Authorization": "Bearer x"},
-        )
-        assert found is not None
-        assert found["id"] == "item-2"
-
-
-def test_find_container_not_found():
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {"items": []}
-
-    with patch("requests.get", return_value=mock_resp):
-        found = find_container(
-            "Nonexistent Container",
-            "http://homebox:7745/api/v1",
-            {"Authorization": "Bearer x"},
-        )
-        assert found is None
-
-
-def test_upsert_container_create():
-    with patch("scripts.tare_weight_manager.find_container", return_value=None), \
-         patch("scripts.tare_weight_manager.ensure_tag_ids", return_value=["t1", "t2", "t3"]):
-        mock_post_resp = MagicMock()
-        mock_post_resp.status_code = 200
-        mock_post_resp.json.return_value = {"id": "new-id", "name": "Mason Jar 16oz"}
-
-        mock_put_resp = MagicMock()
-        mock_put_resp.status_code = 200
-        mock_put_resp.json.return_value = {"id": "new-id", "name": "Mason Jar 16oz"}
-
-        with patch("requests.post", return_value=mock_post_resp) as mock_post, \
-             patch("requests.put", return_value=mock_put_resp) as mock_put:
-            result = upsert_container(
-                "Mason Jar 16oz",
-                250,
-                "http://homebox:7745/api/v1",
-                {"Authorization": "Bearer x"},
-            )
-            assert result["action"] == "created"
-            assert result["id"] == "new-id"
-            assert result["weight"] == 250
-
-            args, kwargs = mock_post.call_args
-            payload = kwargs["json"]
-            assert payload["name"] == "Mason Jar 16oz"
-            assert set(payload["tagIds"]) == {"t1", "t2", "t3"}
-
-            put_args, put_kwargs = mock_put.call_args
-            put_payload = put_kwargs["json"]
-            field = put_payload["fields"][0]
-            assert field["name"] == "Tare Weight (g)"
-            assert field["numberValue"] == 250
-            assert field["textValue"] == "250"
-
-
-def test_upsert_container_update():
-    existing_item = {
-        "id": "existing-1",
-        "name": "Pyrex 2-Cup",
-        "tagIds": ["t1", "old-tag"],
-        "fields": [
-            {"name": "Color", "type": "text", "value": "Clear"},
-            {"name": "Tare Weight (g)", "type": "number", "value": 480},
-        ],
-    }
-
-    with patch("scripts.tare_weight_manager.find_container", return_value=existing_item), \
-         patch("scripts.tare_weight_manager.ensure_tag_ids", return_value=["t1", "t2", "t3"]):
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = {"id": "existing-1", "name": "Pyrex 2-Cup"}
-
-        with patch("requests.put", return_value=mock_resp) as mock_put:
-            result = upsert_container(
-                "Pyrex 2-Cup",
-                490,
-                "http://homebox:7745/api/v1",
-                {"Authorization": "Bearer x"},
-            )
-            assert result["action"] == "updated"
-            assert result["id"] == "existing-1"
-            assert result["weight"] == 490
-
-            args, kwargs = mock_put.call_args
-            payload = kwargs["json"]
-            assert set(payload["tagIds"]) == {"t1", "old-tag", "t2", "t3"}
-            # Field value updated, and existing fields preserved
-            tare_field = next(f for f in payload["fields"] if f["name"] == "Tare Weight (g)")
-            assert tare_field["value"] == 490
-            color_field = next(f for f in payload["fields"] if f["name"] == "Color")
-            assert color_field["value"] == "Clear"
-
-
-def test_fetch_tare_containers():
-    tags = [
-        {"id": "t-tare", "name": "tare-weight"},
-    ]
-    entities = [
-        {
-            "id": "c1",
-            "name": "Pyrex 2-Cup",
-            "tagIds": ["t-tare"],
-            "fields": [{"name": "Tare Weight (g)", "value": 490}],
-        },
-        {
-            "id": "c2",
-            "name": "Other Item",
-            "tagIds": ["t-other"],
-            "fields": [],
-        },
-        {
-            "id": "c3",
+def test_upsert_container_calls_hbctl():
+    with patch(
+        "scripts.tare_weight_manager.hbctl_client.upsert_item",
+        return_value={"id": "new-id", "name": "Mason Jar 16oz", "action": "created"},
+    ) as mock_upsert:
+        result = upsert_container(" Mason Jar 16oz ", "250g")
+        assert result == {
+            "action": "created",
+            "id": "new-id",
             "name": "Mason Jar 16oz",
-            "tags": [{"name": "tare-weight"}],
-            "fields": [{"name": "Tare Weight (g)", "numberValue": 250, "textValue": "250"}],
-        },
-    ]
+            "weight": 250,
+        }
+        mock_upsert.assert_called_once_with(
+            "Mason Jar 16oz",
+            tags=REQUIRED_TAGS,
+            fields=[(TARE_FIELD_NAME, 250)],
+            field_type="number",
+        )
 
-    with patch("scripts.tare_weight_manager.get_tags", return_value=tags):
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = {"items": entities}
-
-        with patch("requests.get", return_value=mock_resp):
-            containers = fetch_tare_containers("http://homebox:7745/api/v1", {"Authorization": "Bearer x"})
-            assert len(containers) == 2
-            container_map = {c["name"]: c["weight"] for c in containers}
-            assert container_map["Pyrex 2-Cup"] == 490
-            assert container_map["Mason Jar 16oz"] == 250
-
-
-def test_fetch_tare_containers_fetches_detail_when_fields_missing():
-    tags = [{"id": "t-tare", "name": "tare-weight"}]
-    entities = [
-        {"id": "c1", "name": "Grandpa's Bowl", "tagIds": ["t-tare"]},
-    ]
-    detail = {
-        "id": "c1",
-        "name": "Grandpa's Bowl",
-        "fields": [{"name": "Tare Weight (g)", "numberValue": 661}],
-    }
-
-    with patch("scripts.tare_weight_manager.get_tags", return_value=tags):
-        mock_list_resp = MagicMock()
-        mock_list_resp.status_code = 200
-        mock_list_resp.json.return_value = {"items": entities}
-
-        mock_detail_resp = MagicMock()
-        mock_detail_resp.status_code = 200
-        mock_detail_resp.json.return_value = detail
-
-        def mock_get(url, *args, **kwargs):
-            if url.endswith("/entities/c1"):
-                return mock_detail_resp
-            return mock_list_resp
-
-        with patch("requests.get", side_effect=mock_get):
-            containers = fetch_tare_containers("http://homebox:7745/api/v1", {"Authorization": "Bearer x"})
-            assert len(containers) == 1
-            assert containers[0]["name"] == "Grandpa's Bowl"
-            assert containers[0]["weight"] == 661
+    with patch(
+        "scripts.tare_weight_manager.hbctl_client.upsert_item",
+        return_value={"id": "existing-id", "name": "Mason Jar 16oz"},
+    ):
+        result_fallback = upsert_container("Mason Jar 16oz", 250)
+        assert result_fallback["action"] == "upserted"
 
 
-def test_generate_tare_sheet():
-    containers = [
-        {"name": "Stainless Steel Bowl", "weight": 310},
-        {"name": "Borosilicate Glass Dish", "weight": 520},
-        {"name": "Pyrex 2-Cup", "weight": 490},
-    ]
-    sheet = generate_tare_sheet(containers)
-    expected = (
+def test_render_tare_sheet_uses_hbctl_export():
+    table = (
         "| Container / Item | Tare Weight (g) |\n"
         "| :--- | :--- |\n"
         "| Borosilicate Glass Dish | 520 |\n"
         "| Pyrex 2-Cup | 490 |\n"
-        "| Stainless Steel Bowl | 310 |"
+        "| Unweighed Jar | - |"
     )
-    assert sheet.strip() == expected
-
-
-def test_generate_tare_sheet_empty():
-    sheet = generate_tare_sheet([])
-    expected = (
-        "| Container / Item | Tare Weight (g) |\n"
-        "| :--- | :--- |"
-    )
-    assert sheet.strip() == expected
+    with patch("scripts.tare_weight_manager.hbctl_client.export_markdown", return_value=table) as mock_export:
+        sheet = render_tare_sheet()
+        mock_export.assert_called_once_with(
+            tag="tare-weight",
+            columns=["name=Container / Item", TARE_FIELD_NAME],
+            align="left",
+            empty="-",
+            sort="name",
+        )
+        assert sheet == table
 
 
 def test_cli_upsert(capsys):
-    with patch("scripts.tare_weight_manager.get_homebox_config", return_value=("localhost", "key")), \
-         patch("scripts.tare_weight_manager.upsert_container", return_value={"action": "created", "id": "123", "name": "Jar", "weight": 200}):
+    with patch(
+        "scripts.tare_weight_manager.upsert_container",
+        return_value={"action": "created", "id": "123", "name": "Jar", "weight": 200},
+    ):
         main(["upsert", "Jar", "200"])
         captured = capsys.readouterr()
         assert "created" in captured.out
@@ -301,9 +90,8 @@ def test_cli_upsert(capsys):
 
 
 def test_cli_sheet(capsys):
-    containers = [{"name": "Jar", "weight": 200}]
-    with patch("scripts.tare_weight_manager.get_homebox_config", return_value=("localhost", "key")), \
-         patch("scripts.tare_weight_manager.fetch_tare_containers", return_value=containers):
+    table = "| Container / Item | Tare Weight (g) |\n| :--- | :--- |\n| Jar | 200 |"
+    with patch("scripts.tare_weight_manager.render_tare_sheet", return_value=table):
         main(["sheet"])
         captured = capsys.readouterr()
         assert "| Container / Item | Tare Weight (g) |" in captured.out
@@ -311,11 +99,9 @@ def test_cli_sheet(capsys):
 
 
 def test_cli_show(capsys):
-    containers = [{"name": "Jar", "weight": 200}]
-    with patch("scripts.tare_weight_manager.get_homebox_config", return_value=("localhost", "key")), \
-         patch("scripts.tare_weight_manager.fetch_tare_containers", return_value=containers):
+    table = "| Container / Item | Tare Weight (g) |\n| :--- | :--- |\n| Jar | 200 |"
+    with patch("scripts.tare_weight_manager.render_tare_sheet", return_value=table):
         main(["show"])
         captured = capsys.readouterr()
         assert "| Container / Item | Tare Weight (g) |" in captured.out
         assert "| Jar | 200 |" in captured.out
-

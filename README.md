@@ -266,10 +266,13 @@ uv run pytest tests/
 - `task homebox:list` — List all Homebox entities.
 - `task homebox:search QUERY='<name>'` — Search Homebox entities by name.
 - `task homebox:get ID=<id>` — Get details for an entity.
-- `task homebox:create DATA='<json>'` — Create a new entity.
-- `task homebox:update ID=<id> DATA='<json>'` — Update an existing entity.
+- `task homebox:create DATA='<json>'` — Create a new entity (optional `ATTACH='<path>'`).
+- `task homebox:update ID=<id> DATA='<json>'` — Update an existing entity (set `FILL_MISSING=1` to preserve existing values).
 - `task homebox:delete ID=<id>` — Delete an entity by ID.
 - `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity.
+- `task homebox:status` — Check remote Homebox server connectivity and version.
+- `task homebox:tree` — Render Homebox item parent/location hierarchy as a tree.
+- `task homebox:move ID=<id> PARENT='<parent>'` — Move an item under a parent item/location (or `none`).
 - `task homebox:dedup` — Detect and report duplicate Homebox entities.
 - `task homebox:dedup-delete` — Delete duplicate entities (preview with `DRY_RUN=1`).
 - `task homebox:dedup-merge` — Merge quantities and delete duplicates (preview with `DRY_RUN=1`).
