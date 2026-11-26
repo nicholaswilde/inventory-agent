@@ -10,7 +10,7 @@ This skill guides the agent to process a GitHub issue, extract item details, map
 ## Workflow
 
 1. **Read Issue**: 
-   - Run `gh issue view <issue_number> --json title,body -q '{title,body}'` (or simply pipe to `cat`) to read the issue title, body, and extract any file URLs (images or zip files).
+   - Run `rtk gh issue view <issue_number> --json title,body --jq '{title,body}' | cat` (or `task issue:extract ISSUE=<issue_number>`) to read the issue title, body, and extract any file URLs (images or zip files).
    - **Appliance Manual Check**: If the issue title starts with `[appliance]` or `[hardware]` (with manual), or contains a `.pdf` manual attachment, use the `ingest-manual` skill instead (`task manual:ingest-issue ISSUE=<issue_number>`).
 
 2. **Download & Process Files**: 

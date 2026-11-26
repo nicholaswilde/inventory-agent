@@ -2,8 +2,9 @@
 ## RTK Command Guidelines
 - **Git Operations**: Prefix `git` commands with `rtk` (e.g., `rtk git status`, `rtk git diff`, `rtk git log`, `rtk git commit`, `rtk git push`).
 - **GitHub CLI**: Prefix `gh` commands with `rtk` and pipe to `cat` (e.g., `rtk gh issue list | cat`, `rtk gh pr status | cat`). Always pipe to bypass interactive pagers.
-- **File & Directory Inspection**: Use `rtk ls`, `rtk tree`, `rtk find`, or `rtk read` when listing or reading files for token-optimized output.
+- **File & Directory Inspection**: Use `rtk ls`, `rtk tree`, `rtk find`, `rtk fd`, or `rtk read` when listing or reading files for token-optimized output.
 - **Searching**: Use `rtk rg` or `rg` (ripgrep) for line search pattern matching to save tokens.
+- **Node/JS Tools**: Prefix `npx` with `rtk` (`rtk npx <cmd>`).
 - **Ripwire Operations**: Prefix `ripwire` commands with `rtk` (e.g., `rtk ripwire <dir> --for="<task>"`). Always invoke via CLI, never register or use MCP.
 - **Python & UV Operations**: Prefix Python scripts and commands with `uv run`, and prefix `uv` commands with `rtk` (e.g., `rtk uv run <script.py>`, `rtk uv run <command>`, `rtk uv add`, `rtk uv sync`). Never run bare `python` or bare `uv`.
 - **Build & Test Outputs**: Use `rtk err` or `rtk test` when running build/test commands to filter output to errors/failures only (e.g., `rtk test uv run pytest`).
@@ -111,16 +112,17 @@ Use `ripwire` CLI (prefixed with `rtk ripwire`) for AST codebase mapping, call g
 
 <!-- taplo-rules-begin -->
 ## Taplo TOML Rules
-- **Format**: Run `taplo fmt` to format TOML files in-place (`pyproject.toml`).
-- **Validation**: Run `taplo lint` to validate TOML syntax and schema.
+- **Format**: Run `rtk taplo fmt` to format TOML files in-place (`pyproject.toml`).
+- **Validation**: Run `rtk taplo lint` to validate TOML syntax and schema.
 <!-- taplo-rules-end -->
 
 <!-- homebox-connection-begin -->
 ## Homebox Connection Rules
 When connecting to Homebox API, strictly follow connection parameters:
-1. **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` file. NEVER commit this file or output raw keys in logs.
-2. **Port**: Homebox service runs on port `7745` (e.g., `http://$HOMEBOX_IP:7745`).
-3. **Authentication**: Pass API key using standard Bearer token header: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
+1. **CLI**: Prefer `hbx` CLI (`--json --select ...`, `-q`, `--dry-run`; auto-loads `.env` or `hbx auth login`) over raw `curl` calls.
+2. **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` file. NEVER commit this file or output raw keys in logs.
+3. **Port**: Homebox service runs on port `7745` (e.g., `http://$HOMEBOX_IP:7745`).
+4. **Authentication**: Pass API key using standard Bearer token header: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
 <!-- homebox-connection-end -->
 
 <!-- uv-rules-begin -->
@@ -192,7 +194,7 @@ When adding or updating section and subsection headings in `README.md`, always i
 
 <!-- api-response-handling-begin -->
 ## API Response Handling Guidelines
-- **JSON Filtering**: Always use `jq` to filter API responses (like Homebox entities) to specific required fields (e.g., `jq '{name: .name, fields: .fields}'`). Do NOT dump full uncompressed JSON into context.
+- **JSON Filtering**: Prefer `hbx --json --select <fields>` (or `jq` on raw endpoints, e.g., `jq '{name: .name, fields: .fields}'`) to keep uncompressed JSON out of context.
 - **Context-Mode for Data**: For heavy JSON analysis, use `ctx_execute` to keep payload in sandbox and return only derived answer.
 <!-- api-response-handling-end -->
 

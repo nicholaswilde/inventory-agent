@@ -68,8 +68,20 @@ hbx tag list
 hbx export --tag electronics --field Manufacturer --format markdown
 ```
 
+### Taskfile Equivalents
+
+- `task homebox:list`
+- `task homebox:get ID=<id>`
+- `task homebox:create DATA='<json>'`
+- `task homebox:update ID=<id> DATA='<json>'`
+- `task homebox:delete ID=<id>`
+- `task homebox:attach ID=<id> FILE='<path>'`
+- `task homebox:search QUERY='<query>'`
+- `task homebox:entity-types`
+
 ## Guidelines for Agents
 
 - Always pass `--json --select id,name,...` or `-q` to keep output compact in agent context.
 - Preview mutating calls with `--dry-run` (always redacts `Authorization: Bearer ***`).
 - `hbx item create` / `upsert` automatically handles Homebox's follow-up `PUT` for custom fields and `GET -> Merge -> PUT` updates.
+- Optimize local photos with `task image:optimize TARGET="<path>"` (< 500KB, max 1920x1080) before `hbx attachment upload`.

@@ -19,8 +19,12 @@ When I ask you to print a document, table, or list (such as the tare weight refe
 
 2. **Execute the Print Command:**
 
-* Pass the formatted markdown text as a single string argument to the print script located at `scripts/print_to_brother.sh`.
-* Example command execution: `bash scripts/print_to_brother.sh "YOUR_FORMATTED_MARKDOWN_TEXT"`
+* Pass the formatted markdown text using the Taskfile task (or direct script fallback):
+  ```bash
+  task print:brother TEXT="YOUR_FORMATTED_MARKDOWN_TEXT"
+  # alias: task print:local TEXT="YOUR_FORMATTED_MARKDOWN_TEXT"
+  # direct fallback: ./scripts/print_to_brother.sh "YOUR_FORMATTED_MARKDOWN_TEXT"
+  ```
 
 3. **Confirmation:**
 

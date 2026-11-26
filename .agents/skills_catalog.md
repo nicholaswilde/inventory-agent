@@ -16,6 +16,6 @@ Catalog of custom Antigravity agent skills available in `inventory-agent`.
 | [`process-local-images`](skills/process-local-images/SKILL.md) | Process images and zips from `images/pending/` | `task process-vision` |
 | [`pull-appliance-manuals`](skills/pull-appliance-manuals/SKILL.md) | Pull appliance PDF manuals from Homebox to `manuals/` | `task manuals:pull` |
 | [`show-tare-weights`](skills/show-tare-weights/SKILL.md) | Display console table of kitchen container tare weights | `task tare:show` |
-| [`tare-weight-manager`](skills/tare-weight-manager/SKILL.md) | Manage kitchen container tare weights and PDF sheet | `task tare:sheet` / `task tare:pdf` |
+| [`tare-weight-manager`](skills/tare-weight-manager/SKILL.md) | Manage kitchen container tare weights and PDF sheet | `task tare:upsert` / `task tare:sheet` / `task tare:pdf` |
 | [`upload-appliance-diagrams`](skills/upload-appliance-diagrams/SKILL.md) | Upload exploded diagrams to Homebox entities | `task diagrams:upload` |
 | [`url-to-homebox`](skills/url-to-homebox/SKILL.md) | Import items from product URLs or Amazon ASINs | `task url:import URL="<url>"` |
