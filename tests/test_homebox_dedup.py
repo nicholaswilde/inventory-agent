@@ -110,13 +110,26 @@ class TestSelectKeeper(unittest.TestCase):
 
 class TestCallHomebox(unittest.TestCase):
     @patch("subprocess.run")
-    def test_calls_correct_script(self, mock_run):
-        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
-        result = call_homebox("list", homebox_script="./scripts/homebox.sh")
+    def test_calls_hbx_cli(self, mock_run):
+        mock_run.return_value = MagicMock(returncode=0, stdout="[]", stderr="")
+        call_homebox("list")
         mock_run.assert_called_once()
         args = mock_run.call_args[0][0]
-        assert args[0] == "./scripts/homebox.sh"
-        assert args[1] == "list"
+        assert args == ["hbx", "item", "list", "--all", "--json", "--select", "id,name,quantity"]
+
+    @patch("subprocess.run")
+    def test_calls_hbx_update_and_delete(self, mock_run):
+        mock_run.return_value = MagicMock(returncode=0, stdout="{}", stderr="")
+        call_homebox("update", "ent-1", '{"quantity": 5}')
+        assert mock_run.call_args[0][0] == ["hbx", "--json", "item", "update", "ent-1", "--from-json", "-"]
+        assert mock_run.call_args[1]["input"] == '{"quantity": 5}'
+
+        call_homebox("delete", "ent-2")
+        assert mock_run.call_args[0][0] == ["hbx", "item", "delete", "ent-2", "--force"]
+
+    def test_parse_list_output_json_from_hbx(self):
+        items = parse_list_output('[{"id":"1","name":"ESP32","quantity":3}]')
+        assert items == [{"id": "1", "name": "ESP32", "quantity": 3}]
 
 
 class TestMergeAndDelete(unittest.TestCase):

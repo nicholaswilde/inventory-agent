@@ -575,13 +575,39 @@ class TestGeminiVisionFallback:
 # ============================================================================
 
 class TestHomeboxSubprocess:
-    """Tests for ./scripts/homebox.sh subprocess execution (search, create, attach)."""
+    """Tests for `hbx` CLI subprocess execution (search, create, attach)."""
+
+    def test_call_homebox_invokes_hbx_cli(self):
+        """Verify call_homebox translates search/create/attach into hbx CLI commands."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+
+            call_homebox("search", "DHT11")
+            assert mock_run.call_args[0][0] == ["hbx", "-q", "search", "DHT11"]
+
+            call_homebox("create", '{"name":"ESP32"}')
+            assert mock_run.call_args[0][0] == ["hbx", "--json", "item", "create", "--from-json", "-"]
+            assert mock_run.call_args[1]["input"] == '{"name":"ESP32"}'
+
+            call_homebox("attach", "uuid-123", "image.jpg")
+            assert mock_run.call_args[0][0] == ["hbx", "attachment", "upload", "uuid-123", "image.jpg"]
+
+    def test_search_entity_match_found_quiet_id(self):
+        """Verify search returns bare UUID line emitted by `hbx -q search`."""
+        with patch("scripts.process_vision.call_homebox") as mock_hb:
+            mock_hb.return_value = subprocess.CompletedProcess(
+                args=["hbx", "-q", "search", "DHT11"],
+                returncode=0,
+                stdout="12edefc5-6bf3-492d-b340-1c73a85be0b8\n",
+                stderr="",
+            )
+            assert search_entity("DHT11") == "12edefc5-6bf3-492d-b340-1c73a85be0b8"
 
     def test_search_entity_match_found(self):
         """Verify search returns UUID when matching item is found."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "search", "DHT11"],
+                args=["hbx", "-q", "search", "DHT11"],
                 returncode=0,
                 stdout="ID: 12edefc5-6bf3-492d-b340-1c73a85be0b8 | Name: DHT11 Sensor Module\n",
                 stderr="",
@@ -594,7 +620,7 @@ class TestHomeboxSubprocess:
         """Verify search returns None when 0 items match."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "search", "NonExistent"],
+                args=["hbx", "-q", "search", "NonExistent"],
                 returncode=0,
                 stdout="",
                 stderr="",
@@ -605,7 +631,7 @@ class TestHomeboxSubprocess:
         """Verify search returns None on non-zero exit code."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "search", "ErrorItem"],
+                args=["hbx", "-q", "search", "ErrorItem"],
                 returncode=1,
                 stdout="",
                 stderr="Connection refused",
@@ -644,7 +670,7 @@ class TestHomeboxSubprocess:
 
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "create", json.dumps(comp)],
+                args=["hbx", "--json", "item", "create", "--from-json", "-"],
                 returncode=0,
                 stdout=created_json,
                 stderr="",
@@ -658,7 +684,7 @@ class TestHomeboxSubprocess:
         comp = {"name": "Bad Item"}
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "create"],
+                args=["hbx", "--json", "item", "create", "--from-json", "-"],
                 returncode=1,
                 stdout="",
                 stderr="Server 500 Error",
@@ -671,7 +697,7 @@ class TestHomeboxSubprocess:
         comp = {"name": "Bad Response Item"}
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "create"],
+                args=["hbx", "--json", "item", "create", "--from-json", "-"],
                 returncode=0,
                 stdout="<html>502 Bad Gateway</html>",
                 stderr="",
@@ -683,7 +709,7 @@ class TestHomeboxSubprocess:
         """Verify attach passes entity ID and image path returning True."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "attach", "uuid-123", "image.jpg"],
+                args=["hbx", "attachment", "upload", "uuid-123", "image.jpg"],
                 returncode=0,
                 stdout='{"id": "att-1", "name": "image.jpg"}',
                 stderr="",
@@ -696,7 +722,7 @@ class TestHomeboxSubprocess:
         """Verify attach returns False on non-zero exit code."""
         with patch("scripts.process_vision.call_homebox") as mock_hb:
             mock_hb.return_value = subprocess.CompletedProcess(
-                args=["./scripts/homebox.sh", "attach", "uuid-123", "image.jpg"],
+                args=["hbx", "attachment", "upload", "uuid-123", "image.jpg"],
                 returncode=1,
                 stdout="",
                 stderr="File upload failed",

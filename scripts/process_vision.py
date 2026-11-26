@@ -319,16 +319,21 @@ def call_homebox(
     *args: str,
     homebox_script: Path | str | None = None,
 ) -> subprocess.CompletedProcess:
-    """Invoke ./scripts/homebox.sh subprocess wrapper."""
-    if homebox_script is None:
-        script_path = Path(__file__).resolve().parent / "homebox.sh"
-        if not script_path.exists():
-            script_path = Path("./scripts/homebox.sh")
-    else:
-        script_path = Path(homebox_script)
+    """Invoke the `hbx` CLI for Homebox interactions (search, create, attach)."""
+    hbx_bin = str(homebox_script) if homebox_script is not None else "hbx"
+    stdin_data: str | None = None
 
-    cmd = [str(script_path), subcommand, *args]
-    return subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if subcommand == "search" and args:
+        cmd = [hbx_bin, "-q", "search", args[0]]
+    elif subcommand == "create" and args:
+        cmd = [hbx_bin, "--json", "item", "create", "--from-json", "-"]
+        stdin_data = args[0]
+    elif subcommand == "attach" and len(args) >= 2:
+        cmd = [hbx_bin, "attachment", "upload", args[0], args[1]]
+    else:
+        cmd = [hbx_bin, subcommand, *args]
+
+    return subprocess.run(cmd, input=stdin_data, capture_output=True, text=True, check=False)
 
 
 def search_entity(query: str, homebox_script: Path | str | None = None) -> str | None:
@@ -344,9 +349,15 @@ def search_entity(query: str, homebox_script: Path | str | None = None) -> str |
         return None
 
     for line in proc.stdout.splitlines():
-        match = re.search(r"ID:\s*([^\s|]+)", line, re.IGNORECASE)
+        stripped = line.strip()
+        if not stripped:
+            continue
+        match = re.search(r"ID:\s*([^\s|]+)", stripped, re.IGNORECASE)
         if match:
             return match.group(1).strip()
+        # `hbx -q search` emits bare entity IDs, one per line
+        if " " not in stripped and "|" not in stripped:
+            return stripped
     return None
 
 

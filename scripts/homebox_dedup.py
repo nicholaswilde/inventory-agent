@@ -47,9 +47,26 @@ def jaccard_similarity(a: str, b: str) -> float:
     return len(sa & sb) / len(sa | sb)
 
 
-def parse_list_output(output: str) -> list[dict[str, str]]:
-    """Parse homebox.sh list output into [{id, name}, ...]."""
-    items = []
+def parse_list_output(output: str) -> list[dict[str, Any]]:
+    """Parse `hbx item list --json` (or legacy `ID: ... | Name: ...`) into [{id, name, ...}, ...]."""
+    stripped = output.strip()
+    if stripped.startswith("["):
+        try:
+            data = json.loads(stripped)
+            if isinstance(data, list):
+                return [
+                    {
+                        "id": str(item.get("id", "")),
+                        "name": str(item.get("name", "")),
+                        **({"quantity": item["quantity"]} if "quantity" in item else {}),
+                    }
+                    for item in data
+                    if isinstance(item, dict) and item.get("id")
+                ]
+        except json.JSONDecodeError:
+            pass
+
+    items: list[dict[str, Any]] = []
     for line in output.splitlines():
         m = re.match(r"ID:\s*([^\s|]+)\s*\|\s*Name:\s*(.+)", line)
         if m:
@@ -62,9 +79,23 @@ def call_homebox(
     *args: str,
     homebox_script: str | Path | None = None,
 ) -> subprocess.CompletedProcess:
-    """Invoke scripts/homebox.sh."""
-    script = str(homebox_script or Path(__file__).resolve().parent / "homebox.sh")
-    return subprocess.run([script, subcommand, *args], capture_output=True, text=True)
+    """Invoke the `hbx` CLI for Homebox entity operations."""
+    hbx_bin = str(homebox_script) if homebox_script is not None else "hbx"
+    stdin_data: str | None = None
+
+    if subcommand == "list":
+        cmd = [hbx_bin, "item", "list", "--all", "--json", "--select", "id,name,quantity"]
+    elif subcommand == "get" and args:
+        cmd = [hbx_bin, "item", "get", args[0], "--json", "--select", "id,name,quantity"]
+    elif subcommand == "update" and len(args) >= 2:
+        cmd = [hbx_bin, "--json", "item", "update", args[0], "--from-json", "-"]
+        stdin_data = args[1]
+    elif subcommand == "delete" and args:
+        cmd = [hbx_bin, "item", "delete", args[0], "--force"]
+    else:
+        cmd = [hbx_bin, subcommand, *args]
+
+    return subprocess.run(cmd, input=stdin_data, capture_output=True, text=True)
 
 
 def detect_duplicates(

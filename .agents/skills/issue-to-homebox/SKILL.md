@@ -32,13 +32,13 @@ This skill guides the agent to process a GitHub issue, extract item details, map
    - **Unstructured / Missing Info**: If the issue does not follow the structured template, or if fields are blank (e.g. just a title and a zip upload), use OCR and your visual identification to generate an appropriate `name`, `manufacturer`, `modelNumber`, and `description` for the Homebox JSON payload yourself.
 
 4. **Check Homebox**:
-   - Use the `homebox` skill (e.g., `scripts/homebox.sh search "<name>"`) to check if the component(s) already exist in Homebox.
+   - Use the `homebox` skill (e.g., `hbx search "<name>" --json --select id,name`) to check if the component(s) already exist in Homebox.
    - If a component **already exists**, inform the user that it exists. Do NOT increase the quantity or add a duplicate.
 
 5. **Add to Homebox**:
-   - For each new component, use `scripts/homebox.sh create '<json_data>'` (or the Taskfile equivalent) to create it. 
-   - After creating, upload the corresponding image(s) to the item using `scripts/homebox.sh attach <entity_id> <image_path>`. 
-   - If there are multiple images of the *same* component, attach ALL of them to that specific Homebox entry by calling the attach command repeatedly. 
+   - For each new component, use `hbx item create --name "<name>" ... --json` (or `printf '%s' '<json_data>' | hbx item create --from-json - --json`, or `task homebox:create DATA='<json_data>'`) to create it.
+   - After creating, upload the corresponding image(s) to the item using `hbx attachment upload <entity_id> <image_path...>`.
+   - If there are multiple images of the *same* component, attach ALL of them in one `hbx attachment upload` call (or repeatedly).
 
 6. **Create Git Commit**:
    - Create an empty git commit (or commit related changes if any) to close the issue.
@@ -50,5 +50,5 @@ Fixes #<issue_number>"`
 ## Requirements
 - `gh` CLI for reading issues.
 - `lit` and `tesseract` for OCR.
-- `scripts/homebox.sh` for Homebox interactions.
+- `hbx` CLI for Homebox interactions.
 - `unzip` for handling zip files.
