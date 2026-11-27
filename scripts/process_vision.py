@@ -19,6 +19,11 @@ from typing import Any
 
 import requests
 
+try:
+    from scripts import hbctl_client
+except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
+
 VALID_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
 ELECTRONIC_KEYWORDS = {
@@ -314,90 +319,50 @@ def query_gemini_vision(
 call_gemini_vision = query_gemini_vision
 
 
-def call_homebox(
-    subcommand: str,
-    *args: str,
-    homebox_script: Path | str | None = None,
-) -> subprocess.CompletedProcess:
-    """Invoke the `hbctl` CLI for Homebox interactions (search, create, attach)."""
-    hbctl_bin = str(homebox_script) if homebox_script is not None else "hbctl"
-    stdin_data: str | None = None
-
-    if subcommand == "search" and args:
-        cmd = [hbctl_bin, "-q", "search", args[0]]
-    elif subcommand == "create" and args:
-        cmd = [hbctl_bin, "--json", "item", "create", "--from-json", "-"]
-        stdin_data = args[0]
-        if len(args) >= 2 and args[1]:
-            cmd.extend(["--attach", args[1]])
-    elif subcommand == "attach" and len(args) >= 2:
-        cmd = [hbctl_bin, "attachment", "upload", args[0], args[1]]
-    else:
-        cmd = [hbctl_bin, subcommand, *args]
-
-    return subprocess.run(cmd, input=stdin_data, capture_output=True, text=True, check=False)
+def _is_meaningful_match(val: str) -> bool:
+    """Return True if value has >=3 chars and at least one letter (safe for --match-mode contains)."""
+    cleaned = val.strip()
+    return len(cleaned) >= 3 and any(c.isalpha() for c in cleaned)
 
 
-def search_entity(query: str, homebox_script: Path | str | None = None) -> str | None:
-    """Search HomeBox for entity matching query. Returns entity UUID if found, else None."""
-    if not query:
-        return None
-    q = query.strip()
-    if len(q) < 3 or not any(c.isalpha() for c in q):
-        return None
-
-    proc = call_homebox("search", q, homebox_script=homebox_script)
-    if proc.returncode != 0 or not proc.stdout:
-        return None
-
-    for line in proc.stdout.splitlines():
-        stripped = line.strip()
-        if not stripped:
-            continue
-        match = re.search(r"ID:\s*([^\s|]+)", stripped, re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-        # `hbctl -q search` emits bare entity IDs, one per line
-        if " " not in stripped and "|" not in stripped:
-            return stripped
-    return None
-
-
-def create_entity(
+def upsert_component(
     component_data: dict[str, Any],
+    image_path: Path | str,
+    *,
     homebox_script: Path | str | None = None,
-    attach: Path | str | None = None,
-) -> str:
-    """Create new entity in HomeBox. Returns entity UUID on success, raises RuntimeError on failure."""
+) -> dict[str, Any]:
+    """Create or attach to an existing Homebox entity via `hbctl item upsert`."""
     sanitized = dict(component_data)
     if "description" in sanitized and isinstance(sanitized["description"], str):
         sanitized["description"] = sanitized["description"][:250].strip()
     if "name" in sanitized and isinstance(sanitized["name"], str):
         sanitized["name"] = sanitized["name"][:100].strip()
-    json_payload = json.dumps(sanitized)
-    extra_args = (str(attach),) if attach is not None else ()
-    proc = call_homebox("create", json_payload, *extra_args, homebox_script=homebox_script)
-    if proc.returncode != 0:
-        raise RuntimeError(f"Failed to create HomeBox entity: {proc.stderr or proc.stdout}")
+
+    model = str(sanitized.get("modelNumber") or "")
+    name = str(sanitized.get("name") or "")
+    has_model = _is_meaningful_match(model)
+    has_name = _is_meaningful_match(name)
+
+    match_by = ["model", "name"] if has_model else ["name"]
+    match_mode = "contains" if (has_model or has_name) else "exact"
+    hbctl_bin = str(homebox_script) if homebox_script is not None else "hbctl"
 
     try:
-        resp = json.loads(proc.stdout)
-        entity_id = resp.get("id")
-        if not entity_id:
-            raise ValueError(f"No id field in create response: {proc.stdout}")
-        return str(entity_id)
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Invalid JSON response from homebox create: {proc.stdout}") from e
+        res = hbctl_client.upsert_item(
+            from_json=sanitized,
+            match_by=match_by,
+            match_mode=match_mode,
+            on_match="attach-only",
+            attach=[image_path],
+            optimize=True,
+            hbctl_bin=hbctl_bin,
+        )
+    except hbctl_client.HbctlError as exc:
+        raise RuntimeError(f"Failed to upsert HomeBox entity: {exc}") from exc
 
-
-def attach_image(
-    entity_id: str,
-    image_path: Path | str,
-    homebox_script: Path | str | None = None,
-) -> bool:
-    """Attach image file to HomeBox entity."""
-    proc = call_homebox("attach", entity_id, str(image_path), homebox_script=homebox_script)
-    return proc.returncode == 0
+    if not res.get("id"):
+        raise RuntimeError(f"No id field in upsert response: {res}")
+    return res
 
 
 def move_to_processed(image_path: Path | str, processed_dir: Path | str) -> Path:
@@ -494,7 +459,7 @@ def process_single_image(
     homebox_script: Path | str | None = None,
     api_key: str | None = None,
 ) -> bool:
-    """Process a single image through identification, duplicate check, creation, attachment, and moving."""
+    """Process a single image through identification, upsert/attach, and moving."""
     img_path = Path(image_path)
     if not img_path.is_file():
         print(f"[-] Image not found: {image_path}")
@@ -510,36 +475,22 @@ def process_single_image(
     model = comp.get("modelNumber", "")
     print(f"  [+] Identified: {name} (Model: {model})")
 
-    search_query = comp.get("modelNumber") or comp.get("name") or img_path.stem
-    entity_id = search_entity(search_query, homebox_script=homebox_script)
+    if dry_run:
+        print(f"  [DRY-RUN] Would upsert '{name}', attach {img_path.name}, and move to {processed_dir}")
+        return True
 
-    if entity_id:
-        print(f"  [i] Found existing HomeBox entity: {entity_id} for query '{search_query}'")
-        # Duplicate found: attach and move
-        if not dry_run:
-            if not attach_image(entity_id, img_path, homebox_script=homebox_script):
-                print(f"  [-] Failed to attach {img_path.name} to entity {entity_id}")
-                return False
-            move_to_processed(img_path, processed_dir)
-            print(f"  [+] Attached {img_path.name} to {entity_id} and moved to {processed_dir}")
-        else:
-            print(f"  [DRY-RUN] Would attach {img_path.name} to {entity_id} and move to {processed_dir}")
-        return True
-    else:
-        print(f"  [i] No existing entity found. Creating new entity: {name}")
-        # New entity
-        if not dry_run:
-            try:
-                entity_id = create_entity(comp, homebox_script=homebox_script, attach=img_path)
-                print(f"  [+] Created entity with ID: {entity_id}")
-            except Exception as e:
-                print(f"  [-] Failed to create/attach entity: {e}")
-                return False
-            move_to_processed(img_path, processed_dir)
-            print(f"  [+] Attached {img_path.name} and moved to {processed_dir}")
-        else:
-            print(f"  [DRY-RUN] Would create entity '{name}', attach {img_path.name}, and move to {processed_dir}")
-        return True
+    try:
+        res = upsert_component(comp, img_path, homebox_script=homebox_script)
+        entity_id = res["id"]
+        action = res.get("action") or "upserted"
+        print(f"  [+] {action.capitalize()} entity {entity_id} with {img_path.name}")
+    except Exception as e:
+        print(f"  [-] Failed to upsert/attach entity: {e}")
+        return False
+
+    move_to_processed(img_path, processed_dir)
+    print(f"  [+] Moved {img_path.name} to {processed_dir}")
+    return True
 
 
 def process_all_images(

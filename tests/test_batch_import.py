@@ -114,6 +114,7 @@ def test_batch_import_execution(
     mock_fetch_html.return_value = """
     <html>
       <span id="productTitle">Lenovo Chromebook Flex 5 13" Laptop</span>
+      <img data-old-hires="https://m.media-amazon.com/images/I/chromebook.jpg" />
     </html>
     """
     mock_create_entity.return_value = "entity-12345"
@@ -134,7 +135,18 @@ def test_batch_import_execution(
     mock_list.assert_called_once()
     mock_create_entity.assert_called_once()
     assert mock_create_entity.call_args[0][0]["purchase_date"] == "2020-12-08"
+    assert mock_create_entity.call_args.kwargs["image_url"] == "https://m.media-amazon.com/images/I/chromebook.jpg"
+    assert mock_create_entity.call_args.kwargs["image_filename"] == "B086383HC7.jpg"
     mock_update.assert_not_called()
+
+    mock_create_entity.reset_mock()
+    batch_import(
+        items=["B086383HC7"],
+        csv_path=str(csv_file),
+        dry_run=False,
+        attach_images=False,
+    )
+    assert mock_create_entity.call_args.kwargs["image_url"] is None
 
 
 @patch("scripts.batch_import.fetch_url_html", side_effect=Exception("404 Not Found"))

@@ -9,6 +9,7 @@ import pytest
 
 from scripts.import_url import (
     _clean_text,
+    _format_attach_url_spec,
     check_duplicate,
     create_homebox_entity,
     extract_product_data,
@@ -133,11 +134,22 @@ def test_check_duplicate_found():
         dup = check_duplicate(model_number="T4111BN-3330", name="Moen T4111BN-3330")
         assert dup is not None
         assert dup["id"] == "existing-uuid-123"
-        assert mock_search.call_args_list[0].kwargs == {"model": "T4111BN-3330"}
+        mock_search.assert_called_once_with(
+            model="T4111BN-3330",
+            query="Moen T4111BN-3330",
+            any_match=True,
+        )
 
 
 def test_check_duplicate_asin():
-    items = [{"id": "asin-uuid-456", "name": "Moen Valve Kit"}]
+    items = [
+        {"id": "other-uuid", "name": "Different Name", "modelNumber": "OTHER"},
+        {
+            "id": "asin-uuid-456",
+            "name": "Moen Valve Kit",
+            "fields": [{"name": "Notes", "type": "text", "textValue": "Amazon ASIN: B0042RV0CY"}],
+        },
+    ]
     with patch("scripts.import_url.hbctl_client.search_items", return_value=items) as mock_search:
         dup = check_duplicate(
             model_number="DIFFERENT-MODEL",
@@ -146,7 +158,27 @@ def test_check_duplicate_asin():
         )
         assert dup is not None
         assert dup["id"] == "asin-uuid-456"
-        mock_search.assert_called_once_with(fields=["Notes=B0042RV0CY"])
+        mock_search.assert_called_once_with(
+            fields=["Notes=B0042RV0CY"],
+            model="DIFFERENT-MODEL",
+            query="Different Name",
+            any_match=True,
+        )
+
+
+def test_check_duplicate_asin_only():
+    items = [
+        {
+            "id": "asin-uuid-789",
+            "name": "Moen Valve Kit",
+            "notes": "Amazon ASIN: B0042RV0CY",
+        }
+    ]
+    with patch("scripts.import_url.hbctl_client.search_items", return_value=items) as mock_search:
+        dup = check_duplicate(model_number=None, name="", asin="B0042RV0CY")
+        assert dup is not None
+        assert dup["id"] == "asin-uuid-789"
+        mock_search.assert_called_once_with(fields=["Notes=B0042RV0CY"], any_match=False)
 
 
 def test_check_duplicate_none():
@@ -157,10 +189,11 @@ def test_check_duplicate_none():
 
 def test_check_duplicate_matches_name():
     items = [{"name": "Matching Name", "id": "hb-name-123"}]
-    with patch("scripts.import_url.hbctl_client.search_items", return_value=items):
+    with patch("scripts.import_url.hbctl_client.search_items", return_value=items) as mock_search:
         dup = check_duplicate(model_number=None, name="Matching Name")
         assert dup is not None
         assert dup["id"] == "hb-name-123"
+        mock_search.assert_called_once_with(query="Matching Name", any_match=False)
 
 
 def test_import_url_dry_run():
@@ -170,27 +203,32 @@ def test_import_url_dry_run():
     assert result["entity"]["manufacturer"] == "Moen"
     assert result["entity"]["model_number"] == "T4111BN-3330"
     assert result["homebox_id"] == "dry-run-id"
+    assert result["has_image"] is True
 
 
 def test_import_url_integration():
-    mock_img_resp = MagicMock()
-    mock_img_resp.status_code = 200
-    mock_img_resp.content = b"fake-jpg-bytes"
-    mock_img_resp.raise_for_status.return_value = None
-
     with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
          patch("scripts.import_url.check_duplicate", return_value=None), \
-         patch("requests.get", return_value=mock_img_resp), \
-         patch("scripts.import_url.hbctl_client.create_item", return_value={"id": "hb-imported-777"}) as mock_create, \
-         patch("scripts.import_url.hbctl_client.upload_attachment_bytes", return_value=[{"id": "att-1"}]) as mock_upload:
+         patch("requests.get") as mock_get, \
+         patch("scripts.import_url.hbctl_client.create_item", return_value={"id": "hb-imported-777"}) as mock_create:
 
         res = import_url("https://www.amazon.com/dp/B0042RV0CY", dry_run=False)
 
     assert res["homebox_id"] == "hb-imported-777"
+    mock_get.assert_not_called()
     mock_create.assert_called_once()
-    mock_upload.assert_called_once()
-    assert mock_upload.call_args[0][0] == "hb-imported-777"
-    assert mock_upload.call_args[0][1] == b"fake-jpg-bytes"
+    assert mock_create.call_args.kwargs["attach_urls"] == [
+        "https://m.media-amazon.com/images/I/41xbCEDMreL._AC_.jpg=Moen_T4111BN_3330_Kingsley_Moe.jpg"
+    ]
+    assert mock_create.call_args.kwargs["attach_best_effort"] is True
+    assert mock_create.call_args.kwargs["optimize"] is True
+
+
+def test_format_attach_url_spec():
+    assert _format_attach_url_spec("https://example.com/a.jpg", "slug.jpg") == "https://example.com/a.jpg=slug.jpg"
+    assert _format_attach_url_spec("https://example.com/img?size=large", "slug.jpg") == "https://example.com/img?size=large=slug.jpg"
+    assert _format_attach_url_spec("https://example.com/img?raw", "slug.jpg") == "https://example.com/img?raw"
+    assert _format_attach_url_spec("https://example.com/a.jpg", None) == "https://example.com/a.jpg"
 
 
 def test_create_homebox_entity_truncates_notes():
@@ -268,12 +306,9 @@ def test_normalize_url():
 
 
 def test_import_url_with_asin():
-    with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML), \
-         patch("requests.get") as mock_img_get:
-        mock_img_get.return_value.status_code = 200
-        mock_img_get.return_value.content = b"fake-image"
-
+    with patch("scripts.import_url.fetch_url_html", return_value=SAMPLE_AMAZON_HTML):
         result = import_url("B0CJR4QZ45", dry_run=True)
         assert result["dry_run"] is True
+        assert result["has_image"] is True
         assert result["entity"]["source_url"] == "https://www.amazon.com/dp/B0CJR4QZ45"
         assert result["entity"]["purchase_from"] == "Amazon"

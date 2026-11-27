@@ -44,14 +44,12 @@ Ingests Amazon PDF invoices from local files or URLs (e.g. Google Drive / web do
      - `purchaseDate`: Order date.
      - `purchaseFrom`: `Amazon`.
      - `fields`: Custom field `Order Number` with order ID.
-   - **Existing Item Check (Fill Missing Details)**:
-     - Checks Homebox first for matching item via model number or name keywords.
-     - If the item **already exists**:
-       - Fills in missing `purchaseDate`, `purchaseFrom`, `purchasePrice`, `modelNumber`, `manufacturer`, and `Order Number` custom field.
-       - Preserves all existing non-empty fields and notes.
-       - Updates the existing entity via Homebox API.
+   - **Upsert & Fill Missing Details**:
+     - Uses `hbctl item upsert --match-by model --match-by name --match-mode contains --fill-missing --attach <pdf> --attach-best-effort`.
+     - If a matching item **already exists**:
+       - Fills in missing `purchaseDate`, `purchaseFrom`, `purchasePrice`, `modelNumber`, `manufacturer`, and `Order Number` custom field while preserving existing non-empty values.
      - If the item **does not exist**:
        - Creates a new item in Homebox with the extracted details.
    - **Attachment**:
      - Copies the invoice PDF to `images/processed/Amazon_Invoice_<order_id>.pdf`.
-     - Attaches the PDF invoice to each corresponding item entity in Homebox.
+     - Attaches the PDF invoice inline during upsert (emitting warnings without aborting on attachment errors).

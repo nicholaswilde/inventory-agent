@@ -35,6 +35,6 @@ Imports an item into Homebox from a product URL (Amazon, e-commerce stores, bran
    - **Manufacturer / Brand**: Extracted from Schema.org brand, meta tags, or byline.
    - **Model Number / SKU / MPN**: Extracted from specifications, tables, or product identifiers.
    - **Purchase Price**: Extracted from offer/price metadata and saved to `purchasePrice`.
-   - **Product Image**: Primary product image downloaded and uploaded as an attachment to the entity. Optimize any local/manual photo attachments via `task image:optimize` (< 500KB, max 1920x1080) before uploading to Homebox.
+   - **Product Image**: Primary product image URL passed directly to `hbctl item create --attach-url <URL>=<name> --attach-best-effort --optimize` for automatic download, rename, and in-memory optimization.
    - **Notes & Description**: Source URL, ASIN / SKU, bullet points, and key product features.
-   - **Deduplication**: Automatically checks Homebox for matching model number or item name before creating to prevent duplicate entries.
+   - **Deduplication**: Checks Homebox in a single `hbctl search --any` pass (matching ASIN in `Notes`, model number, or item name) before creating to prevent duplicate entries.

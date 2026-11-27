@@ -104,7 +104,7 @@ def test_upload_appliance_diagrams_orchestration(tmp_path):
             "eid-bosch",
             [d1, d2],
             overwrite=False,
-            force=True,
+            optimize=True,
             dry_run=True,
         )
         assert len(dry_results) == 2
@@ -143,7 +143,7 @@ def test_upload_appliance_diagrams_orchestration(tmp_path):
             "eid-bosch",
             [d1, d2],
             overwrite=True,
-            force=True,
+            optimize=True,
             dry_run=False,
         )
         assert all(r["uploaded"] is True for r in overwrite_results)
@@ -175,7 +175,7 @@ def test_upload_appliance_diagrams_filter_entity(tmp_path):
             entity_id="eid-2",
             dry_run=True,
         )
-        mock_up.assert_called_once_with("eid-2", [d2], overwrite=False, force=True, dry_run=True)
+        mock_up.assert_called_once_with("eid-2", [d2], overwrite=False, optimize=True, dry_run=True)
         assert len(results) == 1
         assert results[0]["entity_id"] == "eid-2"
         assert results[0]["filename"] == "diag2.png"

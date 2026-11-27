@@ -105,7 +105,7 @@ def upload_appliance_diagrams(
             eid,
             diagrams,
             overwrite=overwrite,
-            force=True,
+            optimize=True,
             dry_run=dry_run,
         )
 

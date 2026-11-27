@@ -161,10 +161,7 @@ def test_ingest_manual_homebox_integration(tmp_path):
     pdf_path.write_bytes(b"%PDF-1.6 dummy")
 
     with patch("scripts.ingest_manual.run_pdf_extraction", return_value=SAMPLE_MANUAL_TEXT), \
-         patch("scripts.ingest_manual.hbctl_client.search_items", return_value=[]) as mock_search, \
-         patch("scripts.ingest_manual.hbctl_client.list_items", return_value=[]), \
-         patch("scripts.ingest_manual.hbctl_client.create_item", return_value={"id": "hb-entity-999", "name": "LG Dryer"}) as mock_create, \
-         patch("scripts.ingest_manual.hbctl_client.upload_attachments", return_value=[{"id": "attach-111"}]) as mock_upload:
+         patch("scripts.ingest_manual.hbctl_client.upsert_item", return_value={"id": "hb-entity-999", "name": "LG Dryer", "action": "created"}) as mock_upsert:
 
         result = ingest_manual(
             source=str(pdf_path),
@@ -174,10 +171,11 @@ def test_ingest_manual_homebox_integration(tmp_path):
         )
 
     assert result["homebox_id"] == "hb-entity-999"
-    mock_search.assert_called_once_with(model=result["entity"]["model_number"])
-    mock_create.assert_called_once()
-    assert mock_create.call_args[1]["attach"] == [Path(result["entity"]["manual_path"])]
-    mock_upload.assert_not_called()
+    mock_upsert.assert_called_once()
+    assert mock_upsert.call_args.kwargs["match_by"] == ["model", "name"]
+    assert mock_upsert.call_args.kwargs["match_mode"] == "contains"
+    assert mock_upsert.call_args.kwargs["on_match"] == "attach-only"
+    assert mock_upsert.call_args.kwargs["attach"] == [result["entity"]["manual_path"]]
 
 
 SAMPLE_REFRIGERATOR_TEXT = """
@@ -690,6 +688,8 @@ def test_create_homebox_entity_matches_partial_model(tmp_path):
 
     dummy_pdf = tmp_path / "manual.pdf"
     dummy_pdf.write_bytes(b"%PDF-1.4 test")
+    compressed_pdf = tmp_path / "manual_compressed.pdf"
+    compressed_pdf.write_bytes(b"%PDF-1.4 small")
 
     data = {
         "name": "Schlage Smart Deadbolt Lock",
@@ -697,24 +697,19 @@ def test_create_homebox_entity_matches_partial_model(tmp_path):
         "manufacturer": "Schlage",
     }
 
-    mock_entities = [
-        {
-            "id": "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d",
-            "name": "Schlage Encode Plus Smart WiFi Deadbolt Lock, Tap to Unlock, Aged Bronze",
-            "fields": [{"name": "Model Number", "textValue": "BE499WB CAM 716"}],
-        }
-    ]
-
-    with patch("scripts.ingest_manual.hbctl_client.search_items", return_value=mock_entities), \
-         patch("scripts.ingest_manual.hbctl_client.list_items", return_value=mock_entities), \
-         patch("scripts.ingest_manual.hbctl_client.create_item") as mock_create, \
-         patch("scripts.ingest_manual.hbctl_client.upload_attachments") as mock_upload:
+    with patch("scripts.ingest_manual.compress_pdf_if_large", return_value=compressed_pdf), \
+         patch(
+             "scripts.ingest_manual.hbctl_client.upsert_item",
+             return_value={"id": "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d", "action": "attached"},
+         ) as mock_upsert:
         entity_id = create_homebox_entity(data, dummy_pdf)
         assert entity_id == "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d"
-        mock_create.assert_not_called()
-        mock_upload.assert_called_once()
-        assert mock_upload.call_args[0][0] == "eeac5cf2-dadd-4ce5-b94c-137c9a01fd8d"
-        assert mock_upload.call_args[1]["remote_name"] == "manual.pdf"
+        mock_upsert.assert_called_once()
+        assert mock_upsert.call_args.kwargs["match_by"] == ["model", "name"]
+        assert mock_upsert.call_args.kwargs["match_mode"] == "contains"
+        assert mock_upsert.call_args.kwargs["on_match"] == "attach-only"
+        assert mock_upsert.call_args.kwargs["attach"] == [f"{compressed_pdf}=manual.pdf"]
+        assert not compressed_pdf.exists()
 
 
 def test_extract_sunny_rower():

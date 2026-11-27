@@ -40,7 +40,7 @@ tasks:
   homebox:create:
     desc: Create Homebox entity with JSON payload (optional ATTACH='<path>')
     cmds:
-      - printf '%s' '{{.DATA}}' | hbctl item create --from-json - {{if .ATTACH}}--attach '{{.ATTACH}}'{{end}} --json
+      - printf '%s' '{{.DATA}}' | hbctl item create --from-json - {{if .ATTACH}}--attach '{{.ATTACH}}' --optimize{{end}} --json
     requires:
       vars: [DATA]
 
@@ -54,7 +54,7 @@ tasks:
   homebox:attach:
     desc: Attach a file to a Homebox entity
     cmds:
-      - hbctl attachment upload {{.ID}} '{{.FILE}}'
+      - hbctl attachment upload --optimize {{.ID}} '{{.FILE}}'
     requires:
       vars: [ID, FILE]
 
@@ -86,11 +86,6 @@ tasks:
       - process-images
     cmds:
       - uv run scripts/process_vision.py {{.CLI_ARGS}}
-
-  image:optimize:
-    desc: Optimize and compress images (< 500KB, max 1920x1080) in images/pending or images/processed
-    cmds:
-      - uv run scripts/optimize_image.py {{if .TARGET}}{{.TARGET}}{{else if .DIR}}{{.DIR}}{{else if .FILE}}{{.FILE}}{{end}} {{if eq .DRY_RUN "1"}}--dry-run{{end}} {{.CLI_ARGS}}
 
   homebox:search:
     desc: Search Homebox entities by name
@@ -237,7 +232,7 @@ tasks:
   tare:upsert:
     desc: Upsert kitchen container tare weight into Homebox
     cmds:
-      - uv run scripts/tare_weight_manager.py upsert {{.NAME | toJson}} {{.WEIGHT | toJson}} {{.CLI_ARGS}}
+      - hbctl item upsert --name {{.NAME | shellQuote}} --tag kitchen --tag container --tag tare-weight --field {{printf "Tare Weight (g)=%s" .WEIGHT | shellQuote}} --field-type number {{.CLI_ARGS}}
     requires:
       vars: [NAME, WEIGHT]
 

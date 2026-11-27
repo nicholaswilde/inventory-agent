@@ -22,6 +22,7 @@ hbctl item list --all --json --select id,name,quantity
 hbctl item tree [--root "<location>"] [--max-depth 2]
 hbctl search "<query>" --json --select id,name
 hbctl search --manufacturer "Espressif" --field Voltage=3.3 --json --select id,name,fields
+hbctl search --any --model "ESP32" --field "Notes=B0CJR4QZ45" --json --select id,name
 ```
 
 ### Get & Move Entity
@@ -34,10 +35,11 @@ hbctl item move <entity_id> "<parent_name_or_id>"   # or 'none' to unparent
 ### Create & Upsert Entity
 
 ```bash
-hbctl item create --name "ESP32 DevKit" --manufacturer "Espressif" --parent "Lab Bin" --field Voltage=3.3 --attach photo.jpg --json
-printf '%s' '{"name":"New Entity","manufacturer":"Acme"}' | hbctl item create --from-json - --attach photo.jpg --json
-hbctl item upsert --name "ESP32 DevKit" --tag electronics --field Pins=38 --field-type number --match-by model --match-by name --fill-missing
-printf '%s' '{"name":"ESP32 DevKit","modelNumber":"ESP32"}' | hbctl item upsert --from-json - --match-by model --fill-missing --attach photo.jpg --json
+hbctl item create --name "ESP32 DevKit" --manufacturer "Espressif" --parent "Lab Bin" --field Voltage=3.3 --attach photo.jpg --optimize --json
+printf '%s' '{"name":"New Entity","manufacturer":"Acme"}' | hbctl item create --from-json - --attach-url "https://example.com/photo.jpg=product.jpg" --attach-best-effort --optimize --json
+hbctl item upsert --name "ESP32 DevKit" --tag electronics --field Pins=38 --field-type number --match-by model --match-by name --match-mode contains --fill-missing
+hbctl item upsert --name "Mason Jar" --tag tare-weight --field "Tare Weight (g)=250g" --field-type number
+printf '%s' '{"name":"ESP32 DevKit","modelNumber":"ESP32"}' | hbctl item upsert --from-json - --match-by model --match-mode contains --on-match attach-only --attach photo.jpg --optimize --json
 ```
 
 ### Update Entity & Custom Fields
@@ -61,7 +63,8 @@ hbctl item delete <entity_id> --force
 ### Attachments
 
 ```bash
-hbctl attachment upload <entity_id> <file_path...> [--name <remote_name>]
+hbctl attachment upload --optimize <entity_id> <file_path...> [--name <remote_name>]
+hbctl attachment upload --optimize <entity_id> --attach-url "https://example.com/img.jpg=img.jpg"
 printf '%s' "<bytes>" | hbctl attachment upload --name <remote_name> <entity_id> -
 hbctl attachment list <entity_id> --json
 hbctl attachment download <entity_id> --all --ext pdf --out ./manuals
@@ -98,5 +101,6 @@ hbctl export --tag electronics --columns "name=Item,Manufacturer,Tare Weight (g)
 
 - Always pass `--json --select id,name,...` or `-q` to keep output compact in agent context.
 - Preview mutating calls with `--dry-run` (always redacts `Authorization: Bearer ***`).
-- `hbctl item create` / `upsert` automatically handles Homebox's follow-up `PUT` for custom fields and `GET -> Merge -> PUT` updates.
-- Optimize local photos with `task image:optimize TARGET="<path>"` (< 500KB, max 1920x1080) before `hbctl attachment upload`.
+- `hbctl item create` / `upsert` automatically handles Homebox's follow-up `PUT` for custom fields, `GET -> Merge -> PUT` updates, `--match-mode` (`exact|contains|fuzzy`), `--on-match` (`update|skip|attach-only`), `--attach FILE=REMOTE_NAME`, `--attach-url URL[=REMOTE_NAME]`, and `--attach-best-effort`.
+- `--field-type number` accepts unit-tolerant values (e.g., `250g`, `490 grams`, `$19.99`).
+- Project `.hbctl.toml` sets `auto_optimize = true` (`max_image_kb = 500`, `max_image_dimension = 1920`), so `hbctl` automatically resizes/compresses oversized images in memory on upload (or pass `--optimize` explicitly).

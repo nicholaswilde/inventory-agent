@@ -26,10 +26,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pytest
 import requests
 
+from scripts.hbctl_client import HbctlError
 from scripts.process_vision import (
-    attach_image,
-    call_homebox,
-    create_entity,
     identify_component,
     is_ocr_meaningful,
     main,
@@ -40,7 +38,7 @@ from scripts.process_vision import (
     query_gemini_vision,
     run_local_ocr,
     scan_image_queue,
-    search_entity,
+    upsert_component,
 )
 
 
@@ -571,169 +569,74 @@ class TestGeminiVisionFallback:
 
 
 # ============================================================================
-# 5. HomeBox Subprocess Wrapper Tests
+# 5. HomeBox Upsert Wrapper Tests
 # ============================================================================
 
-class TestHomeboxSubprocess:
-    """Tests for `hbctl` CLI subprocess execution (search, create, attach)."""
+class TestHomeboxUpsert:
+    """Tests for `upsert_component` via `hbctl item upsert`."""
 
-    def test_call_homebox_invokes_hbctl_cli(self):
-        """Verify call_homebox translates search/create/attach into hbctl CLI commands."""
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
-
-            call_homebox("search", "DHT11")
-            assert mock_run.call_args[0][0] == ["hbctl", "-q", "search", "DHT11"]
-
-            call_homebox("create", '{"name":"ESP32"}')
-            assert mock_run.call_args[0][0] == ["hbctl", "--json", "item", "create", "--from-json", "-"]
-            assert mock_run.call_args[1]["input"] == '{"name":"ESP32"}'
-
-            call_homebox("create", '{"name":"ESP32"}', "image.jpg")
-            assert mock_run.call_args[0][0] == [
-                "hbctl", "--json", "item", "create", "--from-json", "-", "--attach", "image.jpg"
-            ]
-            assert mock_run.call_args[1]["input"] == '{"name":"ESP32"}'
-
-            call_homebox("attach", "uuid-123", "image.jpg")
-            assert mock_run.call_args[0][0] == ["hbctl", "attachment", "upload", "uuid-123", "image.jpg"]
-
-    def test_search_entity_match_found_quiet_id(self):
-        """Verify search returns bare UUID line emitted by `hbctl -q search`."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "-q", "search", "DHT11"],
-                returncode=0,
-                stdout="12edefc5-6bf3-492d-b340-1c73a85be0b8\n",
-                stderr="",
-            )
-            assert search_entity("DHT11") == "12edefc5-6bf3-492d-b340-1c73a85be0b8"
-
-    def test_search_entity_match_found(self):
-        """Verify search returns UUID when matching item is found."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "-q", "search", "DHT11"],
-                returncode=0,
-                stdout="ID: 12edefc5-6bf3-492d-b340-1c73a85be0b8 | Name: DHT11 Sensor Module\n",
-                stderr="",
-            )
-            entity_id = search_entity("DHT11")
-            assert entity_id == "12edefc5-6bf3-492d-b340-1c73a85be0b8"
-            mock_hb.assert_called_once_with("search", "DHT11", homebox_script=None)
-
-    def test_search_entity_no_match(self):
-        """Verify search returns None when 0 items match."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "-q", "search", "NonExistent"],
-                returncode=0,
-                stdout="",
-                stderr="",
-            )
-            assert search_entity("NonExistent") is None
-
-    def test_search_entity_subprocess_error(self):
-        """Verify search returns None on non-zero exit code."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "-q", "search", "ErrorItem"],
-                returncode=1,
-                stdout="",
-                stderr="Connection refused",
-            )
-            assert search_entity("ErrorItem") is None
-
-    @pytest.mark.parametrize(
-        "invalid_query",
-        [
-            "",
-            "   ",
-            ".",
-            "4",
-            "12",
-            "..",
-            "123",
-            "---",
-            "@#$",
-        ],
-    )
-    def test_search_entity_rejects_short_and_non_alpha_queries(self, invalid_query):
-        """Verify search_entity returns None without invoking subprocess for queries < 3 chars or lacking letters."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            result = search_entity(invalid_query)
-            assert result is None
-            assert mock_hb.call_count == 0
-
-    def test_create_entity_success(self):
-        """Verify create passes JSON and parses returned entity UUID."""
+    def test_upsert_component_with_model_and_name(self, tmp_path):
+        img = tmp_path / "dht11.jpg"
+        img.write_bytes(b"data")
         comp = {
-            "name": "CH340G Module",
-            "modelNumber": "CH340G",
-            "description": "USB TTL IC",
+            "name": "DHT11 Sensor Module " * 10,
+            "modelNumber": "DHT11",
+            "description": "Long description " * 30,
         }
-        created_json = json.dumps({"id": "created-uuid-999", "name": "CH340G Module"})
 
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "--json", "item", "create", "--from-json", "-"],
-                returncode=0,
-                stdout=created_json,
-                stderr="",
-            )
-            entity_id = create_entity(comp)
-            assert entity_id == "created-uuid-999"
-            mock_hb.assert_called_once_with("create", json.dumps(comp), homebox_script=None)
+        with patch("scripts.process_vision.hbctl_client.upsert_item") as mock_upsert:
+            mock_upsert.return_value = {"id": "uuid-123", "action": "created"}
+            res = upsert_component(comp, img, homebox_script="/custom/hbctl")
 
-    def test_create_entity_failure_raises_runtime_error(self):
-        """Verify create failure raises RuntimeError."""
+        assert res == {"id": "uuid-123", "action": "created"}
+        kwargs = mock_upsert.call_args.kwargs
+        assert len(kwargs["from_json"]["name"]) <= 100
+        assert len(kwargs["from_json"]["description"]) <= 250
+        assert kwargs["match_by"] == ["model", "name"]
+        assert kwargs["match_mode"] == "contains"
+        assert kwargs["on_match"] == "attach-only"
+        assert kwargs["attach"] == [img]
+        assert kwargs["optimize"] is True
+        assert kwargs["hbctl_bin"] == "/custom/hbctl"
+
+    @pytest.mark.parametrize("short_model", ["", "  ", "4", "12", "123", "...", "@#$"])
+    def test_upsert_component_ignores_short_or_non_alpha_model(self, short_model, tmp_path):
+        img = tmp_path / "sensor.jpg"
+        img.write_bytes(b"data")
+        comp = {"name": "Relay Module 5V", "modelNumber": short_model}
+
+        with patch("scripts.process_vision.hbctl_client.upsert_item", return_value={"id": "u1", "action": "attached"}) as mock_upsert:
+            upsert_component(comp, img)
+
+        kwargs = mock_upsert.call_args.kwargs
+        assert kwargs["match_by"] == ["name"]
+        assert kwargs["match_mode"] == "contains"
+
+    @pytest.mark.parametrize("short_name", ["4", "123", "---"])
+    def test_upsert_component_falls_back_to_exact_for_noisy_name(self, short_name, tmp_path):
+        img = tmp_path / "noise.jpg"
+        img.write_bytes(b"data")
+        comp = {"name": short_name, "modelNumber": "123"}
+
+        with patch("scripts.process_vision.hbctl_client.upsert_item", return_value={"id": "u2", "action": "created"}) as mock_upsert:
+            upsert_component(comp, img)
+
+        kwargs = mock_upsert.call_args.kwargs
+        assert kwargs["match_by"] == ["name"]
+        assert kwargs["match_mode"] == "exact"
+
+    def test_upsert_component_raises_runtime_error_on_failure_or_missing_id(self, tmp_path):
+        img = tmp_path / "bad.jpg"
+        img.write_bytes(b"data")
         comp = {"name": "Bad Item"}
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "--json", "item", "create", "--from-json", "-"],
-                returncode=1,
-                stdout="",
-                stderr="Server 500 Error",
-            )
-            with pytest.raises(RuntimeError, match="Failed to create HomeBox entity"):
-                create_entity(comp)
 
-    def test_create_entity_invalid_json_response_raises_runtime_error(self):
-        """Verify malformed JSON from create subprocess raises RuntimeError."""
-        comp = {"name": "Bad Response Item"}
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "--json", "item", "create", "--from-json", "-"],
-                returncode=0,
-                stdout="<html>502 Bad Gateway</html>",
-                stderr="",
-            )
-            with pytest.raises(RuntimeError, match="Invalid JSON response"):
-                create_entity(comp)
+        with patch("scripts.process_vision.hbctl_client.upsert_item", side_effect=HbctlError("Server 500")):
+            with pytest.raises(RuntimeError, match="Failed to upsert HomeBox entity"):
+                upsert_component(comp, img)
 
-    def test_attach_image_success(self):
-        """Verify attach passes entity ID and image path returning True."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "attachment", "upload", "uuid-123", "image.jpg"],
-                returncode=0,
-                stdout='{"id": "att-1", "name": "image.jpg"}',
-                stderr="",
-            )
-            result = attach_image("uuid-123", "image.jpg")
-            assert result is True
-            mock_hb.assert_called_once_with("attach", "uuid-123", "image.jpg", homebox_script=None)
-
-    def test_attach_image_failure(self):
-        """Verify attach returns False on non-zero exit code."""
-        with patch("scripts.process_vision.call_homebox") as mock_hb:
-            mock_hb.return_value = subprocess.CompletedProcess(
-                args=["hbctl", "attachment", "upload", "uuid-123", "image.jpg"],
-                returncode=1,
-                stdout="",
-                stderr="File upload failed",
-            )
-            assert attach_image("uuid-123", "image.jpg") is False
+        with patch("scripts.process_vision.hbctl_client.upsert_item", return_value={"action": "created"}):
+            with pytest.raises(RuntimeError, match="No id field"):
+                upsert_component(comp, img)
 
 
 # ============================================================================
@@ -813,22 +716,19 @@ class TestCLIAndDryRun:
         img.write_bytes(b"image_data")
 
         with patch("scripts.process_vision.identify_component") as mock_id, \
-             patch("scripts.process_vision.call_homebox") as mock_hb:
+             patch("scripts.process_vision.hbctl_client.upsert_item") as mock_upsert:
 
             mock_id.return_value = {
                 "name": "Dry Run Component",
                 "modelNumber": "DRY-01",
                 "description": "Test Component",
             }
-            # Search returns no match
-            mock_hb.return_value = subprocess.CompletedProcess(args=[], returncode=0, stdout="")
 
             result = process_single_image(img, processed, dry_run=True)
             assert result is True
 
-            # Assert only search was called, no create or attach
-            assert mock_hb.call_count == 1
-            assert mock_hb.call_args[0][0] == "search"
+            # Assert no Homebox mutation occurred
+            mock_upsert.assert_not_called()
 
             # Assert file did NOT move
             assert img.exists()
@@ -844,12 +744,7 @@ class TestCLIAndDryRun:
         (pending / "test.jpg").write_bytes(b"data")
 
         with patch("scripts.process_vision.identify_component", return_value={"name": "Item", "description": "Desc"}), \
-             patch("scripts.process_vision.call_homebox") as mock_hb:
-
-            mock_hb.side_effect = [
-                subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # search
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "new-1"}'),  # create + attach
-            ]
+             patch("scripts.process_vision.hbctl_client.upsert_item", return_value={"id": "new-1", "action": "created"}):
 
             exit_code = main(["--pending-dir", str(pending), "--processed-dir", str(processed)])
             assert exit_code == 0
@@ -883,7 +778,7 @@ class TestFullPipelineE2EMock:
     """Tests for full pipeline workflows across batches with mocked external dependencies."""
 
     def test_e2e_new_item_creation_flow(self, tmp_path):
-        """Verify new item workflow: OCR fails -> Gemini succeeds -> create -> attach -> move."""
+        """Verify new item workflow: OCR fails -> Gemini succeeds -> upsert(created) -> move."""
         pending = tmp_path / "pending"
         processed = tmp_path / "processed"
         pending.mkdir()
@@ -894,7 +789,7 @@ class TestFullPipelineE2EMock:
 
         with patch("scripts.process_vision.run_local_ocr", return_value="?? noise %%"), \
              patch("scripts.process_vision.query_gemini_vision") as mock_gemini, \
-             patch("scripts.process_vision.call_homebox") as mock_hb:
+             patch("scripts.process_vision.hbctl_client.upsert_item") as mock_upsert:
 
             mock_gemini.return_value = {
                 "name": "BME280 Pressure Sensor",
@@ -902,26 +797,20 @@ class TestFullPipelineE2EMock:
                 "manufacturer": "Bosch",
                 "description": "Digital pressure and humidity sensor.",
             }
-
-            mock_hb.side_effect = [
-                subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # search -> not found
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "bme280-uuid"}'),  # create + attach
-            ]
+            mock_upsert.return_value = {"id": "bme280-uuid", "action": "created"}
 
             success = process_single_image(img, processed_dir=processed, api_key="test-key")
             assert success is True
             assert not img.exists()
             assert (processed / "new_sensor.jpg").exists()
 
-            # Verify call sequence
-            hb_calls = mock_hb.call_args_list
-            assert len(hb_calls) == 2
-            assert hb_calls[0][0][0] == "search"
-            assert hb_calls[1][0][0] == "create"
-            assert hb_calls[1][0][2] == str(img)
+            mock_upsert.assert_called_once()
+            assert mock_upsert.call_args.kwargs["attach"] == [img]
+            assert mock_upsert.call_args.kwargs["on_match"] == "attach-only"
+            assert mock_upsert.call_args.kwargs["optimize"] is True
 
     def test_e2e_duplicate_item_attach_flow(self, tmp_path):
-        """Verify duplicate item workflow: Gemini succeeds -> duplicate found -> attach to existing -> move."""
+        """Verify duplicate item workflow: Gemini succeeds -> upsert(attached) -> move."""
         pending = tmp_path / "pending"
         processed = tmp_path / "processed"
         pending.mkdir()
@@ -932,34 +821,24 @@ class TestFullPipelineE2EMock:
 
         with patch("scripts.process_vision.run_local_ocr", return_value=""), \
              patch("scripts.process_vision.query_gemini_vision") as mock_gemini, \
-             patch("scripts.process_vision.call_homebox") as mock_hb:
+             patch("scripts.process_vision.hbctl_client.upsert_item") as mock_upsert:
 
             mock_gemini.return_value = {
                 "name": "DHT11 Sensor Module",
                 "modelNumber": "DHT11",
                 "description": "Temperature and humidity sensor.",
             }
-
-            mock_hb.side_effect = [
-                subprocess.CompletedProcess(
-                    args=[],
-                    returncode=0,
-                    stdout="ID: existing-dht11-uuid | Name: DHT11 Sensor Module\n",
-                ),  # search -> match
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "attached"}'),  # attach
-            ]
+            mock_upsert.return_value = {"id": "existing-dht11-uuid", "action": "attached"}
 
             success = process_single_image(img, processed_dir=processed, api_key="test-key")
             assert success is True
             assert not img.exists()
             assert (processed / "dht11_angle2.jpg").exists()
 
-            # Assert create was NEVER called
-            hb_calls = mock_hb.call_args_list
-            assert len(hb_calls) == 2
-            assert hb_calls[0][0][0] == "search"
-            assert hb_calls[1][0][0] == "attach"
-            assert hb_calls[1][0][1] == "existing-dht11-uuid"
+            mock_upsert.assert_called_once()
+            assert mock_upsert.call_args.kwargs["on_match"] == "attach-only"
+            assert mock_upsert.call_args.kwargs["match_by"] == ["model", "name"]
+            assert mock_upsert.call_args.kwargs["match_mode"] == "contains"
 
     def test_e2e_meaningful_ocr_bypasses_gemini(self, tmp_path):
         """Verify high quality local OCR creates item directly without calling Gemini Vision API."""
@@ -973,12 +852,7 @@ class TestFullPipelineE2EMock:
 
         with patch("scripts.process_vision.run_local_ocr", return_value="ESP32-WROOM-32D Wi-Fi & Bluetooth Module"), \
              patch("scripts.process_vision.query_gemini_vision") as mock_gemini, \
-             patch("scripts.process_vision.call_homebox") as mock_hb:
-
-            mock_hb.side_effect = [
-                subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # search -> not found
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "esp32-uuid"}'),  # create + attach
-            ]
+             patch("scripts.process_vision.hbctl_client.upsert_item", return_value={"id": "esp32-uuid", "action": "created"}):
 
             success = process_single_image(img, processed_dir=processed)
             assert success is True
@@ -993,7 +867,7 @@ class TestFullPipelineE2EMock:
         Verify batch processing over mixed directory:
         - Image 1: Duplicate found -> attached to existing -> moved
         - Image 2: New item -> created -> attached -> moved
-        - Image 3: Create fails -> file remains in pending
+        - Image 3: Upsert fails -> file remains in pending
         - Non-image files (.gitkeep, notes.txt) remain in pending untouched
         """
         pending = tmp_path / "pending"
@@ -1019,18 +893,12 @@ class TestFullPipelineE2EMock:
 
         with patch("scripts.process_vision.run_local_ocr", side_effect=ocr_dispatch), \
              patch("scripts.process_vision.query_gemini_vision", side_effect=gemini_dispatch) as mock_gemini, \
-             patch("scripts.process_vision.call_homebox") as mock_hb:
+             patch("scripts.process_vision.hbctl_client.upsert_item") as mock_upsert:
 
-            mock_hb.side_effect = [
-                # img1_dup: search match -> attach
-                subprocess.CompletedProcess(args=[], returncode=0, stdout="ID: dup-uuid | Name: DHT11\n"),
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"status": "ok"}'),
-                # img2_new: search none -> create + attach
-                subprocess.CompletedProcess(args=[], returncode=0, stdout=""),
-                subprocess.CompletedProcess(args=[], returncode=0, stdout='{"id": "new-uuid"}'),
-                # img3_fail: search none -> create fails (returncode 1)
-                subprocess.CompletedProcess(args=[], returncode=0, stdout=""),
-                subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="500 Internal Error"),
+            mock_upsert.side_effect = [
+                {"id": "dup-uuid", "action": "attached"},
+                {"id": "new-uuid", "action": "created"},
+                HbctlError("500 Internal Error"),
             ]
 
             summary = process_all_images(pending_dir=pending, processed_dir=processed, api_key="key")
@@ -1058,19 +926,11 @@ class TestFullPipelineE2EMock:
         from scripts.process_vision import process_single_image
         assert process_single_image(tmp_path / "missing.jpg", tmp_path / "processed") is False
 
-    def test_process_single_image_attach_failures(self, tmp_path):
+    def test_process_single_image_upsert_failure(self, tmp_path):
         from scripts.process_vision import process_single_image
         img = tmp_path / "chip.jpg"
         img.write_bytes(b"data")
 
-        # 1. Duplicate found but attach fails
         with patch("scripts.process_vision.identify_component", return_value={"name": "Chip", "modelNumber": "CHIP"}), \
-             patch("scripts.process_vision.search_entity", return_value="hb-existing"), \
-             patch("scripts.process_vision.attach_image", return_value=False):
-            assert process_single_image(img, tmp_path / "processed") is False
-
-        # 2. New create/attach fails
-        with patch("scripts.process_vision.identify_component", return_value={"name": "Chip", "modelNumber": "CHIP"}), \
-             patch("scripts.process_vision.search_entity", return_value=None), \
-             patch("scripts.process_vision.create_entity", side_effect=RuntimeError("attach failed")):
+             patch("scripts.process_vision.upsert_component", side_effect=RuntimeError("upsert failed")):
             assert process_single_image(img, tmp_path / "processed") is False

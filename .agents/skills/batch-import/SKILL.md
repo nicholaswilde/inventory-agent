@@ -56,4 +56,4 @@ Performs batch imports of multiple items into Homebox from a list of URLs/ASINs,
    - **Delisted Product Fallback**: Automatically falls back to CSV order name, price, date, and order ID if a product URL returns HTTP 404 or is delisted.
    - **Deduplication**: Checks Homebox for matching ASINs, model numbers, or titles before creating items to prevent duplicate records.
    - **Rate Limiting**: Includes a configurable inter-request delay (`--delay 0.5`) to prevent throttling from retailer websites.
-   - **Image Attachments**: Downloads and attaches product photos directly to created Homebox items (can be skipped with `NO_ATTACH=1`). Optimize any local/manual photo attachments via `task image:optimize` (< 500KB, max 1920x1080) before uploading to Homebox.
+   - **Image Attachments**: Passes primary product image URLs directly via `hbctl item create --attach-url ... --attach-best-effort --optimize` (can be skipped with `NO_ATTACH=1`). `hbctl` automatically handles download, optimization (< 500KB, max 1920px), and non-fatal attachment warnings.

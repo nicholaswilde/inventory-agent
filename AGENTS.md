@@ -140,10 +140,9 @@ When creating or modifying scripts and skills, always update `Taskfile.yml` to i
 
 <!-- image-optimization-begin -->
 ## Image Optimization & Compression
-Ensure images uploaded to Homebox are web-friendly (< 500KB and max 1920x1080 resolution) to prevent database and storage bloat:
-1. Run `task image:optimize` (or `uv run scripts/optimize_image.py`) to compress images in `images/pending/` or `images/processed/`.
-2. Preview optimization savings with `task image:optimize DRY_RUN=1`.
-3. Support target single file or custom directory via `task image:optimize TARGET="path/to/img"`.
+`hbctl` optimizes oversized images (< 500KB, max 1920px) in memory on upload:
+1. `.hbctl.toml` sets `auto_optimize = true`, `max_image_kb = 500`, `max_image_dimension = 1920`.
+2. Pass `--optimize` on `hbctl item create/upsert` or `hbctl attachment upload` (or `--force` to upload as-is).
 <!-- image-optimization-end -->
 
 <!-- document-parsing-begin -->

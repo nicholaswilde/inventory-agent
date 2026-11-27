@@ -12,8 +12,6 @@ import pytest
 from scripts.import_amazon_invoice import (
     extract_invoice_data,
     extract_text_from_pdf,
-    find_existing_item,
-    fill_missing_details,
     create_new_item_payload,
     import_amazon_invoice,
     download_invoice_if_url,
@@ -126,64 +124,6 @@ def test_extract_text_from_pdf(tmp_path):
         assert extract_text_from_pdf(pdf) == "Invoice text via pdftotext"
 
 
-def test_find_existing_item():
-    mock_entities = [
-        {"id": "id-1", "name": "Moen AC Power Adapter Kit", "fields": [{"name": "Model Number", "textValue": "169031"}]},
-        {"id": "id-2", "name": "Moen Kitchen Faucet", "modelNumber": "7594EWSRS"},
-    ]
-
-    with patch("scripts.import_amazon_invoice.hbctl_client.search_items", return_value=mock_entities):
-        # Match by exact model number in custom fields
-        found = find_existing_item(
-            model_number="169031",
-            title="Moen 169031 AC Adapter Service Kit",
-        )
-        assert found is not None
-        assert found["id"] == "id-1"
-
-        # Match by name / keywords
-        found2 = find_existing_item(
-            model_number="7594ESRS",
-            title="Moen Kitchen Faucet Arbor Motionsense",
-        )
-        assert found2 is not None
-        assert found2["id"] == "id-2"
-
-        # Non-matching item returns None
-        found_none = find_existing_item(
-            model_number="NONEXISTENT-999",
-            title="Completely Unknown Item",
-        )
-        assert found_none is None
-
-
-def test_fill_missing_details():
-    item_data = {
-        "title": "Moen Arbor Motionsense Faucet",
-        "model_number": "7594ESRS",
-        "manufacturer": "Moen",
-        "price": 372.27,
-        "quantity": 1,
-    }
-
-    patch_payload = fill_missing_details(
-        item_data=item_data,
-        order_id="113-3740671-2345851",
-        order_date="2018-08-07",
-    )
-
-    assert patch_payload["purchaseDate"] == "2018-08-07"
-    assert patch_payload["purchaseFrom"] == "Amazon"
-    assert patch_payload["purchasePrice"] == 372.27
-    assert patch_payload["manufacturer"] == "Moen"
-    assert patch_payload["modelNumber"] == "7594ESRS"
-
-    # Order Number field should be included
-    order_fields = [f for f in patch_payload.get("fields", []) if f.get("name") == "Order Number"]
-    assert len(order_fields) == 1
-    assert order_fields[0]["textValue"] == "113-3740671-2345851"
-
-
 def test_create_new_item_payload():
     item_data = {
         "title": "Moen 3942SRS Kitchen Soap and Lotion Dispenser, Spot Resist Stainless",
@@ -227,45 +167,42 @@ def test_download_invoice_if_url(tmp_path):
         assert res_path.read_bytes() == b"%PDF-1.4 downloaded content"
 
 
-def test_import_amazon_invoice_pipeline(tmp_path):
+def test_import_amazon_invoice_pipeline(tmp_path, capsys):
     pdf = tmp_path / "invoice.pdf"
     pdf.write_bytes(b"%PDF-1.4 dummy")
+    processed_dir = tmp_path / "processed"
 
-    mock_existing_adapter = {
-        "id": "hb-adapter-123",
-        "name": "Moen AC Power Adapter Kit",
-        "modelNumber": "169031",
-        "purchaseDate": "",
-        "purchasePrice": 0,
-        "fields": [],
-    }
+    upsert_responses = [
+        {"id": "hb-adapter-123", "action": "updated"},
+        {"id": "hb-faucet-456", "action": "updated", "attachmentErrors": ["upload timeout"]},
+        {"id": "hb-new-item-789", "action": "created"},
+    ]
 
     with patch("scripts.import_amazon_invoice.extract_text_from_pdf", return_value=SAMPLE_AMAZON_INVOICE_TEXT), \
-         patch("scripts.import_amazon_invoice.search_homebox_entities") as mock_search, \
-         patch("scripts.import_amazon_invoice.update_homebox_entity") as mock_update, \
-         patch("scripts.import_amazon_invoice.create_homebox_entity") as mock_create, \
-         patch("scripts.import_amazon_invoice.attach_file_to_entity") as mock_attach:
-
-        # Adapter exists, Faucet exists, Dispenser is new
-        mock_search.side_effect = lambda q, *args, **kwargs: (
-            [mock_existing_adapter] if "169031" in q or "Adapter" in q else []
-        )
-        mock_create.return_value = "hb-new-item-789"
+         patch("scripts.import_amazon_invoice.hbctl_client.upsert_item", side_effect=upsert_responses) as mock_upsert:
 
         results = import_amazon_invoice(
             source=str(pdf),
             dry_run=False,
             attach=True,
-            processed_dir=tmp_path / "processed",
+            processed_dir=processed_dir,
         )
 
-        assert results["order_id"] == "113-3740671-2345851"
-        assert len(results["items"]) == 3
-        # Adapter updated with fill_missing=True
-        assert any(item["action"] == "updated" for item in results["items"])
-        assert mock_update.call_args[1]["fill_missing"] is True
-        # Dispenser created
-        assert any(item["action"] == "created" for item in results["items"])
+    assert results["order_id"] == "113-3740671-2345851"
+    assert len(results["items"]) == 3
+    assert results["items"][0]["action"] == "updated"
+    assert results["items"][0]["entity_id"] == "hb-adapter-123"
+    assert results["items"][2]["action"] == "created"
+    assert results["items"][2]["entity_id"] == "hb-new-item-789"
 
-        # Check attach called
-        assert mock_attach.call_count >= 1
+    assert mock_upsert.call_count == 3
+    expected_pdf = processed_dir / "Amazon_Invoice_113-3740671-2345851.pdf"
+    first_kwargs = mock_upsert.call_args_list[0].kwargs
+    assert first_kwargs["match_by"] == ["model", "name"]
+    assert first_kwargs["match_mode"] == "contains"
+    assert first_kwargs["fill_missing"] is True
+    assert first_kwargs["attach"] == [expected_pdf]
+    assert first_kwargs["attach_best_effort"] is True
+
+    captured = capsys.readouterr()
+    assert "upload timeout" in captured.err

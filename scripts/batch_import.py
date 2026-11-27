@@ -8,11 +8,9 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import re
 import sys
 import time
-import urllib.parse
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -20,12 +18,9 @@ from typing import Any
 # Ensure project root in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import requests
-
 try:
     from scripts import hbctl_client
     from scripts.import_url import (
-        HTTP_HEADERS,
         create_homebox_entity,
         extract_product_data,
         fetch_url_html,
@@ -34,7 +29,6 @@ try:
 except ImportError:
     import hbctl_client  # type: ignore[no-redef]
     from import_url import (  # type: ignore[no-redef]
-        HTTP_HEADERS,
         create_homebox_entity,
         extract_product_data,
         fetch_url_html,
@@ -317,16 +311,8 @@ def batch_import(
 
             if raw_html:
                 product_data = extract_product_data(raw_html, url)
-                image_bytes = None
+                image_url = product_data.get("image_url") if attach_images else None
                 image_filename = f"{asin}.jpg"
-
-                if attach_images and product_data.get("image_url"):
-                    try:
-                        img_resp = requests.get(product_data["image_url"], headers=HTTP_HEADERS, timeout=15)
-                        if img_resp.status_code == 200:
-                            image_bytes = img_resp.content
-                    except Exception:
-                        pass
 
                 # Append order history to notes
                 notes_lines = [product_data.get("notes", "")]
@@ -344,7 +330,11 @@ def batch_import(
                 if csv_info.get("count"):
                     product_data["quantity"] = csv_info["count"]
 
-                entity_id = create_homebox_entity(product_data, image_bytes=image_bytes, image_filename=image_filename)
+                entity_id = create_homebox_entity(
+                    product_data,
+                    image_url=image_url or None,
+                    image_filename=image_filename,
+                )
             else:
                 # Fallback on CSV metadata (e.g. delisted / 404 products)
                 fallback = True

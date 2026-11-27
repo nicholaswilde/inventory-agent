@@ -8,10 +8,8 @@ from __future__ import annotations
 import argparse
 import html
 import json
-import os
 import re
 import sys
-import tempfile
 import urllib.parse
 from pathlib import Path
 from typing import Any
@@ -251,30 +249,53 @@ def check_duplicate(
     name: str,
     asin: str | None = None,
 ) -> dict[str, Any] | None:
-    """Check Homebox for existing item with matching model number, name, or ASIN."""
-    searches: list[tuple[str, dict[str, Any]]] = []
-    if asin and asin.strip():
-        searches.append(("asin", {"fields": [f"Notes={asin.strip()}"]}))
-    if model_number and model_number.strip():
-        searches.append(("model", {"model": model_number.strip()}))
-    if name and name.strip():
-        searches.append(("name", {"query": name.strip()}))
+    """Check Homebox for existing item with matching ASIN, model number, or name."""
+    kwargs: dict[str, Any] = {}
+    clean_asin = asin.strip() if asin and asin.strip() else ""
+    clean_model = model_number.strip() if model_number and model_number.strip() else ""
+    clean_name = name.strip() if name and name.strip() else ""
 
-    for kind, kwargs in searches:
-        try:
-            items = hbctl_client.search_items(**kwargs)
-            if kind == "asin" and items:
-                return items[0]
-            for item in items:
-                item_model = hbctl_client.get_field_value(item, "Model Number", "modelNumber")
-                if model_number and item_model.lower() == model_number.strip().lower():
-                    return item
-                if item.get("name", "").strip().lower() == name.strip().lower():
-                    return item
-        except Exception:
-            pass
+    if clean_asin:
+        kwargs["fields"] = [f"Notes={clean_asin}"]
+    if clean_model:
+        kwargs["model"] = clean_model
+    if clean_name:
+        kwargs["query"] = clean_name
+    if not kwargs:
+        return None
+
+    kwargs["any_match"] = len(kwargs) > 1
+    try:
+        items = hbctl_client.search_items(**kwargs)
+    except Exception:
+        return None
+
+    if clean_asin:
+        for item in items:
+            notes = hbctl_client.get_field_value(item, "Notes", "notes")
+            if clean_asin.lower() in notes.lower():
+                return item
+    if clean_model:
+        for item in items:
+            item_model = hbctl_client.get_field_value(item, "Model Number", "modelNumber")
+            if item_model.lower() == clean_model.lower():
+                return item
+    if clean_name:
+        for item in items:
+            if item.get("name", "").strip().lower() == clean_name.lower():
+                return item
 
     return None
+
+
+def _format_attach_url_spec(image_url: str, image_filename: str | None) -> str:
+    """Format `--attach-url` spec as `URL=REMOTE_NAME` when hbctl can safely split it."""
+    if not image_filename:
+        return image_url
+    query = urllib.parse.urlparse(image_url).query
+    if not query or "=" in query.rsplit("&", 1)[-1]:
+        return f"{image_url}={image_filename}"
+    return image_url
 
 
 def truncate_to_bytes(s: str, max_bytes: int = 1000) -> str:
@@ -288,10 +309,10 @@ def truncate_to_bytes(s: str, max_bytes: int = 1000) -> str:
 
 def create_homebox_entity(
     data: dict[str, Any],
-    image_bytes: bytes | None = None,
-    image_filename: str = "product.jpg",
+    image_url: str | None = None,
+    image_filename: str | None = None,
 ) -> str:
-    """Create item in Homebox via `hbctl` and upload product image."""
+    """Create item in Homebox via `hbctl` and attach remote product image URL."""
     notes = truncate_to_bytes(data.get("notes", ""), max_bytes=1000)
 
     payload: dict[str, Any] = {
@@ -309,13 +330,14 @@ def create_homebox_entity(
     if data.get("purchase_from"):
         payload["purchaseFrom"] = data["purchase_from"]
 
-    created = hbctl_client.create_item(payload)
-    entity_id = str(created.get("id", ""))
-
-    if image_bytes and entity_id:
-        hbctl_client.upload_attachment_bytes(entity_id, image_bytes, image_filename, force=True)
-
-    return entity_id
+    attach_urls = [_format_attach_url_spec(image_url, image_filename)] if image_url else ()
+    created = hbctl_client.create_item(
+        payload,
+        attach_urls=attach_urls,
+        attach_best_effort=bool(attach_urls),
+        optimize=bool(attach_urls),
+    )
+    return str(created.get("id", ""))
 
 
 def import_url(
@@ -334,20 +356,13 @@ def import_url(
     if model_override:
         product_data["model_number"] = model_override
 
-    # Fetch product image bytes
-    image_bytes = None
+    image_url = product_data.get("image_url") or ""
     image_filename = "product.jpg"
-    if product_data.get("image_url"):
-        try:
-            img_resp = requests.get(product_data["image_url"], headers=HTTP_HEADERS, timeout=15)
-            if img_resp.status_code == 200:
-                image_bytes = img_resp.content
-                parsed_path = urllib.parse.urlparse(product_data["image_url"]).path
-                ext = Path(parsed_path).suffix or ".jpg"
-                slug = re.sub(r"[^a-zA-Z0-9]+", "_", product_data["name"][:30]).strip("_")
-                image_filename = f"{slug}{ext}"
-        except Exception:
-            pass
+    if image_url:
+        parsed_path = urllib.parse.urlparse(image_url).path
+        ext = Path(parsed_path).suffix or ".jpg"
+        slug = re.sub(r"[^a-zA-Z0-9]+", "_", product_data["name"][:30]).strip("_")
+        image_filename = f"{slug}{ext}" if slug else f"product{ext}"
 
     if dry_run:
         return {
@@ -355,7 +370,7 @@ def import_url(
             "homebox_id": "dry-run-id",
             "dry_run": True,
             "image_filename": image_filename,
-            "has_image": image_bytes is not None,
+            "has_image": bool(image_url),
         }
 
     # Duplicate check
@@ -372,7 +387,11 @@ def import_url(
             "dry_run": False,
         }
 
-    entity_id = create_homebox_entity(product_data, image_bytes=image_bytes, image_filename=image_filename)
+    entity_id = create_homebox_entity(
+        product_data,
+        image_url=image_url or None,
+        image_filename=image_filename,
+    )
     return {
         "entity": product_data,
         "homebox_id": entity_id,

@@ -37,5 +37,5 @@ Uploads appliance exploded diagrams and assembly schematics cataloged in `applia
 3. **Entity Resolution**:
    - Resolves entity IDs from `appliances/*.md` cheat sheets.
    - Maps to diagrams via `[...](<MODEL>/bill_of_materials.md)` or folder name matching in the cheat sheet text.
-4. **Pre-Attachment Image Optimization**:
-   - Optimize large raw diagram images with `task image:optimize TARGET="appliances/<MODEL>/diagrams"` (< 500KB, max 1920x1080) before uploading if needed.
+4. **Built-In Image Optimization**:
+   - Passes `--optimize` to `hbctl attachment upload` (and `.hbctl.toml` enables `auto_optimize = true`), resizing/compressing oversized diagrams (< 500KB, max 1920px) in memory without mutating local files.

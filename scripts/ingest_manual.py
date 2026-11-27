@@ -1190,7 +1190,7 @@ def format_cheat_sheet(data: dict[str, Any]) -> str:
 
 
 def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
-    """Create item in Homebox via `hbctl` and upload manual attachment."""
+    """Create or attach manual to Homebox item via `hbctl item upsert`."""
     payload = {
         "name": data["name"],
         "description": f"{data.get('capacity', '')} {data.get('appliance_type', '')}".strip(),
@@ -1200,48 +1200,30 @@ def create_homebox_entity(data: dict[str, Any], manual_file: Path) -> str:
         "notes": f"Manual {data.get('manual_number', '')}. Dimensions: {data.get('dimensions', '')}. Capacity: {data.get('capacity', '')}",
     }
 
-    # Check if entity already exists by model number or name
-    entity_id = None
-    try:
-        model = (data.get("model_number") or "").strip()
-        if model:
-            items = hbctl_client.search_items(model=model)
-            if items:
-                entity_id = items[0].get("id")
-
-        if not entity_id:
-            items = hbctl_client.list_items()
-            model_lower = model.lower()
-            for it in items:
-                it_model = hbctl_client.get_field_value(it, "Model Number", "modelNumber").lower()
-                it_name = (it.get("name") or "").lower()
-                if model_lower and it_model and (model_lower == it_model or model_lower in it_model or it_model in model_lower):
-                    entity_id = it.get("id")
-                    break
-                if model_lower and len(model_lower) >= 4 and model_lower in it_name:
-                    entity_id = it.get("id")
-                    break
-    except Exception:
-        pass
+    model = (data.get("model_number") or "").strip()
+    match_by = ["model", "name"] if model else ["name"]
 
     upload_file = compress_pdf_if_large(manual_file) if manual_file.exists() else None
-    attached = False
-    try:
-        if not entity_id:
-            if upload_file and upload_file == manual_file:
-                created = hbctl_client.create_item(payload, attach=[upload_file])
-                attached = True
-            else:
-                created = hbctl_client.create_item(payload)
-            entity_id = created.get("id")
+    attach_specs: list[str] = []
+    if upload_file:
+        if upload_file != manual_file:
+            attach_specs.append(f"{upload_file}={manual_file.name}")
+        else:
+            attach_specs.append(str(upload_file))
 
-        if entity_id and upload_file and not attached:
-            hbctl_client.upload_attachments(entity_id, [upload_file], remote_name=manual_file.name)
+    try:
+        res = hbctl_client.upsert_item(
+            from_json=payload,
+            match_by=match_by,
+            match_mode="contains",
+            on_match="attach-only",
+            attach=attach_specs,
+        )
     finally:
         if upload_file and upload_file != manual_file and upload_file.exists():
             upload_file.unlink(missing_ok=True)
 
-    return str(entity_id or "")
+    return str(res.get("id") or "")
 
 
 def ingest_manual(

@@ -16,7 +16,7 @@ This skill guides the agent to process a GitHub issue, extract item details, map
 2. **Download & Process Files**: 
    - Download the attached file(s) from the issue. **Crucial**: Because GitHub attachment links often redirect, you must use `curl -L` or `curl -sL -o <filename>` to follow redirects and download the actual file, not an HTML page.
    - **If the file is a zip archive**: Extract the `.zip` file into a temporary directory first, then process all images inside.
-   - **Image Optimization**: Compress and resize raw images using `task image:optimize TARGET="<image_path>"` (or ensure files are < 500KB and max 1920x1080 resolution) before attaching to Homebox.
+   - **Image Optimization**: `.hbctl.toml` sets `auto_optimize = true` (`< 500KB`, max `1920px`), so `hbctl` automatically optimizes oversized images in memory during upload (or pass `--optimize` explicitly).
    - **Documents (PDFs, invoices, spec sheets)**: Extract text using `lit parse -q --no-ocr <file>` first for instant direct text extraction, falling back to built-in OCR `lit parse -q <file>` if the document is scanned or empty.
    - **Images**: Follow the primary image parsing workflow: Process the image with `lit` (or `lit parse -q <image>`), with built-in OCR / `tesseract` fallback.
    - **Vision Fallback**: If the OCR pipeline fails to extract meaningful text, or if the component's type/model is unclear from the text alone, use your native multimodal capabilities (e.g. via `view_file` tool on the image) to visually inspect the component or board to identify its type, manufacturer, and model.
@@ -32,12 +32,13 @@ This skill guides the agent to process a GitHub issue, extract item details, map
    - **Unstructured / Missing Info**: If the issue does not follow the structured template, or if fields are blank (e.g. just a title and a zip upload), use OCR and your visual identification to generate an appropriate `name`, `manufacturer`, `modelNumber`, and `description` for the Homebox JSON payload yourself.
 
 4. **Check Homebox**:
-   - Use the `homebox` skill (e.g., `hbctl search "<name>" --json --select id,name` or `hbctl search --model "<model>" --json --select id,name`) to check if the component(s) already exist in Homebox.
+   - Use the `homebox` skill (e.g., `hbctl search --any --model "<model>" "<name>" --json --select id,name`) to check if the component(s) already exist in Homebox.
    - If a component **already exists**, inform the user that it exists. Do NOT increase the quantity or add a duplicate.
 
 5. **Add to Homebox**:
-   - For each new component, create it and attach all corresponding optimized image(s) in a single call using `hbctl item create --name "<name>" ... --attach <img1> --attach <img2> --json` (or `printf '%s' '<json_data>' | hbctl item create --from-json - --attach <img1> --json`, or `task homebox:create DATA='<json_data>' ATTACH='<img1>'`).
-   - If adding images to an existing item or uploading extra files afterward, run `hbctl attachment upload <entity_id> <image_path...>`.
+   - For each new component, create it and attach all corresponding image(s) in a single call using `hbctl item create --name "<name>" ... --attach <img1> --attach <img2> --optimize --json` (or `printf '%s' '<json_data>' | hbctl item create --from-json - --attach <img1> --optimize --json`, or `task homebox:create DATA='<json_data>' ATTACH='<img1>'`).
+   - Or combine check + create + attach-on-match in one call with `hbctl item upsert --from-json - --match-by model --match-by name --match-mode contains --on-match attach-only --attach <img1> --optimize --json`.
+   - If adding images to an existing item or uploading extra files afterward, run `hbctl attachment upload --optimize <entity_id> <image_path...>`.
 
 6. **Create Git Commit**:
    - Create an empty git commit (or commit related changes if any) to close the issue.

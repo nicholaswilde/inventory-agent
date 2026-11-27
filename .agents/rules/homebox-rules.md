@@ -8,9 +8,8 @@
 - **JSON Filtering**: Use `hbctl --json --select <fields>` (or `jq` on raw endpoints) to keep raw uncompressed payloads out of model context.
 
 ## Image Optimization & Compression
-- **Limit**: Web-friendly images (< 500KB, max 1920x1080 resolution) before uploading/attaching to Homebox entities.
-- **Task**: Run `task image:optimize` (or `task image:optimize TARGET="<path>"`). Preview with `DRY_RUN=1`.
-- **Metadata**: Strips EXIF to protect location privacy and prevent database bloat.
+- **Limit**: Web-friendly images (< 500KB, max 1920px) enforced/optimized natively by `hbctl` in memory on upload.
+- **Config**: `.hbctl.toml` sets `auto_optimize = true`, `max_image_kb = 500`, `max_image_dimension = 1920` (override per-command with `--optimize` / `--force`).
 
 ## Document & Image OCR Workflow
 1. **Documents (PDF, DOCX, XLSX)**: Extract text with `lit parse -q --no-ocr <file>` first. Fall back to `lit parse -q <file>` if scanned. Fall back to `pdftotext` for digital PDFs.

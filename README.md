@@ -36,19 +36,7 @@ Intelligent inventory management agent for [Homebox](https://homebox.software), 
 
 ### :camera: Image Optimization & Compression
 
-Optimize and compress raw phone photos and high-resolution images in `images/pending/` and `images/processed/` using ImageMagick to ensure assets are web-friendly (< 500KB and max 1920x1080 resolution) before uploading to Homebox:
-
-```bash
-# Preview savings without writing to disk
-task image:optimize DRY_RUN=1
-
-# Compress and resize in-place
-task image:optimize
-
-# Optimize a specific directory or image file
-task image:optimize TARGET="images/pending"
-task image:optimize TARGET="path/to/photo.jpg"
-```
+Project-local [`.hbctl.toml`](.hbctl.toml) configures `hbctl` (`auto_optimize = true`, `max_image_kb = 500`, `max_image_dimension = 1920`) so oversized images are resized and compressed in memory automatically when uploaded via `hbctl` or `task homebox:create` / `task homebox:attach` (without mutating local files). Pass `--optimize` explicitly on ad-hoc `hbctl` commands or `--force` to upload an image as-is.
 
 ### :link: Product URL Ingestion
 
@@ -266,10 +254,10 @@ uv run pytest tests/
 - `task homebox:list` — List all Homebox entities.
 - `task homebox:search QUERY='<name>'` — Search Homebox entities by name.
 - `task homebox:get ID=<id>` — Get details for an entity.
-- `task homebox:create DATA='<json>'` — Create a new entity (optional `ATTACH='<path>'`).
+- `task homebox:create DATA='<json>'` — Create a new entity (optional `ATTACH='<path>'`, auto-optimizes images).
 - `task homebox:update ID=<id> DATA='<json>'` — Update an existing entity (set `FILL_MISSING=1` to preserve existing values).
 - `task homebox:delete ID=<id>` — Delete an entity by ID.
-- `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity.
+- `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity (auto-optimizes images).
 - `task homebox:status` — Check remote Homebox server connectivity and version.
 - `task homebox:tree` — Render Homebox item parent/location hierarchy as a tree.
 - `task homebox:move ID=<id> PARENT='<parent>'` — Move an item under a parent item/location (or `none`).
@@ -279,14 +267,13 @@ uv run pytest tests/
 - `task homebox:entity-types` — List all Homebox entity types (useful for finding Location ID).
 - `task issue:extract ISSUE=<id>` — Extract issue attachments and run quiet OCR.
 - `task process-vision` — Process pending local images and zip archives.
-- `task image:optimize` — Optimize and compress images (< 500KB, max 1920x1080) in images/pending or images/processed (preview with `DRY_RUN=1`).
 - `task manual:ingest FILE='<path_or_url>'` — Ingest appliance manual into Homebox and generate cheat sheet (preview with `DRY_RUN=1`).
 - `task url:import URL='<product_url>'` — Import item from product URL into Homebox with image and price (preview with `DRY_RUN=1`).
 - `task parts:download TARGET='<url_or_model>'` — Download GE appliance assembly diagrams and bill of materials.
 - `task parts:bosch TARGET='<url_or_variant>'` — Download Bosch appliance spare parts assembly diagrams and bill of materials.
 - `task parts:lg TARGET='<url_or_parentId>'` — Download LG appliance spare parts assembly diagrams and bill of materials.
 - `task parts:repairclinic TARGET='<url_or_id>'` — Download RepairClinic appliance assembly diagrams and bill of materials.
-- `task tare:upsert NAME='<name>' WEIGHT=<grams>` — Upsert kitchen container tare weight into Homebox.
+- `task tare:upsert NAME='<name>' WEIGHT=<grams>` — Upsert kitchen container tare weight into Homebox via `hbctl item upsert` (supports `250` or `250g`).
 - `task tare:sheet` — Generate printable tare weight reference sheet Markdown table (`task tare:show`, `task tare:table`).
 - `task tare:pdf` — Generate tare weight reference sheet as a PDF in `output/tare_weights.pdf` (`FONT_SIZE=6pt`, `PAPER=card`).
 - `task tare:serve` — Generate tare weight PDF and serve on LAN for browser viewing (`PORT=8080`).

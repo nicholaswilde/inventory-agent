@@ -15,22 +15,12 @@ def run_hbctl(
     args: Sequence[str],
     *,
     stdin_data: str | None = None,
-    stdin_bytes: bytes | None = None,
     hbctl_bin: str = "hbctl",
     check: bool = True,
 ) -> subprocess.CompletedProcess[str]:
     """Execute `hbctl` with the given arguments and optional stdin payload."""
     cmd = [hbctl_bin, *args]
-    if stdin_bytes is not None:
-        raw_proc = subprocess.run(cmd, input=stdin_bytes, capture_output=True, text=False)
-        proc = subprocess.CompletedProcess(
-            args=raw_proc.args,
-            returncode=raw_proc.returncode,
-            stdout=(raw_proc.stdout or b"").decode("utf-8", errors="replace"),
-            stderr=(raw_proc.stderr or b"").decode("utf-8", errors="replace"),
-        )
-    else:
-        proc = subprocess.run(cmd, input=stdin_data, capture_output=True, text=True)
+    proc = subprocess.run(cmd, input=stdin_data, capture_output=True, text=True)
     if check and proc.returncode != 0:
         msg = (proc.stderr or proc.stdout or f"exit code {proc.returncode}").strip()
         raise HbctlError(f"hbctl {' '.join(args)} failed: {msg}")
@@ -41,14 +31,12 @@ def hbctl_json(
     args: Sequence[str],
     *,
     stdin_data: str | None = None,
-    stdin_bytes: bytes | None = None,
     hbctl_bin: str = "hbctl",
 ) -> Any:
     """Execute `hbctl --json` and parse the JSON stdout payload."""
     proc = run_hbctl(
         ["--json", *args],
         stdin_data=stdin_data,
-        stdin_bytes=stdin_bytes,
         hbctl_bin=hbctl_bin,
     )
     stripped = proc.stdout.strip()
@@ -106,6 +94,7 @@ def search_items(
     serial: str | None = None,
     manufacturer: str | None = None,
     fields: Sequence[str] = (),
+    any_match: bool = False,
     select: str | None = None,
 ) -> list[dict[str, Any]]:
     """Search Homebox items via `hbctl search`."""
@@ -120,6 +109,8 @@ def search_items(
         args.extend(["--manufacturer", manufacturer])
     for field in fields:
         args.extend(["--field", field])
+    if any_match:
+        args.append("--any")
     if select:
         args.extend(["--select", select])
     if query:
@@ -134,19 +125,54 @@ def get_item(entity_id: str) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
+def _append_attachment_args(
+    args: list[str],
+    *,
+    attach: Sequence[Path | str] = (),
+    attach_urls: Sequence[str] = (),
+    attach_best_effort: bool = False,
+    optimize: bool = False,
+    force: bool = False,
+    dry_run: bool = False,
+) -> None:
+    """Append shared attachment/optimization/dry-run flags for item create and upsert."""
+    for path in attach:
+        args.extend(["--attach", str(path)])
+    for url in attach_urls:
+        args.extend(["--attach-url", url])
+    if attach_best_effort:
+        args.append("--attach-best-effort")
+    if optimize:
+        args.append("--optimize")
+    if force:
+        args.append("--force")
+    if dry_run:
+        args.append("--dry-run")
+
+
 def create_item(
     payload: dict[str, Any],
     *,
     attach: Sequence[Path | str] = (),
+    attach_urls: Sequence[str] = (),
+    attach_best_effort: bool = False,
+    optimize: bool = False,
     force: bool = False,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
 ) -> dict[str, Any]:
     """Create an item from a JSON payload via `hbctl item create --from-json -`."""
     args = ["item", "create", "--from-json", "-"]
-    for path in attach:
-        args.extend(["--attach", str(path)])
-    if force:
-        args.append("--force")
-    data = hbctl_json(args, stdin_data=json.dumps(payload))
+    _append_attachment_args(
+        args,
+        attach=attach,
+        attach_urls=attach_urls,
+        attach_best_effort=attach_best_effort,
+        optimize=optimize,
+        force=force,
+        dry_run=dry_run,
+    )
+    data = hbctl_json(args, stdin_data=json.dumps(payload), hbctl_bin=hbctl_bin)
     return data if isinstance(data, dict) else {}
 
 
@@ -180,9 +206,16 @@ def upsert_item(
     model: str | None = None,
     notes: str | None = None,
     match_by: Sequence[str] = (),
+    match_mode: str | None = None,
+    on_match: str | None = None,
     fill_missing: bool = False,
     attach: Sequence[Path | str] = (),
+    attach_urls: Sequence[str] = (),
+    attach_best_effort: bool = False,
+    optimize: bool = False,
     force: bool = False,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
 ) -> dict[str, Any]:
     """Create or update an item matched by key via `hbctl item upsert`."""
     args = ["item", "upsert"]
@@ -214,14 +247,23 @@ def upsert_item(
         args.extend(["--field-type", field_type])
     for key in match_by:
         args.extend(["--match-by", key])
+    if match_mode is not None:
+        args.extend(["--match-mode", match_mode])
+    if on_match is not None:
+        args.extend(["--on-match", on_match])
     if fill_missing:
         args.append("--fill-missing")
-    for path in attach:
-        args.extend(["--attach", str(path)])
-    if force:
-        args.append("--force")
+    _append_attachment_args(
+        args,
+        attach=attach,
+        attach_urls=attach_urls,
+        attach_best_effort=attach_best_effort,
+        optimize=optimize,
+        force=force,
+        dry_run=dry_run,
+    )
     stdin_data = json.dumps(from_json) if from_json is not None else None
-    data = hbctl_json(args, stdin_data=stdin_data)
+    data = hbctl_json(args, stdin_data=stdin_data, hbctl_bin=hbctl_bin)
     return data if isinstance(data, dict) else {}
 
 
@@ -276,50 +318,35 @@ def upload_attachments(
     entity_id: str,
     files: Sequence[Path | str],
     *,
+    attach_urls: Sequence[str] = (),
     overwrite: bool = False,
+    optimize: bool = False,
     force: bool = False,
     dry_run: bool = False,
     remote_name: str | None = None,
+    hbctl_bin: str = "hbctl",
 ) -> list[dict[str, Any]]:
-    """Upload one or more files as item attachments via `hbctl attachment upload`."""
-    if not files:
+    """Upload one or more files or URLs as item attachments via `hbctl attachment upload`."""
+    if not files and not attach_urls:
         return []
 
     args = ["attachment", "upload"]
     if overwrite:
         args.append("--overwrite")
+    if optimize:
+        args.append("--optimize")
     if force:
         args.append("--force")
     if dry_run:
         args.append("--dry-run")
     if remote_name:
         args.extend(["--name", remote_name])
+    for url in attach_urls:
+        args.extend(["--attach-url", url])
     args.append(entity_id)
     args.extend(str(Path(f)) for f in files)
 
-    data = hbctl_json(args)
-    return data if isinstance(data, list) else []
-
-
-def upload_attachment_bytes(
-    entity_id: str,
-    content: bytes,
-    filename: str,
-    *,
-    overwrite: bool = False,
-    force: bool = False,
-    dry_run: bool = False,
-) -> list[dict[str, Any]]:
-    """Upload raw bytes as a named attachment via `hbctl attachment upload --name ... -`."""
-    args = ["attachment", "upload"]
-    if overwrite:
-        args.append("--overwrite")
-    if force:
-        args.append("--force")
-    if dry_run:
-        args.append("--dry-run")
-    args.extend(["--name", filename, entity_id, "-"])
-    data = hbctl_json(args, stdin_bytes=content)
+    data = hbctl_json(args, hbctl_bin=hbctl_bin)
     return data if isinstance(data, list) else []
 
 

@@ -1,0 +1,4 @@
+# Project-local hbctl defaults (non-secret; credentials stay in .env or hbctl auth).
+auto_optimize = true
+max_image_kb = 500
+max_image_dimension = 1920

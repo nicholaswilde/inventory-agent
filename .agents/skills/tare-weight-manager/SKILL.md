@@ -12,11 +12,11 @@ Upserts kitchen container weights into Homebox and generates a printable markdow
 When I feed you a container name and its weight via `agy`:
 
 1. **Upsert the Item:**
-  - Run `task tare:upsert NAME="<container>" WEIGHT="<grams>"` (or `uv run scripts/tare_weight_manager.py upsert "<container>" <grams>`).
-  - **Behavior:** Checks existing inventory via Homebox API; if found, updates it, else creates it. Applies labels `kitchen`, `container`, and `tare-weight`, and stores custom field `Tare Weight (g)` strictly as an integer in grams.
+  - Run `task tare:upsert NAME="<container>" WEIGHT="<grams>"` (or directly `hbctl item upsert --name "<container>" --tag kitchen --tag container --tag tare-weight --field "Tare Weight (g)=<grams>" --field-type number`).
+  - **Behavior:** Checks existing inventory via `hbctl item upsert`; if found, updates it, else creates it. Applies tags `kitchen`, `container`, and `tare-weight`, and stores custom field `Tare Weight (g)` via unit-tolerant `--field-type number` (accepts `250` or `250g`).
 
 2. **Generate the Reference Sheet / Console Table:**
-  - Run `task tare:sheet` (aliases `task tare:show`, `task tare:table`) — executes `hbctl export --tag tare-weight --format markdown --columns "name=Container / Item,Tare Weight (g)" --align left --empty "-" --sort name` directly (or `uv run scripts/tare_weight_manager.py sheet`).
+  - Run `task tare:sheet` (aliases `task tare:show`, `task tare:table`) — executes `hbctl export --tag tare-weight --format markdown --columns "name=Container / Item,Tare Weight (g)" --align left --empty "-" --sort name` directly.
   - Queries all Homebox items tagged `tare-weight`, formats an alphabetically sorted Markdown table with columns `Container / Item` and `Tare Weight (g)`, and prints without conversational filler.
 
 3. **Generate Printable PDF & LAN Preview:**

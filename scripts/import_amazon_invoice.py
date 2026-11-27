@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 import json
-import os
 from pathlib import Path
 import re
 import shutil
@@ -262,67 +261,6 @@ def _build_item_object(title: str, price: float, quantity: int, sold_by: str | N
     }
 
 
-def search_homebox_entities(query: str) -> list[dict[str, Any]]:
-    """Query Homebox items via `hbctl search`."""
-    try:
-        return hbctl_client.search_items(query)
-    except Exception:
-        return []
-
-
-def find_existing_item(
-    model_number: str | None,
-    title: str,
-) -> dict[str, Any] | None:
-    """Check Homebox for existing item with matching model number or title keywords."""
-    queries = []
-    if model_number and model_number.strip():
-        queries.append(model_number.strip())
-
-    # Key words from title
-    title_words = [w for w in re.findall(r"[A-Za-z0-9]{4,}", title) if w.lower() not in ["with", "from", "other", "resist", "stainless"]]
-    if len(title_words) >= 2:
-        queries.append(" ".join(title_words[:3]))
-
-    for q in queries:
-        items = search_homebox_entities(q)
-        for item in items:
-            item_model = hbctl_client.get_field_value(item, "Model Number", "modelNumber").lower()
-            if model_number and item_model and (model_number.lower() in item_model or item_model in model_number.lower()):
-                return item
-
-            # Strong name matching
-            item_name = item.get("name", "").strip().lower()
-            if model_number and model_number.lower() in item_name:
-                return item
-            if all(word.lower() in item_name for word in title_words[:2]):
-                return item
-
-    return None
-
-
-def fill_missing_details(
-    item_data: dict[str, Any],
-    order_id: str | None,
-    order_date: str | None,
-) -> dict[str, Any]:
-    """Build patch payload of candidate values for `hbctl item update --fill-missing`."""
-    patch: dict[str, Any] = {"purchaseFrom": "Amazon"}
-
-    if order_date:
-        patch["purchaseDate"] = order_date
-    if item_data.get("price"):
-        patch["purchasePrice"] = item_data["price"]
-    if item_data.get("manufacturer"):
-        patch["manufacturer"] = item_data["manufacturer"]
-    if item_data.get("model_number"):
-        patch["modelNumber"] = item_data["model_number"]
-    if order_id:
-        patch["fields"] = [{"name": "Order Number", "type": "text", "textValue": order_id}]
-
-    return patch
-
-
 def create_new_item_payload(
     item_data: dict[str, Any],
     order_id: str | None,
@@ -348,27 +286,6 @@ def create_new_item_payload(
         "purchaseFrom": "Amazon",
         "fields": fields,
     }
-
-
-def update_homebox_entity(
-    entity_id: str,
-    patch_data: dict[str, Any],
-    *,
-    fill_missing: bool = False,
-) -> None:
-    """Merge patch onto an existing Homebox entity via `hbctl item update`."""
-    hbctl_client.update_item(entity_id, patch_data, fill_missing=fill_missing)
-
-
-def create_homebox_entity(data: dict[str, Any]) -> str:
-    """Create entity via `hbctl item create`."""
-    created = hbctl_client.create_item(data)
-    return str(created.get("id", ""))
-
-
-def attach_file_to_entity(entity_id: str, file_path: Path | str) -> None:
-    """Upload attachment to Homebox entity via `hbctl attachment upload`."""
-    hbctl_client.upload_attachments(entity_id, [Path(file_path)])
 
 
 def import_amazon_invoice(
@@ -419,27 +336,24 @@ def import_amazon_invoice(
             processed_items.append(item_summary)
             continue
 
-        # Check existing item
-        existing = find_existing_item(item["model_number"], item["title"])
-        if existing:
-            entity_id = existing["id"]
-            patch = fill_missing_details(item, order_id, order_date)
-            if patch:
-                update_homebox_entity(entity_id, patch, fill_missing=True)
-            item_summary["action"] = "updated"
-            item_summary["entity_id"] = entity_id
-        else:
-            payload = create_new_item_payload(item, order_id, order_date)
-            entity_id = create_homebox_entity(payload)
-            item_summary["action"] = "created"
-            item_summary["entity_id"] = entity_id
+        payload = create_new_item_payload(item, order_id, order_date)
+        match_by = ["model", "name"] if (item.get("model_number") or "").strip() else ["name"]
+        attach_files = [final_pdf_path] if (attach and final_pdf_path.exists()) else ()
 
-        # Attach invoice
-        if attach and entity_id and final_pdf_path.exists():
-            try:
-                attach_file_to_entity(entity_id, final_pdf_path)
-            except Exception as e:
-                print(f"Warning: Failed to attach invoice to entity {entity_id}: {e}", file=sys.stderr)
+        res = hbctl_client.upsert_item(
+            from_json=payload,
+            match_by=match_by,
+            match_mode="contains",
+            fill_missing=True,
+            attach=attach_files,
+            attach_best_effort=True,
+        )
+        entity_id = str(res.get("id") or "")
+        item_summary["action"] = str(res.get("action") or "upserted")
+        item_summary["entity_id"] = entity_id
+
+        for err in res.get("attachmentErrors") or []:
+            print(f"Warning: Failed to attach invoice to entity {entity_id}: {err}", file=sys.stderr)
 
         processed_items.append(item_summary)
 
