@@ -34,7 +34,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq tesseract-ocr
+          sudo apt-get install -y jq tesseract-ocr imagemagick
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5

@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.optimize_image import (
     get_image_dimensions,
+    get_magick_command,
     optimize_image,
     optimize_directory,
     main,
@@ -26,7 +27,7 @@ def sample_large_image(tmp_path: Path) -> Path:
     img_path = tmp_path / "large_photo.jpg"
     # Create 2000x1200 image with fractal noise to ensure high file size
     subprocess.run(
-        ["magick", "-size", "2000x1200", "plasma:fractal", str(img_path)],
+        [*get_magick_command(), "-size", "2000x1200", "plasma:fractal", str(img_path)],
         check=True,
     )
     return img_path
@@ -37,7 +38,7 @@ def sample_small_image(tmp_path: Path) -> Path:
     """Create a small 200x200 low-size image."""
     img_path = tmp_path / "small_icon.png"
     subprocess.run(
-        ["magick", "-size", "200x200", "xc:blue", str(img_path)],
+        [*get_magick_command(), "-size", "200x200", "xc:blue", str(img_path)],
         check=True,
     )
     return img_path
@@ -125,8 +126,8 @@ def test_optimize_directory(tmp_path: Path):
     txt = img_dir / "readme.txt"
     txt.write_text("not an image")
 
-    subprocess.run(["magick", "-size", "2000x1200", "plasma:fractal", str(img1)], check=True)
-    subprocess.run(["magick", "-size", "150x150", "xc:red", str(img2)], check=True)
+    subprocess.run([*get_magick_command(), "-size", "2000x1200", "plasma:fractal", str(img1)], check=True)
+    subprocess.run([*get_magick_command(), "-size", "150x150", "xc:red", str(img2)], check=True)
 
     results = optimize_directory(img_dir, max_size_kb=500, max_dimension="1920x1080")
     assert len(results) == 2
@@ -143,7 +144,7 @@ def test_cli_execution(tmp_path: Path):
     test_dir = tmp_path / "cli_test"
     test_dir.mkdir()
     img = test_dir / "test.jpg"
-    subprocess.run(["magick", "-size", "2000x1200", "plasma:fractal", str(img)], check=True)
+    subprocess.run([*get_magick_command(), "-size", "2000x1200", "plasma:fractal", str(img)], check=True)
 
     cmd = [
         sys.executable,
@@ -156,3 +157,20 @@ def test_cli_execution(tmp_path: Path):
     assert proc.returncode == 0
     assert "Optimized" in proc.stdout or "Summary" in proc.stdout
     assert img.stat().st_size <= 400 * 1024
+
+
+def test_get_image_dimensions_im6_fallback(tmp_path: Path):
+    img = tmp_path / "img.jpg"
+    img.write_bytes(b"fake")
+    with (
+        patch(
+            "scripts.optimize_image.shutil.which",
+            side_effect=lambda name: "/usr/bin/convert" if name == "convert" else None,
+        ),
+        patch(
+            "scripts.optimize_image.subprocess.run",
+            return_value=MagicMock(stdout="640 480\n"),
+        ) as mock_run,
+    ):
+        assert get_image_dimensions(img) == (640, 480)
+        assert mock_run.call_args[0][0] == ["identify", "-format", "%w %h", str(img)]

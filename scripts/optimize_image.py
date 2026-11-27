@@ -32,7 +32,8 @@ def get_image_dimensions(image_path: Path | str) -> tuple[int, int]:
         raise FileNotFoundError(f"Image not found: {image_path}")
 
     magick = get_magick_command()
-    cmd = magick + ["identify", "-format", "%w %h", str(path)]
+    identify_cmd = ["magick", "identify"] if magick == ["magick"] else ["identify"]
+    cmd = identify_cmd + ["-format", "%w %h", str(path)]
     proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
     parts = proc.stdout.strip().split()
     if len(parts) >= 2:
