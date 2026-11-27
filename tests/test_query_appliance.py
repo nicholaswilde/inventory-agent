@@ -11,6 +11,7 @@ from scripts.query_appliance import (
     get_appliance_info,
     search_parts,
     search_error_codes,
+    search_maintenance,
     search_appliances,
     main,
 )
@@ -55,6 +56,14 @@ def sample_appliances_dir(tmp_path):
 |---|---|---|
 | `IE` | Water Inlet Error | Check supply valves |
 | `UE` | Unbalanced Load | Redistribute laundry |
+
+---
+
+## Maintenance History
+
+| Date | Action | Part(s) | Cost | Notes |
+|---|---|---|---|---|
+| 2024-02 (approx.) | Replaced drain pump filter | `P10002` | $29.99 | Routine replacement |
 """
     )
 
@@ -119,6 +128,10 @@ def test_get_appliance_info(sample_appliances_dir):
     assert len(info["error_codes"]) == 2
     assert info["error_codes"][0]["code"] == "IE"
     assert info["error_codes"][0]["meaning"] == "Water Inlet Error"
+    assert len(info["maintenance_history"]) == 1
+    assert info["maintenance_history"][0]["date"] == "2024-02 (approx.)"
+    assert info["maintenance_history"][0]["parts"] == "P10002"
+    assert info["maintenance_history"][0]["action"] == "Replaced drain pump filter"
     assert len(info["assemblies"]) == 1
     assert info["assemblies"][0]["name"] == "Drum and Motor Assembly"
 
@@ -165,6 +178,17 @@ def test_search_error_codes(sample_appliances_dir):
     assert results[0]["code"] == "UE"
 
 
+def test_search_maintenance(sample_appliances_dir):
+    results = search_maintenance(sample_appliances_dir, "P10002")
+    assert len(results) == 1
+    assert results[0]["parts"] == "P10002"
+    assert results[0]["action"] == "Replaced drain pump filter"
+
+    results = search_maintenance(sample_appliances_dir, "Routine replacement")
+    assert len(results) == 1
+    assert results[0]["date"] == "2024-02 (approx.)"
+
+
 def test_search_appliances_unified(sample_appliances_dir):
     results = search_appliances(sample_appliances_dir, "washer")
     assert len(results["appliances"]) >= 1
@@ -187,6 +211,12 @@ def test_cli_search_json(sample_appliances_dir, capsys):
     assert len(data["parts"]) == 1
     assert data["parts"][0]["part_number"] == "P10002"
 
+    ret = main(["--dir", str(sample_appliances_dir), "search", "P10002", "--json"])
+    assert ret == 0
+    data_maint = json.loads(capsys.readouterr().out)
+    assert len(data_maint["maintenance_history"]) == 1
+    assert data_maint["maintenance_history"][0]["parts"] == "P10002"
+
 
 def test_cli_info_human_and_json(sample_appliances_dir, capsys):
     ret = main(["--dir", str(sample_appliances_dir), "info", "sample-washer"])
@@ -195,12 +225,15 @@ def test_cli_info_human_and_json(sample_appliances_dir, capsys):
     assert "Sample Washer" in out
     assert "Specifications" in out
     assert "Error Codes" in out
+    assert "Maintenance History" in out
+    assert "Replaced drain pump filter" in out
     assert "Bill of Materials" in out
 
     ret = main(["--dir", str(sample_appliances_dir), "info", "sample-washer", "--json"])
     assert ret == 0
     data = json.loads(capsys.readouterr().out)
     assert data["name"] == "Sample Washer"
+    assert len(data["maintenance_history"]) == 1
 
     ret = main(["--dir", str(sample_appliances_dir), "info", "nonexistent"])
     assert ret == 1
@@ -244,6 +277,12 @@ def test_cli_search_human_readable(sample_appliances_dir, capsys):
     out = capsys.readouterr().out
     assert "Search results for 'washer'" in out
     assert "Matched Appliances" in out
+
+    ret = main(["--dir", str(sample_appliances_dir), "search", "P10002"])
+    assert ret == 0
+    out_maint = capsys.readouterr().out
+    assert "Matched Maintenance History" in out_maint
+    assert "Replaced drain pump filter" in out_maint
 
     ret = main(["--dir", str(sample_appliances_dir), "search", "zzzzzz_nonexistent"])
     assert ret == 0

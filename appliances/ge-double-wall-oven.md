@@ -29,6 +29,7 @@
 - **CeramaBryte Stainless Cleaner**: `PM10X311`
 - **Oven Light Bulb**: 40W appliance bulb (check socket type)
 - **Relay Daughter Board (`BOARD DAUGHTER RELAY 6`)**: `WB27X25594` (supersedes `WB27T11326`, callout 270 in `01_CONTROL_PANEL.jpg`)
+- **Lower Cooling Fan Motor (`Wall oven- lower cooling fan motor/double oven`)**: `WB26X35088` (supersedes `WB26T10068`, callout 31 in `03_CENTER_SPACER.jpg`)
 - **Full Parts List & Assembly Diagrams**: [JT5500SF1SS Bill of Materials](JT5500SF1SS/bill_of_materials.md)
 
 ---
@@ -70,3 +71,13 @@
 - **Self-Clean Cycle**: Remove all oven racks (shiny flat racks will discolor/warp if left inside during high-heat self-clean). Wipe heavy spills before starting cycle.
 - **Steam Clean**: Use 1 cup of water in oven bottom for light, everyday soils; takes ~30 minutes.
 - **Stainless Steel Surfaces**: Clean with CeramaBryte (`PM10X311`) or CitruShine (`WX10X10007`); wipe in direction of grain; do not use steel wool or abrasive powders.
+
+---
+
+## Maintenance History
+
+| Date | Action | Part(s) | Cost | Notes |
+|---|---|---|---|---|
+| 2026-11 | Replaced relay daughter board | `WB27X25594` (supersedes `WB27T11326`, callout 270) | - | Relay daughter board (`BOARD DAUGHTER RELAY 6`, `01_CONTROL_PANEL.jpg`); logged in Homebox maintenance. |
+| 2026-03 | Replaced relay daughter board | `WB27X25594` (supersedes `WB27T11326`, callout 270) | - | Relay daughter board (`BOARD DAUGHTER RELAY 6`, `01_CONTROL_PANEL.jpg`); logged in Homebox maintenance. |
+| 2024-02 (approx.) | Replaced lower cooling fan motor | `WB26X35088` (supersedes `WB26T10068`, callout 31) | - | Lower oven cooling fan motor replacement (`03_CENTER_SPACER.jpg`); logged in Homebox maintenance. |

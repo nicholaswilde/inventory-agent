@@ -35,6 +35,7 @@ def parse_markdown_metadata(content: str) -> dict[str, Any]:
         "manual_part_number": "",
         "specs": {},
         "error_codes": [],
+        "maintenance_history": [],
         "accessories": [],
         "bom_link": None,
     }
@@ -103,6 +104,18 @@ def parse_markdown_metadata(content: str) -> dict[str, Any]:
                 item_text = line_stripped[2:].strip()
                 if item_text and not item_text.startswith("**Full Parts"):
                     data["accessories"].append(item_text)
+
+        elif "maintenance history" in current_section or "maintenance log" in current_section:
+            if line_stripped.startswith("|") and not line_stripped.startswith("|---"):
+                cols = [c.strip() for c in line_stripped.strip("|").split("|")]
+                if len(cols) >= 2 and cols[0].lower() != "date":
+                    data["maintenance_history"].append({
+                        "date": cols[0],
+                        "action": cols[1],
+                        "parts": re.sub(r"`", "", cols[2]).strip() if len(cols) > 2 else "",
+                        "cost": cols[3] if len(cols) > 3 else "",
+                        "notes": cols[4] if len(cols) > 4 else "",
+                    })
 
     # If covered_models is empty but model is set
     if not data["covered_models"] and data["model"]:
@@ -262,6 +275,7 @@ def get_appliance_info(appliances_dir: Path, target: str) -> Optional[dict[str, 
         "manual_part_number": meta["manual_part_number"],
         "specs": meta["specs"],
         "error_codes": meta["error_codes"],
+        "maintenance_history": meta["maintenance_history"],
         "accessories": meta["accessories"],
         "has_bom": bool(bom_dir),
         "bom_dir": str(bom_dir) if bom_dir else None,
@@ -354,6 +368,45 @@ def search_error_codes(appliances_dir: Path, query: str) -> list[dict[str, Any]]
     return results
 
 
+def search_maintenance(appliances_dir: Path, query: str) -> list[dict[str, Any]]:
+    query_lower = query.strip().lower()
+    results = []
+
+    if not appliances_dir.is_dir():
+        return results
+
+    for md_file in sorted(appliances_dir.glob("*.md")):
+        content = md_file.read_text(encoding="utf-8", errors="replace")
+        meta = parse_markdown_metadata(content)
+        app_name = meta["name"]
+        model = meta["model"] or meta["covered_models"]
+
+        for entry in meta.get("maintenance_history", []):
+            date = entry.get("date", "")
+            action = entry.get("action", "")
+            parts = entry.get("parts", "")
+            notes = entry.get("notes", "")
+
+            if (
+                query_lower in date.lower()
+                or query_lower in action.lower()
+                or query_lower in parts.lower()
+                or query_lower in notes.lower()
+                or query_lower in app_name.lower()
+            ):
+                results.append({
+                    "appliance": app_name,
+                    "model": model,
+                    "slug": md_file.stem,
+                    "date": date,
+                    "action": action,
+                    "parts": parts,
+                    "cost": entry.get("cost", ""),
+                    "notes": notes,
+                })
+    return results
+
+
 def search_appliances(appliances_dir: Path, query: str) -> dict[str, Any]:
     query_lower = query.strip().lower()
     apps_list = list_appliances(appliances_dir)
@@ -367,12 +420,14 @@ def search_appliances(appliances_dir: Path, query: str) -> dict[str, Any]:
     ]
     parts = search_parts(appliances_dir, query)
     error_codes = search_error_codes(appliances_dir, query)
+    maintenance = search_maintenance(appliances_dir, query)
 
     return {
         "query": query,
         "appliances": matched_apps,
         "parts": parts,
         "error_codes": error_codes,
+        "maintenance_history": maintenance,
     }
 
 
@@ -476,6 +531,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             ec_rows = [[e['code'], e['meaning'], e['action']] for e in info['error_codes']]
             print(format_table(["Code", "Meaning", "Action"], ec_rows))
 
+        if info.get('maintenance_history'):
+            print("\n--- Maintenance History ---")
+            m_rows = [[m['date'], m['action'], m['parts'], m['cost'], m['notes']] for m in info['maintenance_history']]
+            print(format_table(["Date", "Action", "Part(s)", "Cost", "Notes"], m_rows))
+
         if info['assemblies']:
             print(f"\n--- Bill of Materials ({len(info['assemblies'])} assemblies) ---")
             total_p = sum(len(a['parts']) for a in info['assemblies'])
@@ -550,8 +610,20 @@ def main(argv: Optional[list[str]] = None) -> int:
                 print(f"  - [{p['model']}] #{p['part_number']} ({p['callout']}): {p['description']} (${p['price']})")
             if len(res["parts"]) > 10:
                 print(f"    ... and {len(res['parts']) - 10} more")
+        if res.get("maintenance_history"):
+            print(f"\nMatched Maintenance History ({len(res['maintenance_history'])}):")
+            for m in res["maintenance_history"][:5]:
+                parts_info = f" ({m['parts']})" if m["parts"] else ""
+                print(f"  - [{m['appliance']}] {m['date']}: {m['action']}{parts_info}")
+            if len(res["maintenance_history"]) > 5:
+                print(f"    ... and {len(res['maintenance_history']) - 5} more")
 
-        if not res["appliances"] and not res["error_codes"] and not res["parts"]:
+        if (
+            not res["appliances"]
+            and not res["error_codes"]
+            and not res["parts"]
+            and not res.get("maintenance_history")
+        ):
             print("No matches found.")
         return 0
 

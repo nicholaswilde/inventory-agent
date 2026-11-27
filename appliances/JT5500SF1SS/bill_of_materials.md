@@ -98,7 +98,7 @@
 |---|---|---|---|---|
 | 8 | [`WB34X20282`](https://www.geapplianceparts.com/store/parts/spec/WB34X20282) | Double Wall oven Rear cover- plug holder 30" | $10.37 | Available |
 | 11 | [`WB34T10146`](https://www.geapplianceparts.com/store/parts/spec/WB34T10146) | Double Wall oven Structural support - double oven only | $25.80 | Available |
-| 31 | [`WB26T10068`](https://www.geapplianceparts.com/store/parts/spec/WB26T10068) | Wall oven- lower cooling fan motor/double oven | N/A | No longer available |
+| 31 | [`WB26T10068`](https://www.geapplianceparts.com/store/parts/spec/WB26T10068) | Wall oven- lower cooling fan motor/double oven (Superseded by WB26X35088) | N/A | No longer available |
 | 34 | [`WB01T10133`](https://www.geapplianceparts.com/store/parts/spec/WB01T10133) | Double Wall oven lower cooling motor FAN board hex nut M4-.7 THREAD | $6.07 | Available |
 | 266 | [`WB07T10805`](https://www.geapplianceparts.com/store/parts/spec/WB07T10805) | Wall oven Upper trim BLACK | $35.28 | Available |
 | 267 | [`WB07X20180`](https://www.geapplianceparts.com/store/parts/spec/WB07X20180) | Wall oven middle trim vent | $37.30 | Available |

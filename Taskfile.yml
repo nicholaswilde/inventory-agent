@@ -229,6 +229,25 @@ tasks:
     requires:
       vars: [QUERY]
 
+  maintenance:list:
+    desc: List Homebox appliance maintenance entries (optional TARGET='<slug|model|id>', STATUS=both|completed|scheduled)
+    cmds:
+      - uv run scripts/appliance_maintenance.py list{{if .TARGET}} {{.TARGET | shellQuote}}{{end}}{{if .STATUS}} --status {{.STATUS | shellQuote}}{{end}} {{.CLI_ARGS}}
+
+  maintenance:log:
+    desc: Log appliance maintenance to Homebox and local cheat sheet (TARGET, NAME; optional DATE, DISPLAY_DATE, SCHEDULED, PART, COST, NOTES, DRY_RUN=1)
+    cmds:
+      - uv run scripts/appliance_maintenance.py log {{.TARGET | shellQuote}} --name {{.NAME | shellQuote}}{{if .DATE}} --date {{.DATE | shellQuote}}{{end}}{{if .DISPLAY_DATE}} --display-date {{.DISPLAY_DATE | shellQuote}}{{end}}{{if .SCHEDULED}} --scheduled {{.SCHEDULED | shellQuote}}{{end}}{{if .PART}} --part {{.PART | shellQuote}}{{end}}{{if .COST}} --cost {{.COST | shellQuote}}{{end}}{{if .NOTES}} --notes {{.NOTES | shellQuote}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [TARGET, NAME]
+
+  maintenance:delete:
+    desc: Delete a Homebox maintenance entry by ID (optional DRY_RUN=1)
+    cmds:
+      - uv run scripts/appliance_maintenance.py delete {{.ID | shellQuote}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ID]
+
   tare:upsert:
     desc: Upsert kitchen container tare weight into Homebox
     cmds:

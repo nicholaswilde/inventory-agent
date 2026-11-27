@@ -68,3 +68,4 @@ task appliance:error QUERY="unbalanced"
 2. **Schematic Cross-Referencing**: When locating a part, provide the user with the callout number, part number, price, and the diagram filename in `appliances/<MODEL>/diagrams/`.
 3. **JSON Output**: When parsing programmatically in subagents, pass `--json` to receive structured objects without table formatting.
 4. **Part Supersessions**: When a BOM part is `No longer available` and superseded, preserve the original OEM `part_number`, note `(Superseded by <NEW_PART>)` in the BOM `description` and `appliances/<slug>.md`, and report both numbers when answering queries.
+5. **Maintenance History**: Log completed/scheduled appliance repairs with `task maintenance:log TARGET="<slug>" NAME="..."` (which writes both Homebox's native maintenance log via `POST /api/v1/entities/<id>/maintenance` and the `## Maintenance History` table of `appliances/<slug>.md`) and list entries with `task maintenance:list`.
