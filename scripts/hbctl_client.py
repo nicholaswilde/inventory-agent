@@ -392,3 +392,151 @@ def download_attachments(
         args.append("--dry-run")
     data = hbctl_json(args, stdin_data=stdin_data)
     return data if isinstance(data, list) else []
+
+
+def api_request(
+    method: str,
+    path: str,
+    *,
+    data: dict[str, Any] | list[Any] | None = None,
+    query: Sequence[tuple[str, str]] = (),
+    select: str | None = None,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
+) -> Any:
+    """Issue a raw authenticated HTTP request via `hbctl api`."""
+    args = ["api", method, path]
+    stdin_data: str | None = None
+    if data is not None:
+        args.extend(["--from-json", "-"])
+        stdin_data = json.dumps(data)
+    for key, val in query:
+        args.extend(["--query", f"{key}={val}"])
+    if select:
+        args.extend(["--select", select])
+    if dry_run:
+        args.append("--dry-run")
+    return hbctl_json(args, stdin_data=stdin_data, hbctl_bin=hbctl_bin)
+
+
+def _unwrap_dry_run(data: Any, dry_run: bool) -> dict[str, Any]:
+    """Unwrap `hbctl --json --dry-run` single-element preview list into a dict."""
+    if dry_run and isinstance(data, list) and data and isinstance(data[0], dict):
+        return data[0]
+    return data if isinstance(data, dict) else {}
+
+
+def _append_maintenance_fields(
+    args: list[str],
+    *,
+    name: str | None = None,
+    completed_date: str | None = None,
+    scheduled_date: str | None = None,
+    cost: str | None = None,
+    description: str | None = None,
+    dry_run: bool = False,
+) -> None:
+    """Append shared maintenance create/update flags."""
+    if name is not None:
+        args.extend(["--name", name])
+    if completed_date is not None:
+        args.extend(["--completed-date", completed_date])
+    if scheduled_date is not None:
+        args.extend(["--scheduled-date", scheduled_date])
+    if cost is not None:
+        args.extend(["--cost", cost])
+    if description is not None:
+        args.extend(["--description", description])
+    if dry_run:
+        args.append("--dry-run")
+
+
+def list_maintenance(
+    entity_id: str | None = None,
+    *,
+    status: str = "both",
+    select: str | None = None,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
+) -> list[dict[str, Any]]:
+    """List maintenance entries via `hbctl maintenance list`."""
+    args = ["maintenance", "list"]
+    if status and status != "both":
+        args.extend(["--status", status])
+    if select:
+        args.extend(["--select", select])
+    if dry_run:
+        args.append("--dry-run")
+    if entity_id:
+        args.append(entity_id)
+    data = hbctl_json(args, hbctl_bin=hbctl_bin)
+    return data if isinstance(data, list) else []
+
+
+def create_maintenance(
+    entity_id: str,
+    name: str,
+    *,
+    completed_date: str | None = None,
+    scheduled_date: str | None = None,
+    cost: str | None = None,
+    description: str | None = None,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
+) -> dict[str, Any]:
+    """Create a maintenance log entry on an entity via `hbctl maintenance create`."""
+    args = ["maintenance", "create"]
+    _append_maintenance_fields(
+        args,
+        name=name,
+        completed_date=completed_date,
+        scheduled_date=scheduled_date,
+        cost=cost,
+        description=description,
+        dry_run=dry_run,
+    )
+    args.append(entity_id)
+    return _unwrap_dry_run(hbctl_json(args, hbctl_bin=hbctl_bin), dry_run)
+
+
+def update_maintenance(
+    entry_id: str,
+    *,
+    name: str | None = None,
+    completed_date: str | None = None,
+    scheduled_date: str | None = None,
+    cost: str | None = None,
+    description: str | None = None,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
+) -> dict[str, Any]:
+    """Update an existing maintenance log entry via `hbctl maintenance update`."""
+    args = ["maintenance", "update"]
+    _append_maintenance_fields(
+        args,
+        name=name,
+        completed_date=completed_date,
+        scheduled_date=scheduled_date,
+        cost=cost,
+        description=description,
+        dry_run=dry_run,
+    )
+    args.append(entry_id)
+    return _unwrap_dry_run(hbctl_json(args, hbctl_bin=hbctl_bin), dry_run)
+
+
+def delete_maintenance(
+    entry_id: str,
+    *,
+    force: bool = True,
+    dry_run: bool = False,
+    hbctl_bin: str = "hbctl",
+) -> dict[str, Any]:
+    """Delete a maintenance log entry via `hbctl maintenance delete`."""
+    args = ["maintenance", "delete"]
+    if force:
+        args.append("--force")
+    if dry_run:
+        args.append("--dry-run")
+    args.append(entry_id)
+    return _unwrap_dry_run(hbctl_json(args, hbctl_bin=hbctl_bin), dry_run)

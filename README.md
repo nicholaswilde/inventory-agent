@@ -164,6 +164,23 @@ You can look up replacement part numbers, callouts, pricing, stock status, and s
    uv run scripts/query_appliance.py part "valve" --json | jq '.[0] | {part: .part_number, desc: .description, price: .price}'
    ```
 
+### :hammer_and_wrench: Appliance Maintenance Tracking
+
+List, log, update, and delete appliance maintenance records in Homebox (`hbctl maintenance`) and local `appliances/<slug>.md` cheat sheets:
+
+```bash
+# List all maintenance entries (or filter by appliance slug/model or status)
+task maintenance:list
+task maintenance:list TARGET="ge-double-wall-oven" STATUS="completed"
+
+# Log a completed or scheduled repair to Homebox and appliances/<slug>.md
+task maintenance:log TARGET="ge-double-wall-oven" NAME="Replaced relay daughter board" DATE="2026-11" PART="WB27X25594"
+
+# Update or delete an entry by ID (preview with DRY_RUN=1)
+task maintenance:update ID="<entry_uuid>" COST="$45.00" DRY_RUN=1
+task maintenance:delete ID="<entry_uuid>" DRY_RUN=1
+```
+
 ### :scales: Container Tare Weight Tracking
 
 Upsert individual kitchen container weights (borosilicate glass, stainless steel, silicone, Pyrex) into Homebox and generate printable reference sheets:
@@ -259,12 +276,17 @@ uv run pytest tests/
 - `task homebox:delete ID=<id>` — Delete an entity by ID.
 - `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity (auto-optimizes images).
 - `task homebox:status` — Check remote Homebox server connectivity and version.
+- `task homebox:api METHOD=<METHOD> PATH='<path>'` — Issue a raw authenticated Homebox API request via `hbctl api` (optional `DATA='<json>'`, `DRY_RUN=1`).
 - `task homebox:tree` — Render Homebox item parent/location hierarchy as a tree.
 - `task homebox:move ID=<id> PARENT='<parent>'` — Move an item under a parent item/location (or `none`).
 - `task homebox:dedup` — Detect and report duplicate Homebox entities.
 - `task homebox:dedup-delete` — Delete duplicate entities (preview with `DRY_RUN=1`).
 - `task homebox:dedup-merge` — Merge quantities and delete duplicates (preview with `DRY_RUN=1`).
 - `task homebox:entity-types` — List all Homebox entity types (useful for finding Location ID).
+- `task maintenance:list` — List Homebox maintenance entries (optional `TARGET='<slug|model|id>'`, `STATUS=both|completed|scheduled`).
+- `task maintenance:log TARGET='<slug|model|id>' NAME='<action>'` — Log maintenance to Homebox and `appliances/<slug>.md` (preview with `DRY_RUN=1`).
+- `task maintenance:update ID='<entry_id>'` — Update a Homebox maintenance entry by ID (preview with `DRY_RUN=1`).
+- `task maintenance:delete ID='<entry_id>'` — Delete a Homebox maintenance entry by ID (preview with `DRY_RUN=1`).
 - `task issue:extract ISSUE=<id>` — Extract issue attachments and run quiet OCR.
 - `task process-vision` — Process pending local images and zip archives.
 - `task manual:ingest FILE='<path_or_url>'` — Ingest appliance manual into Homebox and generate cheat sheet (preview with `DRY_RUN=1`).

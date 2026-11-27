@@ -68,6 +68,13 @@ tasks:
     cmds:
       - hbctl status {{.CLI_ARGS}}
 
+  homebox:api:
+    desc: Issue raw authenticated Homebox API request via hbctl api (METHOD, PATH; optional DATA, DRY_RUN=1)
+    cmds:
+      - hbctl api {{.METHOD}} {{.PATH | shellQuote}}{{if .DATA}} -d {{.DATA | shellQuote}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [METHOD, PATH]
+
   homebox:tree:
     desc: Render Homebox item parent/location hierarchy as a tree
     cmds:
@@ -232,7 +239,7 @@ tasks:
   maintenance:list:
     desc: List Homebox appliance maintenance entries (optional TARGET='<slug|model|id>', STATUS=both|completed|scheduled)
     cmds:
-      - uv run scripts/appliance_maintenance.py list{{if .TARGET}} {{.TARGET | shellQuote}}{{end}}{{if .STATUS}} --status {{.STATUS | shellQuote}}{{end}} {{.CLI_ARGS}}
+      - '{{if .TARGET}}uv run scripts/appliance_maintenance.py list {{.TARGET | shellQuote}}{{if .STATUS}} --status {{.STATUS | shellQuote}}{{end}} {{.CLI_ARGS}}{{else}}hbctl maintenance list{{if .STATUS}} --status {{.STATUS | shellQuote}}{{end}} {{.CLI_ARGS}}{{end}}'
 
   maintenance:log:
     desc: Log appliance maintenance to Homebox and local cheat sheet (TARGET, NAME; optional DATE, DISPLAY_DATE, SCHEDULED, PART, COST, NOTES, DRY_RUN=1)
@@ -241,10 +248,17 @@ tasks:
     requires:
       vars: [TARGET, NAME]
 
+  maintenance:update:
+    desc: Update a Homebox maintenance entry by ID (optional NAME, DATE, SCHEDULED, COST, NOTES, DRY_RUN=1)
+    cmds:
+      - hbctl maintenance update {{.ID | shellQuote}}{{if .NAME}} --name {{.NAME | shellQuote}}{{end}}{{if .DATE}} --completed-date {{.DATE | shellQuote}}{{end}}{{if .SCHEDULED}} --scheduled-date {{.SCHEDULED | shellQuote}}{{end}}{{if .COST}} --cost {{.COST | shellQuote}}{{end}}{{if .NOTES}} --description {{.NOTES | shellQuote}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ID]
+
   maintenance:delete:
     desc: Delete a Homebox maintenance entry by ID (optional DRY_RUN=1)
     cmds:
-      - uv run scripts/appliance_maintenance.py delete {{.ID | shellQuote}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+      - hbctl maintenance delete {{.ID | shellQuote}} --force{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
     requires:
       vars: [ID]
 

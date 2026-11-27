@@ -1,6 +1,6 @@
 ---
 name: homebox
-description: Interacts with the Homebox API using the `hbctl` CLI to list, get, create, update, upsert, search, export, and attach files to items/entities.
+description: Interacts with the Homebox API using the `hbctl` CLI to list, get, create, update, upsert, search, export, manage maintenance logs, issue raw API requests, and attach files to items/entities.
 ---
 
 # Homebox Skill
@@ -83,9 +83,28 @@ hbctl --profile <name> item list --all
 hbctl export --tag electronics --columns "name=Item,Manufacturer,Tare Weight (g)" --align left --empty "-" --format markdown
 ```
 
+### Maintenance Log
+
+```bash
+hbctl maintenance list [<entity_id>] [--status both|completed|scheduled] [--json]
+hbctl maintenance create <entity_id> --name "<task>" [--completed-date YYYY-MM-DD] [--scheduled-date YYYY-MM-DD] [--cost 29.99] [--description "<notes>"]
+hbctl maintenance update <entry_id> [--name "<task>"] [--completed-date YYYY-MM-DD] [--scheduled-date YYYY-MM-DD] [--cost 29.99] [--description "<notes>"]
+hbctl maintenance delete <entry_id> --force [--dry-run]
+```
+
+### Raw API Requests
+
+```bash
+hbctl api GET status --json --select reachable,health,version
+hbctl api GET groups --query limit=10 --json
+hbctl api POST /api/v1/templates -d '{"name":"Template"}' --dry-run
+printf '%s' '{"name":"Template"}' | hbctl api POST templates --from-json -
+```
+
 ### Taskfile Equivalents
 
 - `task homebox:status`
+- `task homebox:api METHOD=<GET|POST|...> PATH='<path>' [DATA='<json>'] [DRY_RUN=1]`
 - `task homebox:list`
 - `task homebox:tree`
 - `task homebox:move ID=<id> PARENT='<parent>'`
@@ -96,10 +115,15 @@ hbctl export --tag electronics --columns "name=Item,Manufacturer,Tare Weight (g)
 - `task homebox:attach ID=<id> FILE='<path>'`
 - `task homebox:search QUERY='<query>'`
 - `task homebox:entity-types`
+- `task maintenance:list [TARGET='<slug|model|id>'] [STATUS=both|completed|scheduled]`
+- `task maintenance:log TARGET='<slug|model|id>' NAME='<action>' [DATE=YYYY-MM] [PART='<part>'] [COST='<cost>']`
+- `task maintenance:update ID='<entry_id>' [NAME='<action>'] [DATE=YYYY-MM] [COST='<cost>']`
+- `task maintenance:delete ID='<entry_id>' [DRY_RUN=1]`
 
 ## Guidelines for Agents
 
 - Always pass `--json --select id,name,...` or `-q` to keep output compact in agent context.
+- Use `hbctl api` instead of raw `curl | jq` for any endpoint without a dedicated subcommand; `hbctl status` supports Homebox v0.27+.
 - Preview mutating calls with `--dry-run` (always redacts `Authorization: Bearer ***`).
 - `hbctl item create` / `upsert` automatically handles Homebox's follow-up `PUT` for custom fields, `GET -> Merge -> PUT` updates, `--match-mode` (`exact|contains|fuzzy`), `--on-match` (`update|skip|attach-only`), `--attach FILE=REMOTE_NAME`, `--attach-url URL[=REMOTE_NAME]`, and `--attach-best-effort`.
 - `--field-type number` accepts unit-tolerant values (e.g., `250g`, `490 grams`, `$19.99`).

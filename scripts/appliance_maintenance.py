@@ -4,18 +4,16 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import os
+import json
 import re
 import sys
 from pathlib import Path
 from typing import Any, Optional
-import json
-
-import requests
 
 try:
-    from scripts import query_appliance
+    from scripts import hbctl_client, query_appliance
 except ImportError:
+    import hbctl_client  # type: ignore[no-redef]
     import query_appliance  # type: ignore[no-redef]
 
 
@@ -23,38 +21,6 @@ _UUID_RE = re.compile(
     r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 )
 _DATE_PREFIX_RE = re.compile(r"^\|\s*(\d{4}-\d{2}(?:-\d{2})?)")
-
-
-def load_homebox_config(env_file: Path | None = None) -> tuple[str, str]:
-    """Return (base_url, api_key) from environment variables or `.env` file."""
-    env_vals: dict[str, str] = {}
-    if env_file is None:
-        repo_env = Path(__file__).resolve().parent.parent / ".env"
-        cwd_env = Path.cwd() / ".env"
-        candidate = repo_env if repo_env.is_file() else cwd_env
-    else:
-        candidate = env_file
-
-    if candidate.is_file():
-        for raw_line in candidate.read_text(encoding="utf-8").splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, val = line.split("=", 1)
-            env_vals[key.strip()] = val.strip().strip('"').strip("'")
-
-    url = (os.environ.get("HOMEBOX_URL") or env_vals.get("HOMEBOX_URL") or "").strip()
-    if not url:
-        ip = (os.environ.get("HOMEBOX_IP") or env_vals.get("HOMEBOX_IP") or "").strip()
-        if ip:
-            url = f"http://{ip}:7745"
-
-    api_key = (os.environ.get("HOMEBOX_API_KEY") or env_vals.get("HOMEBOX_API_KEY") or "").strip()
-    if not url or not api_key:
-        raise RuntimeError(
-            "Missing Homebox config: set HOMEBOX_URL (or HOMEBOX_IP) and HOMEBOX_API_KEY"
-        )
-    return url.rstrip("/"), api_key
 
 
 def normalize_api_date(raw: str) -> str:
@@ -184,104 +150,6 @@ def insert_maintenance_row(
     return "\n".join(updated_lines) + "\n"
 
 
-# ponytail: Homebox v0.27 maintenance API via requests until hbctl adds maintenance subcommand -> swap to hbctl_client
-def _hb_request(
-    method: str,
-    base_url: str,
-    api_key: str,
-    path: str,
-    *,
-    params: dict[str, str] | None = None,
-    json_body: dict[str, Any] | None = None,
-    timeout: int = 15,
-) -> Any:
-    resp = requests.request(
-        method,
-        f"{base_url.rstrip('/')}{path}",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        params=params,
-        json=json_body,
-        timeout=timeout,
-    )
-    if resp.status_code >= 400:
-        raise RuntimeError(f"Homebox API {method} {path} failed (HTTP {resp.status_code}): {resp.text}")
-    if resp.status_code == 204 or not getattr(resp, "text", "1"):
-        return None
-    try:
-        return resp.json()
-    except ValueError:
-        return None
-
-
-def list_maintenance(
-    base_url: str,
-    api_key: str,
-    *,
-    entity_id: str | None = None,
-    status: str = "both",
-    timeout: int = 15,
-) -> list[dict[str, Any]]:
-    """Fetch maintenance entries from Homebox for an entity or across all items."""
-    if entity_id:
-        data = _hb_request(
-            "GET",
-            base_url,
-            api_key,
-            f"/api/v1/entities/{entity_id}/maintenance",
-            timeout=timeout,
-        )
-    else:
-        data = _hb_request(
-            "GET",
-            base_url,
-            api_key,
-            "/api/v1/maintenance",
-            params={"status": status},
-            timeout=timeout,
-        )
-    return data if isinstance(data, list) else []
-
-
-def create_maintenance(
-    base_url: str,
-    api_key: str,
-    entity_id: str,
-    payload: dict[str, Any],
-    *,
-    timeout: int = 15,
-) -> dict[str, Any]:
-    """Create a maintenance entry on a Homebox entity."""
-    data = _hb_request(
-        "POST",
-        base_url,
-        api_key,
-        f"/api/v1/entities/{entity_id}/maintenance",
-        json_body=payload,
-        timeout=timeout,
-    )
-    return data if isinstance(data, dict) else {}
-
-
-def delete_maintenance(
-    base_url: str,
-    api_key: str,
-    entry_id: str,
-    *,
-    timeout: int = 15,
-) -> None:
-    """Delete a Homebox maintenance entry by entry ID."""
-    _hb_request(
-        "DELETE",
-        base_url,
-        api_key,
-        f"/api/v1/maintenance/{entry_id}",
-        timeout=timeout,
-    )
-
-
 def _format_entries_table(entries: list[dict[str, Any]]) -> str:
     rows: list[list[str]] = []
     for entry in entries:
@@ -344,7 +212,6 @@ def main(argv: Optional[list[str]] = None) -> int:
     dry_run = getattr(args, "dry_run", False)
 
     if args.command == "list":
-        base_url, api_key = load_homebox_config()
         entity_id = None
         if args.target:
             resolved = resolve_target(appliances_dir, args.target)
@@ -352,7 +219,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             if not entity_id:
                 print(f"No Homebox Entity ID found for '{args.target}'", file=sys.stderr)
                 return 1
-        entries = list_maintenance(base_url, api_key, entity_id=entity_id, status=args.status)
+        entries = hbctl_client.list_maintenance(entity_id=entity_id, status=args.status)
         if output_json:
             print(json.dumps(entries, indent=2))
         else:
@@ -436,8 +303,14 @@ def main(argv: Optional[list[str]] = None) -> int:
             if not entity_id or entity_id == "dry-run-id":
                 print(f"No valid Homebox Entity ID for '{args.target}'", file=sys.stderr)
                 return 1
-            base_url, api_key = load_homebox_config()
-            hb_result = create_maintenance(base_url, api_key, entity_id, payload)
+            hb_result = hbctl_client.create_maintenance(
+                entity_id,
+                args.name.strip(),
+                completed_date=api_completed,
+                scheduled_date=api_scheduled,
+                cost=api_cost,
+                description=description or None,
+            )
 
         md_updated: str | None = None
         if not args.homebox_only and resolved["md_path"] is not None:
@@ -469,8 +342,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             else:
                 print(f"[DRY RUN] Would DELETE /api/v1/maintenance/{args.entry_id}")
             return 0
-        base_url, api_key = load_homebox_config()
-        delete_maintenance(base_url, api_key, args.entry_id)
+        hbctl_client.delete_maintenance(args.entry_id, force=True)
         if output_json:
             print(json.dumps({"deleted": args.entry_id}, indent=2))
         else:

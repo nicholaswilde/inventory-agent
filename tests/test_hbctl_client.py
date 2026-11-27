@@ -13,7 +13,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.hbctl_client import (
     HbctlError,
+    api_request,
     create_item,
+    create_maintenance,
+    delete_maintenance,
     download_attachments,
     export_items,
     export_markdown,
@@ -21,9 +24,11 @@ from scripts.hbctl_client import (
     get_item,
     hbctl_json,
     list_items,
+    list_maintenance,
     run_hbctl,
     search_items,
     update_item,
+    update_maintenance,
     upload_attachments,
     upsert_item,
 )
@@ -394,3 +399,125 @@ def test_download_attachments(tmp_path):
     with patch("scripts.hbctl_client.hbctl_json") as mock_json:
         assert download_attachments(out_dir=tmp_path, items_from=[]) == []
         mock_json.assert_not_called()
+
+
+def test_api_request():
+    with patch("scripts.hbctl_client.hbctl_json") as mock_json:
+        mock_json.return_value = [{"method": "POST", "url": "http://hb:7745/api/v1/groups"}]
+        res = api_request(
+            "POST",
+            "groups",
+            data={"name": "Lab"},
+            query=[("limit", "10")],
+            select="id,name",
+            dry_run=True,
+            hbctl_bin="/custom/hbctl",
+        )
+        assert isinstance(res, list)
+        assert mock_json.call_args[0][0] == [
+            "api",
+            "POST",
+            "groups",
+            "--from-json",
+            "-",
+            "--query",
+            "limit=10",
+            "--select",
+            "id,name",
+            "--dry-run",
+        ]
+        assert json.loads(mock_json.call_args[1]["stdin_data"]) == {"name": "Lab"}
+        assert mock_json.call_args[1]["hbctl_bin"] == "/custom/hbctl"
+
+        mock_json.return_value = {"version": "0.27.1"}
+        res_get = api_request("GET", "status")
+        assert res_get == {"version": "0.27.1"}
+        assert mock_json.call_args[0][0] == ["api", "GET", "status"]
+        assert mock_json.call_args[1]["stdin_data"] is None
+
+
+def test_maintenance_helpers():
+    with patch("scripts.hbctl_client.hbctl_json") as mock_json:
+        mock_json.return_value = [{"id": "m1", "name": "Test"}]
+        assert list_maintenance() == [{"id": "m1", "name": "Test"}]
+        assert mock_json.call_args[0][0] == ["maintenance", "list"]
+
+        list_maintenance("e1", status="completed", select="id,name", dry_run=True)
+        assert mock_json.call_args[0][0] == [
+            "maintenance",
+            "list",
+            "--status",
+            "completed",
+            "--select",
+            "id,name",
+            "--dry-run",
+            "e1",
+        ]
+
+        mock_json.return_value = {"id": "m2", "name": "Replaced valve"}
+        created = create_maintenance(
+            "e1",
+            "Replaced valve",
+            completed_date="2026-11-27",
+            scheduled_date="2026-11-20",
+            cost="29.99",
+            description="Part: 00628334",
+        )
+        assert created["id"] == "m2"
+        assert mock_json.call_args[0][0] == [
+            "maintenance",
+            "create",
+            "--name",
+            "Replaced valve",
+            "--completed-date",
+            "2026-11-27",
+            "--scheduled-date",
+            "2026-11-20",
+            "--cost",
+            "29.99",
+            "--description",
+            "Part: 00628334",
+            "e1",
+        ]
+
+        mock_json.return_value = [{"method": "POST", "url": "http://hb:7745/api/v1/entities/e1/maintenance"}]
+        dry_created = create_maintenance("e1", "Replaced valve", dry_run=True)
+        assert isinstance(dry_created, dict)
+        assert dry_created["method"] == "POST"
+
+        mock_json.return_value = [{"method": "PUT", "url": "http://hb:7745/api/v1/maintenance/m1"}]
+        updated = update_maintenance(
+            "m1",
+            name="Updated",
+            completed_date="2026-11-28",
+            cost="10.00",
+            description="Note",
+            dry_run=True,
+        )
+        assert isinstance(updated, dict)
+        assert updated["method"] == "PUT"
+        assert mock_json.call_args[0][0] == [
+            "maintenance",
+            "update",
+            "--name",
+            "Updated",
+            "--completed-date",
+            "2026-11-28",
+            "--cost",
+            "10.00",
+            "--description",
+            "Note",
+            "--dry-run",
+            "m1",
+        ]
+
+        mock_json.return_value = {"id": "m1", "deleted": True}
+        deleted = delete_maintenance("m1")
+        assert deleted == {"id": "m1", "deleted": True}
+        assert mock_json.call_args[0][0] == ["maintenance", "delete", "--force", "m1"]
+
+        mock_json.return_value = [{"method": "DELETE", "url": "http://hb:7745/api/v1/maintenance/m1"}]
+        dry_deleted = delete_maintenance("m1", force=False, dry_run=True)
+        assert isinstance(dry_deleted, dict)
+        assert dry_deleted["method"] == "DELETE"
+        assert mock_json.call_args[0][0] == ["maintenance", "delete", "--dry-run", "m1"]
