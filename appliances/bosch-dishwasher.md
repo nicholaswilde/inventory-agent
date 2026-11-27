@@ -55,3 +55,11 @@
 - **Spray Arms**:
   - Unscrew upper spray arm nut to remove; lift lower spray arm straight up.
   - Clear clogged nozzle holes with a toothpick and rinse.
+
+---
+
+## Maintenance History
+
+| Date | Action | Part(s) | Cost | Notes |
+|---|---|---|---|---|
+| 2026-03 (approx.) | Replaced water inlet valve | `00628334` | - | Bosch Dishwasher Water Inlet Valve (callout 0544, 05_diagram.png); approximate date: March 2026. |

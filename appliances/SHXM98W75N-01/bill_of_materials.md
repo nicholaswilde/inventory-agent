@@ -128,7 +128,7 @@
 | 0531 | [`00609843`](https://www.appliancepartspros.com/bosch-foot-609843-ap5657280.html) | Dishwasher Leveling Foot | $15.95 | Available |
 | 0540 | [`00632896`](https://www.appliancepartspros.com/bosch-holder-00632896-ap5950432.html) | Dishwasher Door Spring Retainer | $7.95 | Available |
 | 0543 | [`00628793`](https://www.appliancepartspros.com/bosch-terminal-628793-ap5691130.html) | Terminal | $8.95 | Available |
-| 0544 | `00628334` | — | N/A | Available |
+| 0544 | `00628334` | Dishwasher Water Inlet Valve | N/A | Available |
 | 0545 | [`10005178`](https://www.appliancepartspros.com/bosch-support-10005178-ap6281857.html) | Support | $5.57 | Available |
 | 0546 | [`00751409`](https://www.appliancepartspros.com/bosch-holder-00751409-ap5953579.html) | Dishwasher Holder Retainer | $4.45 | Available |
 | 0548 | [`00628344`](https://www.appliancepartspros.com/bosch-support-628344-ap5691121.html) | Support | N/A | Out of Stock / Inquire |
