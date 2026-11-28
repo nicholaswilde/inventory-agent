@@ -91,7 +91,16 @@ def test_get_field_value_custom_and_top_level():
 def test_list_search_get_create_update_items():
     with patch("scripts.hbctl_client.hbctl_json") as mock_json:
         mock_json.return_value = [{"id": "e1", "name": "ESP32"}]
-        assert list_items(tag="electronics", has_field="Voltage", select="id,name") == [
+        assert list_items(
+            tag="electronics",
+            entity_type="Component",
+            parent="Lab",
+            has_field="Voltage",
+            include_archived=True,
+            archived_only=True,
+            warranty_expiring=30,
+            select="id,name",
+        ) == [
             {"id": "e1", "name": "ESP32"}
         ]
         assert mock_json.call_args[0][0] == [
@@ -100,8 +109,16 @@ def test_list_search_get_create_update_items():
             "--all",
             "--tag",
             "electronics",
+            "--type",
+            "Component",
+            "--parent",
+            "Lab",
             "--has-field",
             "Voltage",
+            "--include-archived",
+            "--archived-only",
+            "--warranty-expiring",
+            "30",
             "--select",
             "id,name",
         ]
@@ -110,6 +127,13 @@ def test_list_search_get_create_update_items():
         assert search_items(
             "ESP32",
             tag="mcu",
+            entity_type="Appliance",
+            parent="Kitchen",
+            limit=10,
+            include_archived=True,
+            archived_only=True,
+            warranty_expiring=30,
+            with_path=True,
             model="S3",
             serial="SN1",
             manufacturer="Espressif",
@@ -121,6 +145,17 @@ def test_list_search_get_create_update_items():
             "search",
             "--tag",
             "mcu",
+            "--type",
+            "Appliance",
+            "--parent",
+            "Kitchen",
+            "--limit",
+            "10",
+            "--include-archived",
+            "--archived-only",
+            "--warranty-expiring",
+            "30",
+            "--with-path",
             "--model",
             "S3",
             "--serial",
@@ -138,6 +173,8 @@ def test_list_search_get_create_update_items():
         mock_json.return_value = {"id": "e1"}
         assert get_item("e1") == {"id": "e1"}
         assert mock_json.call_args[0][0] == ["item", "get", "e1"]
+        assert get_item("000-001", with_path=True, asset_id=True) == {"id": "e1"}
+        assert mock_json.call_args[0][0] == ["item", "get", "--with-path", "--asset-id", "000-001"]
 
         payload = {"name": "ESP32", "quantity": 2}
         assert create_item(
@@ -166,6 +203,18 @@ def test_list_search_get_create_update_items():
         ]
         assert json.loads(mock_json.call_args[1]["stdin_data"]) == payload
         assert mock_json.call_args[1]["hbctl_bin"] == "/custom/hbctl"
+
+        assert create_item(None, from_barcode="012345678905", dry_run=True) == {"id": "e1"}
+        assert mock_json.call_args[0][0] == [
+            "item",
+            "create",
+            "--from-barcode",
+            "012345678905",
+            "--dry-run",
+        ]
+        assert mock_json.call_args[1]["stdin_data"] is None
+        with pytest.raises(ValueError, match="payload or from_barcode"):
+            create_item(None)
 
         patch_data = {"quantity": 5}
         assert update_item("e1", patch_data, fill_missing=True) == {"id": "e1"}
@@ -314,6 +363,7 @@ def test_upload_attachments_flags_and_remote_name(tmp_path):
             optimize=True,
             force=True,
             dry_run=True,
+            primary=True,
             remote_name="LG_Manual.pdf",
             hbctl_bin="/custom/hbctl",
         )
@@ -326,6 +376,7 @@ def test_upload_attachments_flags_and_remote_name(tmp_path):
         "--optimize",
         "--force",
         "--dry-run",
+        "--primary",
         "--name",
         "LG_Manual.pdf",
         "--attach-url",

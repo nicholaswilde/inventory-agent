@@ -36,9 +36,9 @@ This skill guides the agent to process a GitHub issue, extract item details, map
    - If a component **already exists**, inform the user that it exists. Do NOT increase the quantity or add a duplicate.
 
 5. **Add to Homebox**:
-   - For each new component, create it and attach all corresponding image(s) in a single call using `hbctl item create --name "<name>" ... --attach <img1> --attach <img2> --optimize --json` (or `printf '%s' '<json_data>' | hbctl item create --from-json - --attach <img1> --optimize --json`, or `task homebox:create DATA='<json_data>' ATTACH='<img1>'`).
+   - For each new component, create it and attach all corresponding image(s) in a single call using `hbctl item create --name "<name>" ... --attach <img1> --attach <img2> --optimize --json` (or `printf '%s' '<json_data>' | hbctl item create --from-json - --attach <img1> --optimize --json`, or `task homebox:create DATA='<json_data>' ATTACH='<img1>'`). For barcode/UPC items, use `hbctl item create --from-barcode <CODE>`.
    - Or combine check + create + attach-on-match in one call with `hbctl item upsert --from-json - --match-by model --match-by name --match-mode contains --on-match attach-only --attach <img1> --optimize --json`.
-   - If adding images to an existing item or uploading extra files afterward, run `hbctl attachment upload --optimize <entity_id> <image_path...>`.
+   - If adding images to an existing item or uploading extra files afterward, run `hbctl attachment upload --optimize [--primary] <entity_id> <image_path...>`, or link external datasheets/docs with `hbctl attachment add-link <entity_id> <url> --title "..." --type manual`.
 
 6. **Create Git Commit**:
    - Create an empty git commit (or commit related changes if any) to close the issue.

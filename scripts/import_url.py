@@ -265,6 +265,7 @@ def check_duplicate(
         return None
 
     kwargs["any_match"] = len(kwargs) > 1
+    kwargs["select"] = "id,name,notes,modelNumber,fields"
     try:
         items = hbctl_client.search_items(**kwargs)
     except Exception:

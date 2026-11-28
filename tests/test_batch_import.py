@@ -132,7 +132,9 @@ def test_batch_import_execution(
     assert results[0]["quantity"] == 1
     assert results[0]["purchase_price"] == 433.70
 
-    mock_list.assert_called_once()
+    mock_list.assert_called_once_with(
+        select="id,name,quantity,purchasePrice,notes,modelNumber,fields"
+    )
     mock_create_entity.assert_called_once()
     assert mock_create_entity.call_args[0][0]["purchase_date"] == "2020-12-08"
     assert mock_create_entity.call_args.kwargs["image_url"] == "https://m.media-amazon.com/images/I/chromebook.jpg"

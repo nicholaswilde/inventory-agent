@@ -181,6 +181,32 @@ task maintenance:update ID="<entry_uuid>" COST="$45.00" DRY_RUN=1
 task maintenance:delete ID="<entry_uuid>" DRY_RUN=1
 ```
 
+### :bar_chart: Homebox Analytics, Backups, Labels & Barcodes
+
+Inspect inventory breakdowns, generate labels/QR codes, import from barcodes/templates, run server maintenance actions, and back up Homebox via `hbctl`:
+
+```bash
+# View inventory statistics and expiring warranties
+task homebox:stats
+task homebox:stats VIEW=tags WARRANTY_DAYS=30
+
+# Create a portable .tar.gz inventory backup in output/
+task homebox:backup DRY_RUN=1
+task homebox:backup OVERWRITE=1
+
+# Generate labels or QR codes (supports UUIDs or asset IDs like 000-001)
+task homebox:label ID="000-001" OUT="output/label.png"
+task homebox:qr ID="000-001" OUT="output/qr.png"
+
+# Look up or create an item from a UPC/EAN barcode, or apply a template
+task homebox:barcode CODE="012345678905" CREATE=1 PARENT="Pantry" DRY_RUN=1
+task homebox:template APPLY="<template_uuid>" NAME="USB-C Cable 2m" DRY_RUN=1
+
+# Run server actions or inspect resolved hbctl config/profiles
+task homebox:actions ACTION=ensure-asset-ids DRY_RUN=1
+task homebox:config
+```
+
 ### :scales: Container Tare Weight Tracking
 
 Upsert individual kitchen container weights (borosilicate glass, stainless steel, silicone, Pyrex) into Homebox and generate printable reference sheets:
@@ -270,15 +296,26 @@ uv run pytest tests/
 - `task coveralls` — Report code coverage to Coveralls.io using `coveralls` CLI.
 - `task homebox:list` — List all Homebox entities.
 - `task homebox:search QUERY='<name>'` — Search Homebox entities by name.
-- `task homebox:get ID=<id>` — Get details for an entity.
+- `task homebox:get ID=<id>` — Get details for an entity (supports UUID or asset ID; optional `WITH_PATH=1`).
 - `task homebox:create DATA='<json>'` — Create a new entity (optional `ATTACH='<path>'`, auto-optimizes images).
 - `task homebox:update ID=<id> DATA='<json>'` — Update an existing entity (set `FILL_MISSING=1` to preserve existing values).
-- `task homebox:delete ID=<id>` — Delete an entity by ID.
-- `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity (auto-optimizes images).
+- `task homebox:duplicate ID=<id>` — Duplicate an entity (optional `COUNT=N`, `DRY_RUN=1`).
+- `task homebox:delete ID=<id>` — Delete an entity by `ID` or bulk delete by `TAG` (preview with `DRY_RUN=1`).
+- `task homebox:attach ID=<id> FILE='<path>'` — Attach an image or file to an entity (auto-optimizes images; optional `PRIMARY=1`).
+- `task homebox:attach-link ID=<id> URL='<url>'` — Attach an external URL link to an entity (optional `TITLE`, `TYPE`, `DRY_RUN=1`).
 - `task homebox:status` — Check remote Homebox server connectivity and version.
 - `task homebox:api METHOD=<METHOD> PATH='<path>'` — Issue a raw authenticated Homebox API request via `hbctl api` (optional `DATA='<json>'`, `DRY_RUN=1`).
 - `task homebox:tree` — Render Homebox item parent/location hierarchy as a tree.
-- `task homebox:move ID=<id> PARENT='<parent>'` — Move an item under a parent item/location (or `none`).
+- `task homebox:path ID=<id>` — Display location/parent breadcrumb path for an item.
+- `task homebox:move ID=<id> PARENT='<parent>'` — Move item(s) by `ID` or `TAG` under a parent item/location (or `none`; preview with `DRY_RUN=1`).
+- `task homebox:stats` — Display inventory statistics (`VIEW=overview|tags|locations|entity-types|purchase-price`, `WARRANTY_DAYS=N`).
+- `task homebox:backup` — Create portable inventory backup (`OUT=output/homebox-backup.tar.gz`, `NO_ATTACHMENTS=1`, `EXCLUDE_ARCHIVED=1`, `OVERWRITE=1`, `DRY_RUN=1`).
+- `task homebox:label ID=<id>` — Generate or server-print an item, asset, or location label (`KIND`, `OUT`, `PRINT=1`, `DRY_RUN=1`).
+- `task homebox:qr ID=<id>` — Generate a QR code image (`RAW=1`, `OUT`, `DRY_RUN=1`).
+- `task homebox:barcode CODE='<code>'` — Look up product metadata or create item from barcode (`CREATE=1`, `PARENT`, `DRY_RUN=1`).
+- `task homebox:template` — List templates or apply one to create an item (`APPLY=<id>`, `NAME`, `LOCATION`, `DRY_RUN=1`).
+- `task homebox:actions ACTION=<action>` — Run server maintenance action (`ensure-asset-ids`, `create-missing-thumbnails`, `DRY_RUN=1`).
+- `task homebox:config` — Display effective `hbctl` configuration and profiles.
 - `task homebox:dedup` — Detect and report duplicate Homebox entities.
 - `task homebox:dedup-delete` — Delete duplicate entities (preview with `DRY_RUN=1`).
 - `task homebox:dedup-merge` — Merge quantities and delete duplicates (preview with `DRY_RUN=1`).

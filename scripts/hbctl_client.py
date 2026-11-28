@@ -71,15 +71,30 @@ def get_field_value(
 def list_items(
     *,
     tag: str | None = None,
+    entity_type: str | None = None,
+    parent: str | None = None,
     has_field: str | None = None,
+    include_archived: bool = False,
+    archived_only: bool = False,
+    warranty_expiring: int | None = None,
     select: str | None = None,
 ) -> list[dict[str, Any]]:
     """List all Homebox items via `hbctl item list --all`."""
     args = ["item", "list", "--all"]
     if tag:
         args.extend(["--tag", tag])
+    if entity_type:
+        args.extend(["--type", entity_type])
+    if parent:
+        args.extend(["--parent", parent])
     if has_field:
         args.extend(["--has-field", has_field])
+    if include_archived:
+        args.append("--include-archived")
+    if archived_only:
+        args.append("--archived-only")
+    if warranty_expiring is not None:
+        args.extend(["--warranty-expiring", str(warranty_expiring)])
     if select:
         args.extend(["--select", select])
     data = hbctl_json(args)
@@ -90,6 +105,13 @@ def search_items(
     query: str | None = None,
     *,
     tag: str | None = None,
+    entity_type: str | None = None,
+    parent: str | None = None,
+    limit: int | None = None,
+    include_archived: bool = False,
+    archived_only: bool = False,
+    warranty_expiring: int | None = None,
+    with_path: bool = False,
     model: str | None = None,
     serial: str | None = None,
     manufacturer: str | None = None,
@@ -101,6 +123,20 @@ def search_items(
     args = ["search"]
     if tag:
         args.extend(["--tag", tag])
+    if entity_type:
+        args.extend(["--type", entity_type])
+    if parent:
+        args.extend(["--parent", parent])
+    if limit is not None:
+        args.extend(["--limit", str(limit)])
+    if include_archived:
+        args.append("--include-archived")
+    if archived_only:
+        args.append("--archived-only")
+    if warranty_expiring is not None:
+        args.extend(["--warranty-expiring", str(warranty_expiring)])
+    if with_path:
+        args.append("--with-path")
     if model:
         args.extend(["--model", model])
     if serial:
@@ -119,9 +155,20 @@ def search_items(
     return data if isinstance(data, list) else []
 
 
-def get_item(entity_id: str) -> dict[str, Any]:
-    """Fetch a single item by ID via `hbctl item get`."""
-    data = hbctl_json(["item", "get", entity_id])
+def get_item(
+    entity_id: str,
+    *,
+    with_path: bool = False,
+    asset_id: bool = False,
+) -> dict[str, Any]:
+    """Fetch a single item by UUID or asset ID via `hbctl item get`."""
+    args = ["item", "get"]
+    if with_path:
+        args.append("--with-path")
+    if asset_id:
+        args.append("--asset-id")
+    args.append(entity_id)
+    data = hbctl_json(args)
     return data if isinstance(data, dict) else {}
 
 
@@ -151,8 +198,9 @@ def _append_attachment_args(
 
 
 def create_item(
-    payload: dict[str, Any],
+    payload: dict[str, Any] | None = None,
     *,
+    from_barcode: str | None = None,
     attach: Sequence[Path | str] = (),
     attach_urls: Sequence[str] = (),
     attach_best_effort: bool = False,
@@ -161,8 +209,14 @@ def create_item(
     dry_run: bool = False,
     hbctl_bin: str = "hbctl",
 ) -> dict[str, Any]:
-    """Create an item from a JSON payload via `hbctl item create --from-json -`."""
-    args = ["item", "create", "--from-json", "-"]
+    """Create an item from a JSON payload and/or barcode lookup via `hbctl item create`."""
+    if payload is None and not from_barcode:
+        raise ValueError("Either payload or from_barcode must be provided")
+    args = ["item", "create"]
+    if payload is not None:
+        args.extend(["--from-json", "-"])
+    if from_barcode:
+        args.extend(["--from-barcode", from_barcode])
     _append_attachment_args(
         args,
         attach=attach,
@@ -172,7 +226,8 @@ def create_item(
         force=force,
         dry_run=dry_run,
     )
-    data = hbctl_json(args, stdin_data=json.dumps(payload), hbctl_bin=hbctl_bin)
+    stdin_data = json.dumps(payload) if payload is not None else None
+    data = hbctl_json(args, stdin_data=stdin_data, hbctl_bin=hbctl_bin)
     return data if isinstance(data, dict) else {}
 
 
@@ -323,6 +378,7 @@ def upload_attachments(
     optimize: bool = False,
     force: bool = False,
     dry_run: bool = False,
+    primary: bool = False,
     remote_name: str | None = None,
     hbctl_bin: str = "hbctl",
 ) -> list[dict[str, Any]]:
@@ -339,6 +395,8 @@ def upload_attachments(
         args.append("--force")
     if dry_run:
         args.append("--dry-run")
+    if primary:
+        args.append("--primary")
     if remote_name:
         args.extend(["--name", remote_name])
     for url in attach_urls:

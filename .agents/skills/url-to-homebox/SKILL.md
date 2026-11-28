@@ -29,6 +29,10 @@ Imports an item into Homebox from a product URL (Amazon, e-commerce stores, bran
      ```bash
      task url:import URL="<url_or_asin>" -- --name "<Custom Name>" --model "<Model Number>"
      ```
+   - **From Barcode (UPC/EAN without scraping)**:
+     ```bash
+     task homebox:barcode CODE="<upc_or_ean>" CREATE=1 [PARENT="<location>"] [DRY_RUN=1]
+     ```
 
 3. **Artifacts & Data Extracted**:
    - **Name**: Product title / model name.
@@ -37,4 +41,4 @@ Imports an item into Homebox from a product URL (Amazon, e-commerce stores, bran
    - **Purchase Price**: Extracted from offer/price metadata and saved to `purchasePrice`.
    - **Product Image**: Primary product image URL passed directly to `hbctl item create --attach-url <URL>=<name> --attach-best-effort --optimize` for automatic download, rename, and in-memory optimization.
    - **Notes & Description**: Source URL, ASIN / SKU, bullet points, and key product features.
-   - **Deduplication**: Checks Homebox in a single `hbctl search --any` pass (matching ASIN in `Notes`, model number, or item name) before creating to prevent duplicate entries.
+   - **Deduplication**: Checks Homebox in a single `hbctl search --any --select id,name,notes,modelNumber,fields` pass (matching ASIN in `Notes`, model number, or item name) before creating to prevent duplicate entries.

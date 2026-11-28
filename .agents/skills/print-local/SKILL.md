@@ -29,3 +29,5 @@ When I ask you to print a document, table, or list (such as the tare weight refe
 3. **Confirmation:**
 
 * Confirm to the user that the print job has been spooled to `BrotherPrinter`, but do not output the raw table to the terminal again unless explicitly asked.
+
+> **Note**: For Homebox item, asset, or location labels and QR codes, prefer `task homebox:label` (`hbctl label`) or `task homebox:qr` (`hbctl qr`). Reserve `task print:brother` for custom Markdown lists and tables.

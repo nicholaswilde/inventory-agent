@@ -119,7 +119,7 @@ Use `ripwire` CLI (prefixed with `rtk ripwire`) for AST codebase mapping, call g
 <!-- homebox-connection-begin -->
 ## Homebox Connection Rules
 When connecting to Homebox API, strictly follow connection parameters:
-1. **CLI**: Prefer `hbctl` CLI (`--json --select ...`, `-q`, `--dry-run`; auto-loads `.env` or `hbctl auth login`) over raw `curl` calls. Use `hbctl api <METHOD> <PATH>` for uncovered endpoints and `hbctl maintenance` for maintenance logs.
+1. **CLI**: Prefer `hbctl` CLI (`--json --select ...`, `-q`, `--dry-run`, `--asset-id`, `--output csv|markdown`; auto-loads `.env` or `hbctl auth login`) over raw `curl` calls. Use native `hbctl` subcommands (`maintenance`, `stats`, `backup`, `label`, `qr`, `template`, `barcode`, `actions`, `notifier`, `config`, bulk `item` ops, `attachment add-link`/`set-primary`/`update`) before `hbctl api <METHOD> <PATH>`.
 2. **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` file. NEVER commit this file or output raw keys in logs.
 3. **Port**: Homebox service runs on port `7745` (e.g., `http://$HOMEBOX_IP:7745`).
 4. **Authentication**: Pass API key using standard Bearer token header: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.

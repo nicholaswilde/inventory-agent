@@ -21,47 +21,55 @@ tasks:
   homebox:list:
     desc: List all Homebox entities
     cmds:
-      - hbctl item list --all
+      - hbctl item list --all {{.CLI_ARGS}}
 
   homebox:get:
-    desc: Get Homebox entity by ID
+    desc: Get Homebox entity by UUID or asset ID (optional WITH_PATH=1)
     cmds:
-      - hbctl item get {{.ID}} --json
+      - hbctl item get {{.ID | shellQuote}}{{if eq .WITH_PATH "1"}} --with-path{{end}} --json {{.CLI_ARGS}}
     requires:
       vars: [ID]
 
   homebox:update:
     desc: Update Homebox entity by ID with JSON payload (set FILL_MISSING=1 to preserve existing values)
     cmds:
-      - printf '%s' '{{.DATA}}' | hbctl item update {{.ID}} --from-json - {{if eq .FILL_MISSING "1"}}--fill-missing{{end}}
+      - printf '%s' '{{.DATA}}' | hbctl item update {{.ID | shellQuote}} --from-json - {{if eq .FILL_MISSING "1"}}--fill-missing{{end}} {{.CLI_ARGS}}
     requires:
       vars: [ID, DATA]
 
   homebox:create:
     desc: Create Homebox entity with JSON payload (optional ATTACH='<path>')
     cmds:
-      - printf '%s' '{{.DATA}}' | hbctl item create --from-json - {{if .ATTACH}}--attach '{{.ATTACH}}' --optimize{{end}} --json
+      - printf '%s' '{{.DATA}}' | hbctl item create --from-json - {{if .ATTACH}}--attach {{.ATTACH | shellQuote}} --optimize{{end}} --json {{.CLI_ARGS}}
     requires:
       vars: [DATA]
 
   homebox:delete:
-    desc: Delete Homebox entity by ID
+    desc: Delete Homebox entity by ID or tag (ID=<id> or TAG=<tag>; optional DRY_RUN=1)
     cmds:
-      - hbctl item delete {{.ID}} --force
-    requires:
-      vars: [ID]
+      - hbctl item delete{{if .ID}} {{.ID | shellQuote}}{{end}}{{if .TAG}} --tag {{.TAG | shellQuote}}{{end}} --yes{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    preconditions:
+      - sh: 'test -n "{{.ID}}{{.TAG}}"'
+        msg: "Either ID or TAG must be specified"
 
   homebox:attach:
-    desc: Attach a file to a Homebox entity
+    desc: Attach a file to a Homebox entity (optional PRIMARY=1)
     cmds:
-      - hbctl attachment upload --optimize {{.ID}} '{{.FILE}}'
+      - hbctl attachment upload --optimize{{if eq .PRIMARY "1"}} --primary{{end}} {{.ID | shellQuote}} {{.FILE | shellQuote}} {{.CLI_ARGS}}
     requires:
       vars: [ID, FILE]
+
+  homebox:attach-link:
+    desc: Attach an external URL link to a Homebox entity (ID, URL; optional TITLE, TYPE, DRY_RUN=1)
+    cmds:
+      - hbctl attachment add-link {{.ID | shellQuote}} {{.URL | shellQuote}}{{if .TITLE}} --title {{.TITLE | shellQuote}}{{end}}{{if .TYPE}} --type {{.TYPE | shellQuote}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ID, URL]
 
   homebox:entity-types:
     desc: List all Homebox entity types
     cmds:
-      - hbctl entity-types
+      - hbctl entity-types {{.CLI_ARGS}}
 
   homebox:status:
     desc: Check remote Homebox server connectivity and version
@@ -80,12 +88,80 @@ tasks:
     cmds:
       - hbctl item tree {{.CLI_ARGS}}
 
-  homebox:move:
-    desc: Move Homebox item under a parent item/location (or 'none' to unparent)
+  homebox:path:
+    desc: Display location/parent breadcrumb path for a Homebox item
     cmds:
-      - hbctl item move {{.ID}} '{{.PARENT}}'
+      - hbctl item path {{.ID | shellQuote}} {{.CLI_ARGS}}
     requires:
-      vars: [ID, PARENT]
+      vars: [ID]
+
+  homebox:duplicate:
+    desc: Duplicate an existing Homebox item (ID; optional COUNT=N, DRY_RUN=1)
+    cmds:
+      - hbctl item duplicate {{.ID | shellQuote}}{{if .COUNT}} --count {{.COUNT}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ID]
+
+  homebox:move:
+    desc: Move Homebox item(s) under a parent item/location or 'none' (ID or TAG, PARENT; optional DRY_RUN=1)
+    cmds:
+      - hbctl item move{{if .ID}} {{.ID | shellQuote}}{{end}}{{if .TAG}} --tag {{.TAG | shellQuote}}{{end}} --to {{.PARENT | shellQuote}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    preconditions:
+      - sh: 'test -n "{{.ID}}{{.TAG}}"'
+        msg: "Either ID or TAG must be specified"
+    requires:
+      vars: [PARENT]
+
+  homebox:stats:
+    desc: Display Homebox inventory statistics (optional VIEW=overview|tags|locations|entity-types|purchase-price, WARRANTY_DAYS=N)
+    cmds:
+      - hbctl stats{{if .WARRANTY_DAYS}} --warranty-days {{.WARRANTY_DAYS}}{{end}}{{if .VIEW}} {{.VIEW | shellQuote}}{{end}} {{.CLI_ARGS}}
+
+  homebox:backup:
+    desc: Create portable Homebox inventory backup (optional OUT=output/homebox-backup.tar.gz, NO_ATTACHMENTS=1, EXCLUDE_ARCHIVED=1, OVERWRITE=1, DRY_RUN=1)
+    vars:
+      OUT: '{{.OUT | default "output/homebox-backup.tar.gz"}}'
+    cmds:
+      - mkdir -p output
+      - hbctl backup --out {{.OUT | shellQuote}}{{if eq .NO_ATTACHMENTS "1"}} --no-attachments{{end}}{{if eq .EXCLUDE_ARCHIVED "1"}} --exclude-archived{{end}}{{if eq .OVERWRITE "1"}} --overwrite{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+
+  homebox:label:
+    desc: Generate or server-print a Homebox item, asset, or location label (ID; optional KIND, OUT, PRINT=1, OVERWRITE=1, DRY_RUN=1)
+    cmds:
+      - hbctl label {{.ID | shellQuote}}{{if .KIND}} --kind {{.KIND | shellQuote}}{{end}}{{if .OUT}} --out {{.OUT | shellQuote}}{{end}}{{if eq .PRINT "1"}} --print{{end}}{{if eq .OVERWRITE "1"}} --overwrite{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ID]
+
+  homebox:qr:
+    desc: Generate a Homebox QR code image (ID; optional RAW=1, OUT, OVERWRITE=1, DRY_RUN=1)
+    cmds:
+      - hbctl qr {{.ID | shellQuote}}{{if eq .RAW "1"}} --raw{{end}}{{if .OUT}} --out {{.OUT | shellQuote}}{{end}}{{if eq .OVERWRITE "1"}} --overwrite{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ID]
+
+  homebox:barcode:
+    desc: Look up product metadata or create item from barcode (CODE; optional CREATE=1, PARENT, DRY_RUN=1)
+    cmds:
+      - '{{if eq .CREATE "1"}}hbctl item create --from-barcode {{.CODE | shellQuote}}{{if .PARENT}} --parent {{.PARENT | shellQuote}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}{{else}}hbctl barcode {{.CODE | shellQuote}} {{.CLI_ARGS}}{{end}}'
+    requires:
+      vars: [CODE]
+
+  homebox:template:
+    desc: List Homebox templates or apply one to create an item (optional APPLY=<id>, NAME, LOCATION, DRY_RUN=1)
+    cmds:
+      - '{{if .APPLY}}hbctl template apply {{.APPLY | shellQuote}}{{if .NAME}} --name {{.NAME | shellQuote}}{{end}}{{if .LOCATION}} --location {{.LOCATION | shellQuote}}{{end}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}{{else}}hbctl template list {{.CLI_ARGS}}{{end}}'
+
+  homebox:actions:
+    desc: Run Homebox server maintenance action (ACTION=ensure-asset-ids|create-missing-thumbnails; optional DRY_RUN=1)
+    cmds:
+      - hbctl actions {{.ACTION | shellQuote}}{{if eq .DRY_RUN "1"}} --dry-run{{end}} {{.CLI_ARGS}}
+    requires:
+      vars: [ACTION]
+
+  homebox:config:
+    desc: Display resolved effective hbctl configuration and profiles
+    cmds:
+      - hbctl config show {{.CLI_ARGS}}
 
   process-vision:
     desc: Process electronic component images using vision pipeline
@@ -97,7 +173,7 @@ tasks:
   homebox:search:
     desc: Search Homebox entities by name
     cmds:
-      - hbctl search '{{.QUERY}}'
+      - hbctl search '{{.QUERY}}' {{.CLI_ARGS}}
     requires:
       vars: [QUERY]
 

@@ -32,7 +32,7 @@ Ingests appliance user and service manuals from local PDF files, URLs (Google Dr
    - After completing ingestion and verification, commit changes with `Fixes #<issue_number>` to close the issue automatically upon push (e.g., `git commit -m "feat(manual): ingest <appliance> manual (Fixes #<issue_number>)"`).
 4. **Artifacts Produced**:
    - **Processed Manual**: Saved to `images/processed/<Slug>_Manual.pdf` (gitignored to prevent repository bloat).
-   - **Homebox Entity**: Upserted via `hbctl item upsert --match-by model --match-by name --match-mode contains --on-match attach-only --attach <file>[=<remote_name>]` (creates with specs/model or attaches PDF manual to existing match).
+   - **Homebox Entity**: Upserted via `hbctl item upsert --match-by model --match-by name --match-mode contains --on-match attach-only --attach <file>[=<remote_name>]` (creates with specs/model or attaches PDF manual to existing match). Link external manual/support URLs with `task homebox:attach-link` (`hbctl attachment add-link <id> <url> --type manual`) and classify uploaded manuals with `hbctl attachment update <id> <att_id> --type manual`.
    - **Quick Lookup Cheat Sheet**: Saved to `appliances/<slug>.md` containing specs, error codes, part numbers, and maintenance tips.
 5. **Appliance Information Lookup**:
    - For fast lookups (error codes, specs, dimensions, replacement parts), read `appliances/<slug>.md` first.

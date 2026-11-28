@@ -138,6 +138,7 @@ def test_check_duplicate_found():
             model="T4111BN-3330",
             query="Moen T4111BN-3330",
             any_match=True,
+            select="id,name,notes,modelNumber,fields",
         )
 
 
@@ -163,6 +164,7 @@ def test_check_duplicate_asin():
             model="DIFFERENT-MODEL",
             query="Different Name",
             any_match=True,
+            select="id,name,notes,modelNumber,fields",
         )
 
 
@@ -178,7 +180,11 @@ def test_check_duplicate_asin_only():
         dup = check_duplicate(model_number=None, name="", asin="B0042RV0CY")
         assert dup is not None
         assert dup["id"] == "asin-uuid-789"
-        mock_search.assert_called_once_with(fields=["Notes=B0042RV0CY"], any_match=False)
+        mock_search.assert_called_once_with(
+            fields=["Notes=B0042RV0CY"],
+            any_match=False,
+            select="id,name,notes,modelNumber,fields",
+        )
 
 
 def test_check_duplicate_none():
@@ -193,7 +199,11 @@ def test_check_duplicate_matches_name():
         dup = check_duplicate(model_number=None, name="Matching Name")
         assert dup is not None
         assert dup["id"] == "hb-name-123"
-        mock_search.assert_called_once_with(query="Matching Name", any_match=False)
+        mock_search.assert_called_once_with(
+            query="Matching Name",
+            any_match=False,
+            select="id,name,notes,modelNumber,fields",
+        )
 
 
 def test_import_url_dry_run():

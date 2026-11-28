@@ -193,7 +193,9 @@ def filter_csv_candidates(
 def fetch_existing_homebox_items() -> list[dict[str, Any]]:
     """Retrieve existing items from Homebox via `hbctl item list --all`."""
     try:
-        return hbctl_client.list_items()
+        return hbctl_client.list_items(
+            select="id,name,quantity,purchasePrice,notes,modelNumber,fields"
+        )
     except Exception:
         return []
 

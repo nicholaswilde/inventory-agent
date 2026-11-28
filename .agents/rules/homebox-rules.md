@@ -1,7 +1,7 @@
 # Homebox & Ingestion Pipeline Rules
 
 ## Homebox API Connection
-- **CLI**: Prefer `hbctl` CLI (`--json --select ...`, `-q`, `--dry-run`) over raw `curl | jq` calls; use `hbctl api <METHOD> <PATH>` for uncovered endpoints and `hbctl maintenance` for maintenance logs.
+- **CLI**: Prefer `hbctl` CLI (`--json --select ...`, `-q`, `--dry-run`, `--asset-id`, `--output csv|markdown`) over raw `curl | jq` calls; use native `hbctl` subcommands (`maintenance`, `stats`, `backup`, `label`, `qr`, `template`, `barcode`, `actions`, `notifier`, `config`, bulk `item` ops, `attachment add-link`/`set-primary`/`update`) before `hbctl api <METHOD> <PATH>`.
 - **Credentials**: Source `HOMEBOX_IP` and `HOMEBOX_API_KEY` from local `.env` (auto-loaded by `hbctl`) or `hbctl auth login`. Never commit `.env` or log keys.
 - **Port**: 7745 (`http://$HOMEBOX_IP:7745`).
 - **Auth Header**: Bearer token: `-H "Authorization: Bearer $HOMEBOX_API_KEY"`.
